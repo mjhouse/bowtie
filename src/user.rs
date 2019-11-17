@@ -1,12 +1,11 @@
 use rusqlite::{Connection};
-
+use serde::{Serialize, Deserialize};
 use base64::{encode, decode};
 use whirlpool::{Whirlpool, Digest};
-use rocket::http::{Cookies,Cookie};
-use sha3::{Sha3_256};
 
 const SELECT_ID:       &str = "SELECT * FROM users WHERE id = ?1";
 const SELECT_USERNAME: &str = "SELECT * FROM users WHERE username = ?1";
+const INSERT_USER:     &str = "INSERT INTO users (username, passhash) VALUES(?1,?2);";
 
 const DATABASE: &str = "data/bowtie.db";
 
@@ -33,9 +32,9 @@ macro_rules! impl_from {
     };
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct User {
-    pub id: i32,
+    pub id: i64,
     pub username: String,
     pub passhash: String,
 }
@@ -53,6 +52,24 @@ impl User {
         else {
             None
         }
+    }
+
+    pub fn create( t_username:&str, t_password:&str ) -> Option<User> {
+        if let Ok(conn) = Connection::open(DATABASE) {
+            let passhash = encode(&hash!(t_password));
+            let result = conn.execute(INSERT_USER,params![t_username,&passhash]);
+            if result.is_ok() {
+                let id = conn.last_insert_rowid();
+                if id != 0 {
+                    return Some(User {
+                        id: id,
+                        username: t_username.to_string(),
+                        passhash: passhash.to_string()
+                    });
+                }
+            }
+        }
+        None
     }
 
 }

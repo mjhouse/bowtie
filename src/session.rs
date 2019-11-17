@@ -17,16 +17,6 @@ use crate::user::*;
 const COOKIE_NAME: &str    = "bowtie_session_token";
 const SERVER_KEY: &[u8;10] = b"secret_key";
 
-macro_rules! to_user {
-    ( $r:expr ) => {
-        User {
-            id: $r.get(0)?,
-            username: $r.get(1)?,
-            password: $r.get(2)?,
-            session:  $r.get(3)?
-    }}
-}
-
 #[derive(FromForm)]
 pub struct LoginForm {
     pub username: String,
@@ -34,12 +24,21 @@ pub struct LoginForm {
     pub submit:   String
 }
 
+#[derive(FromForm)]
+pub struct RegisterForm {
+    pub username:  String,
+    pub password1: String,
+    pub password2: String,
+    pub submit:    String
+}
+
 #[derive(Default,Debug, Serialize, Deserialize, PartialEq)]
 struct SessionClaims {
-    id: i32,
+    id: i64,
     username: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
     pub user: Option<User>,
 }
@@ -69,6 +68,13 @@ impl Session {
             }
         }
         user
+    }
+
+    pub fn register( &self, t_form:&RegisterForm ) -> Option<User> {
+        let pass1 = t_form.password1.trim();
+        let pass2 = t_form.password2.trim();
+        if pass1 != pass2 { return None; }
+        User::create(&t_form.username,&pass1)
     }
 
     pub fn login( &self, t_cookies:&mut Cookies, t_form:&LoginForm ) -> Option<User> {
