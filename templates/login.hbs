@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+        <link rel="stylesheet" type="text/css" href="/css/login.css">
+    </head>
+    <body>
+        <div class="content">
+            <nav class="main-menu" type="toolbar" label="Main Menu">
+                <span class="main-menu-title">BowTie</span>
+                <a href="#" class="main-menu-item">Login</a>
+                <a href="/login" class="main-menu-item">Search</a>
+            </nav>
+            <div class="login">
+                <form class="login-form" action="login" method="post">
+                    <table>
+                        <tr>
+                            <td colspan="2">
+                                <h1>Login</h1>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <p>
+                                    Login with your username and password. The longer the better.
+                                </p>
+                                <br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="username-field">Username:</label></td>
+                            <td><input type="text" placeholder="Enter Username" name="username" required autofocus></td>
+                        </tr>
+                        <tr>
+                            <td><label for="password-field">Password:</label></td>
+                            <td><input type="password" placeholder="Enter Password" name="password" required></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><button class="login-button" type="submit" name="submit" value="">Login</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <script src="/js/login.js"></script>
+    </body>
+</html>
