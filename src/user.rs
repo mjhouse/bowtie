@@ -3,6 +3,12 @@ use serde::{Serialize, Deserialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
 
+use medallion::{
+    Header,
+    Payload,
+    Token,
+};
+
 const SELECT_ID:       &str = "SELECT * FROM users WHERE id = ?1";
 const SELECT_ROWID:    &str = "SELECT * FROM users WHERE rowid = ?1";
 const SELECT_USERNAME: &str = "SELECT * FROM users WHERE username = ?1";
@@ -10,6 +16,10 @@ const INSERT_USER:     &str = "INSERT INTO users (username, passhash) VALUES(?1,
 const DELETE_USER:     &str = "DELETE FROM users WHERE username = ?1 AND passhash = ?2";
 
 const DATABASE: &str = "data/bowtie.db";
+const ISSUER:   &str = "bowtie.com";
+const SUBJECT:  &str = "user";
+
+const SERVER_KEY: &[u8;10] = b"secret_key";
 
 macro_rules! hash {
     ( $s:expr ) => { Whirlpool::new().chain(&$s).result(); }
@@ -43,11 +53,24 @@ pub enum DatabaseError {
     QueryFailed
 }
 
+#[derive(Debug)]
+pub enum TokenError {
+    FailedToSign,
+    FailedToParse,
+    TokenNotVerifies
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct User {
     pub id: i64,
     pub username: String,
     pub passhash: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct UserClaims {
+    pub id: i64,
+    pub username: String
 }
 
 impl User {
@@ -90,6 +113,50 @@ impl User {
                           })
                       })
         })
+    }
+
+    pub fn to_token( &self ) -> Option<String> {
+        let header: Header<()> = Default::default();
+
+        let payload = Payload {
+            iss: Some(ISSUER.into()),
+            sub: Some(SUBJECT.into()),
+            claims: Some(self.to_claims()),
+            ..Payload::default()
+        };
+
+        Token::new(header, payload)
+            .sign(SERVER_KEY)
+            .or_else(logs!(TokenError::FailedToSign))
+            .ok()
+    }
+
+    pub fn from_token( &self, t_token:String ) -> Option<User> {
+        Token::<(), SessionClaims>::parse(t_token)
+        .or_else(logs!(TokenError::FailedToParse))
+        .and_then(|t|{
+            t.verify(SERVER_KEY)
+            .or_else(logs!(TokenError::TokenNotVerifies))
+            .and_then(|r|{
+                if r && token.payload.claims.is_some() {
+                    self.from_claims(token.payload.claims.unwrap())
+                }
+                else {
+                    None
+                }
+            })
+        })
+    }
+
+    pub fn to_claims( &self ) -> UserClaims {
+        UserClaims {
+            id:       self.id.clone()
+            username: self.username.clone()
+        }
+    }
+
+    pub fn from_claims( t_claims: &UserClaims ) -> User {
+
     }
 
 }
