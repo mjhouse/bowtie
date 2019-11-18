@@ -1,16 +1,11 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
+#[macro_use] extern crate log;
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate rusqlite;
-
+extern crate simplelog;
 extern crate medallion;
 extern crate base64;
-extern crate sha3;
-
-const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
-const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
-const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
-const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 use rocket_contrib::{
     serve::StaticFiles,
@@ -29,9 +24,17 @@ use rocket::{
     response::{Redirect}
 };
 
+use simplelog::*;
+
 mod user;
 mod session;
+use user::*;
 use session::*;
+
+const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
+const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
+const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
+const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Site {
@@ -69,7 +72,7 @@ fn login_post(session: Session, mut cookies: Cookies, login_form: Form<LoginForm
 }
 
 #[post("/register", data = "<register_form>")]
-fn register_post(session: Session, mut cookies: Cookies, register_form: Form<RegisterForm>) -> Redirect {
+fn register_post(session: Session, register_form: Form<RegisterForm>) -> Redirect {
     let result = session.register(&register_form);
     dbg!(result);
 
@@ -83,6 +86,14 @@ fn logout(session: Session, mut cookies: Cookies) -> Redirect {
 }
 
 fn main() {
+
+    CombinedLogger::init(
+        vec![
+            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed).unwrap()
+            // WriteLogger::new(LevelFilter::Info, Config::default(), File::create("my_rust_binary.log").unwrap()),
+        ]
+    ).unwrap();
+
     let site = Site {
         name: String::from("Michael House")
     };
