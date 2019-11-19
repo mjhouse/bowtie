@@ -7,16 +7,9 @@ use rocket::{
     http::{Method,Cookies,Cookie}
 };
 
-use medallion::{
-    Header,
-    Payload,
-    Token,
-};
-
 use crate::user::*;
 
 const COOKIE_NAME: &str    = "bowtie_session_token";
-const SERVER_KEY: &[u8;10] = b"secret_key";
 
 #[derive(FromForm)]
 pub struct LoginForm {
@@ -47,69 +40,39 @@ pub struct Session {
 impl Session {
 
     pub fn from( t_cookies:&Cookies ) -> Self {
-        Self {
-            user: Session::user_from_cookie(t_cookies)
-        }
-    }
+        let user = t_cookies.get(COOKIE_NAME)
+            .and_then(|t|{ User::from_token(t.value()).ok() });
 
-    fn user_from_cookie( t_cookies:&Cookies ) -> Option<User> {
-        let mut user = None;
-        if let Some(cookie) = t_cookies.get(COOKIE_NAME){
-            if let Ok(token) = Token::<(), SessionClaims>::parse(cookie.value()) {
-                if token.verify(SERVER_KEY).unwrap_or(false){
-                    let claims = token.payload.claims.unwrap();
-                    let id = claims.id;
-                    let username = claims.username;
-                    user = Some ( User{
-                        id: id,
-                        username: username,
-                        passhash: String::new(),
-                    });
-                }
-            }
+        Self {
+            user: user
         }
-        user
     }
 
     pub fn register( &self, t_form:&RegisterForm ) -> Option<User> {
         let pass1 = t_form.password1.trim();
         let pass2 = t_form.password2.trim();
-        if pass1 != pass2 { return None; }
-        User::create(&t_form.username,&pass1).ok()
+
+        if pass1 == pass2 {
+            User::create(&t_form.username,&pass1).ok()
+        }
+        else {
+            None
+        }
     }
 
     pub fn login( &self, t_cookies:&mut Cookies, t_form:&LoginForm ) -> Option<User> {
-
-        // find the user in the database
-        if let Some(user) = User::from_username(&t_form.username).ok() {
-            // compare the users password to the given password
-            if user.validate(&t_form.password) {
-                // if the passwords match, create a JWT token
-                let header: Header<()> = Default::default();
-
-                let id = user.id.clone();
-                let un = user.username.clone();
-
-                let payload = Payload {
-                    iss: Some("bowtie.com".into()),
-                    sub: Some("user".into()),
-                    claims: Some(SessionClaims {
-                        id: id.into(),
-                        username: un.into(),
-                        ..SessionClaims::default()
-                    }),
-                    ..Payload::default()
-                };
-
-                // insert the token into the users cookies
-                let token = Token::new(header, payload);
-                if let Ok(jwt) = token.sign(SERVER_KEY) {
-                    t_cookies.add(Cookie::new(COOKIE_NAME,jwt.clone()));
-                    return Some(user);
+        match User::from_username(&t_form.username) {
+            Ok(user) if user.validate(&t_form.password) => {
+                match user.to_token() {
+                    Ok(token) => {
+                        t_cookies.add(Cookie::new(COOKIE_NAME,token));
+                        Some(user)
+                    }
+                    _ => None
                 }
             }
+            _ => None
         }
-        None
     }
 
     pub fn logout( &self, t_cookies:&mut Cookies ) {

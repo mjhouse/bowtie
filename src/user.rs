@@ -57,7 +57,7 @@ pub enum DatabaseError {
 pub enum TokenError {
     FailedToSign,
     FailedToParse,
-    TokenNotVerifies
+    TokenNotVerified
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -67,7 +67,7 @@ pub struct User {
     pub passhash: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Default,Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserClaims {
     pub id: i64,
     pub username: String
@@ -115,7 +115,7 @@ impl User {
         })
     }
 
-    pub fn to_token( &self ) -> Option<String> {
+    pub fn to_token( &self ) -> Result<String,TokenError> {
         let header: Header<()> = Default::default();
 
         let payload = Payload {
@@ -128,21 +128,18 @@ impl User {
         Token::new(header, payload)
             .sign(SERVER_KEY)
             .or_else(logs!(TokenError::FailedToSign))
-            .ok()
     }
 
-    pub fn from_token( &self, t_token:String ) -> Option<User> {
-        Token::<(), SessionClaims>::parse(t_token)
+    pub fn from_token(t_token:&str ) -> Result<User,TokenError> {
+        Token::<(), UserClaims>::parse(t_token)
         .or_else(logs!(TokenError::FailedToParse))
         .and_then(|t|{
             t.verify(SERVER_KEY)
-            .or_else(logs!(TokenError::TokenNotVerifies))
+            .or_else(logs!(TokenError::TokenNotVerified))
             .and_then(|r|{
-                if r && token.payload.claims.is_some() {
-                    self.from_claims(token.payload.claims.unwrap())
-                }
-                else {
-                    None
+                match t.payload.claims {
+                    Some(c) if r => Ok(User::from_claims(&c)),
+                    _ => Err(TokenError::TokenNotVerified)
                 }
             })
         })
@@ -150,13 +147,17 @@ impl User {
 
     pub fn to_claims( &self ) -> UserClaims {
         UserClaims {
-            id:       self.id.clone()
+            id:       self.id.clone(),
             username: self.username.clone()
         }
     }
 
     pub fn from_claims( t_claims: &UserClaims ) -> User {
-
+        User{
+            id:       t_claims.id.clone(),
+            username: t_claims.username.clone(),
+            passhash: String::new(),
+        }
     }
 
 }

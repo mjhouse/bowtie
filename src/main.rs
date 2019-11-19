@@ -27,8 +27,11 @@ use rocket::{
 use simplelog::*;
 
 mod user;
+mod post;
 mod session;
+
 use user::*;
+use post::*;
 use session::*;
 
 const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
@@ -86,14 +89,6 @@ fn logout(session: Session, mut cookies: Cookies) -> Redirect {
 }
 
 fn main() {
-
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed).unwrap()
-            // WriteLogger::new(LevelFilter::Info, Config::default(), File::create("my_rust_binary.log").unwrap()),
-        ]
-    ).unwrap();
-
     let site = Site {
         name: String::from("Michael House")
     };
