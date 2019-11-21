@@ -1,1 +1,6 @@
--- Your SQL goes here
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(30) NOT NULL,
+  username VARCHAR(30) NOT NULL,
+  passhash VARCHAR(128) NOT NULL
+)

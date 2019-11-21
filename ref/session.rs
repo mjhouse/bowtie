@@ -40,39 +40,41 @@ pub struct Session {
 impl Session {
 
     pub fn from( t_cookies:&Cookies ) -> Self {
-        let user = t_cookies.get(COOKIE_NAME)
-            .and_then(|t|{ User::from_token(t.value()).ok() });
+        // let user = t_cookies.get(COOKIE_NAME)
+        //     .and_then(|t|{ User::from_token(t.value()).ok() });
 
         Self {
-            user: user
+            user: None
         }
     }
 
     pub fn register( &self, t_form:&RegisterForm ) -> Option<User> {
-        let pass1 = t_form.password1.trim();
-        let pass2 = t_form.password2.trim();
+        // let pass1 = t_form.password1.trim();
+        // let pass2 = t_form.password2.trim();
 
-        if pass1 == pass2 {
-            User::create(&t_form.username,&pass1).ok()
-        }
-        else {
-            None
-        }
+        // if pass1 == pass2 {
+        //     User::create(&t_form.username,&pass1).ok()
+        // }
+        // else {
+        //     None
+        // }
+        None
     }
 
     pub fn login( &self, t_cookies:&mut Cookies, t_form:&LoginForm ) -> Option<User> {
-        match User::from_username(&t_form.username) {
-            Ok(user) if user.validate(&t_form.password) => {
-                match user.to_token() {
-                    Ok(token) => {
-                        t_cookies.add(Cookie::new(COOKIE_NAME,token));
-                        Some(user)
-                    }
-                    _ => None
-                }
-            }
-            _ => None
-        }
+        // match User::from_username(&t_form.username) {
+        //     Ok(user) if user.validate(&t_form.password) => {
+        //         match user.to_token() {
+        //             Ok(token) => {
+        //                 t_cookies.add(Cookie::new(COOKIE_NAME,token));
+        //                 Some(user)
+        //             }
+        //             _ => None
+        //         }
+        //     }
+        //     _ => None
+        // }
+        None
     }
 
     pub fn logout( &self, t_cookies:&mut Cookies ) {

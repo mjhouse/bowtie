@@ -2,18 +2,17 @@
 
 #[macro_use] extern crate log;
 #[macro_use] extern crate rocket;
-extern crate simplelog;
+#[macro_use] extern crate diesel;
+extern crate dotenv;
 extern crate medallion;
 extern crate base64;
+
+use dotenv::dotenv;
+use std::env;
 
 use rocket_contrib::{
     serve::StaticFiles,
     templates::Template
-};
-
-use serde::{
-    Serialize,
-    Deserialize
 };
 
 use rocket::{
@@ -23,81 +22,67 @@ use rocket::{
     response::{Redirect}
 };
 
-// use simplelog::*;
+mod schema;
+mod models;
+mod user;
 
-// mod user;
-// mod post;
-// mod session;
+use user::*;
+use models::*;
+use schema::users::dsl::*;
+use diesel::prelude::*;
 
-// use user::*;
-// use post::*;
-// use session::*;
+const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
+const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
+const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
+const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
-// const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
-// const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
-// const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
-// const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
+#[get("/")]
+fn index() -> Template {
+    Template::render("index",{})
+}
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct Site {
-//     name: String,
-// }
+#[get("/login")]
+fn login() -> Template {
+    Template::render("login",{})
+}
 
-// #[get("/")]
-// fn index(site: State<Site>) -> Template {
-//     Template::render("index", &(*site))
-// }
+#[get("/logout")]
+fn logout() -> Redirect {
+    Redirect::to("/login")
+}
 
-// #[get("/login")]
-// fn login_get(_session: Session, site: State<Site>) -> Template {
-//     Template::render("login", &(*site))
-// }
+#[get("/profile")]
+fn profile() -> Template {
+    Template::render("profile",{})
+}
 
-// #[get("/profile")]
-// fn profile(session: Session) -> Result<Template,Redirect> {
-//     if session.user.is_some(){
-//         Ok(Template::render("profile", &session))
-//     }
-//     else {
-//         Err(Redirect::to("/login"))
-//     }
-// }
+pub fn establish_connection() -> PgConnection {
+    dotenv().ok();
 
-// #[post("/login", data = "<login_form>")]
-// fn login_post(session: Session, mut cookies: Cookies, login_form: Form<LoginForm>) -> Redirect {
-//     if session.login(&mut cookies,&login_form).is_some() {
-//         Redirect::to("/profile")
-//     }
-//     else {
-//         Redirect::to("/login")
-//     }
-// }
-
-// #[post("/register", data = "<register_form>")]
-// fn register_post(session: Session, register_form: Form<RegisterForm>) -> Redirect {
-//     let result = session.register(&register_form);
-//     dbg!(result);
-
-//     Redirect::to("/login")
-// }
-
-// #[get("/logout")]
-// fn logout(session: Session, mut cookies: Cookies) -> Redirect {
-//     session.logout(&mut cookies);
-//     Redirect::to("/")
-// }
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+    PgConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url))
+}
 
 fn main() {
-    // let site = Site {
-    //     name: String::from("Michael House")
-    // };
+    dotenv().ok();
+
+    let connection = establish_connection();
+
+    //let new_user = User::create(&connection,"TESTY3","TEST","MCTEST");
+    let all_user = User::all_slice(&connection,1,2);
+
+    println!("Displaying {} users", all_user.len());
+    for user in all_user {
+        println!("{}: {}", user.username, user.email);
+    }
+
 
     // rocket::ignite()
     //     .attach(Template::fairing())
-    //     .manage(site)
-    //     .mount("/", routes![index,
-    //         login_get, login_post, register_post,
-    //         logout, profile
+    //     .mount("/", routes![
+    //         index, login, logout, profile
     //     ])
     //     .mount("/css",  StaticFiles::from(STATIC_CSS ))
     //     .mount("/js",   StaticFiles::from(STATIC_JS  ))
