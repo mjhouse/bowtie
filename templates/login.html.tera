@@ -11,6 +11,9 @@
         You can log in here. If you don't have an account
         just click the 'Register' link.
     </p>
+    {% if flash %}
+    <p class="flash-message">{{ flash }}</p>
+    {% endif %}
     <br/>
     <input name="username" type="text" placeholder="Username" tabindex="4" required/>
     <input name="password" type="password" placeholder="********" tabindex="5" required/>

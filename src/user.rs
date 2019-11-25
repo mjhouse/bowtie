@@ -67,6 +67,13 @@ pub struct LoginForm {
     pub password: String
 }
 
+#[derive(FromForm)]
+pub struct RegisterForm {
+    pub username:  String,
+    pub password1: String,
+    pub password2: String
+}
+
 #[derive(Debug)]
 pub enum TokenError {
     FailedToSign,

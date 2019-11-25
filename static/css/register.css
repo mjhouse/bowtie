@@ -3,7 +3,7 @@
     height: 60vh;
 }
 
-.login-form {
+.register-form {
     padding:10px;
     display:flex;
     flex-direction: column;
@@ -18,20 +18,25 @@
     box-shadow: 5px 5px 20px black;
 }
 
-.login-form > * {
+.register-form > * {
     margin-bottom: 10px;
 }
 
-.login-form > button {
+.register-form > button {
     width:60px;
     margin-left:auto;
 }
 
-.login-form > input {
+.register-form > input {
     background-color: rgba(0, 0, 0, 0.35);
 }
 
-.login-form > input:focus {
+.register-form > button {
+    text-align: center;
+    padding: 0;
+}
+
+.register-form > input:focus {
     background-color:#121212;
 }
 

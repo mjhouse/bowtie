@@ -14,11 +14,15 @@ impl Config {
     }
 
     pub fn establish_connection( &self ) -> Option<PgConnection> {
-        let database_url = env::var("DATABASE_URL")
-            .expect("DATABASE_URL must be set");
-
-        Some(PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url)))
+        match env::var("DATABASE_URL") {
+            Ok(p) => {
+                match PgConnection::establish(&p) {
+                    Ok(c) => Some(c),
+                    _ => None
+                } 
+            },
+            _ => None
+        }
     }
 
 }

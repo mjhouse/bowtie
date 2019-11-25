@@ -18,9 +18,9 @@ use rocket_contrib::{
 
 use rocket::{
     State,
-    http::{Cookies},
-    request::{LenientForm},
-    response::{Redirect}
+    http::{Cookies,Cookie},
+    request::{FlashMessage,LenientForm},
+    response::{Flash,Redirect}
 };
 
 mod schema;
@@ -39,6 +39,12 @@ const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
 const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
 const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
+const COOKIE_NAME: &str = "bowtie_session_token";
+
+macro_rules! flash {
+    ( $p:expr, $m:expr ) => { Err(Flash::error(Redirect::to($p), $m)) }
+}
+
 #[get("/")]
 fn index() -> Template {
     Template::render("index",Context::empty())
@@ -47,35 +53,68 @@ fn index() -> Template {
 // -----------------------------------------
 // Authentication
 #[get("/login")]
-fn login_get() -> Template {
-    Template::render("login",Context::empty())
+fn login_get( flash: Option<FlashMessage> ) -> Template {
+    let msg = flash.map(|msg| Some(msg.msg().to_string()))
+                   .unwrap_or_else(|| None);
+        
+    Template::render("login",Context::flash(msg))
 }
 
 #[post("/login", data = "<form>")]
-fn login_post( config: State<Config>, cookies:Cookies, form: LenientForm<LoginForm> ) -> Redirect {
-    let conn = config.establish_connection().unwrap();
-    match User::from_username(&conn,&form.username) {
-        Some(u) if u.validate(&form.password) => {
-            dbg!(&u);
-            Redirect::to("/login")
-        } 
-        _ => Redirect::to("/login")
+fn login_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<LoginForm> ) -> Result<Redirect,Flash<Redirect>> {
+    if let Some(c) = config.establish_connection() {
+        match User::from_username(&c,&form.username) {
+            Some(u) if u.validate(&form.password) => {
+                match u.to_token() {
+                    Ok(token) => {
+                        cookies.add(Cookie::new(COOKIE_NAME,token));
+                        Ok(Redirect::to("/profile"))
+                    }
+                    _ => flash!("/login", "There was a problem")
+                }
+            }
+            _ => flash!("/login", "Invalid username or password")
+        }
+    }
+    else {
+        flash!("/login", "Server is unavailable")
     }
 }
 
 #[get("/logout")]
-fn logout() -> Redirect {
-    Redirect::to("/login")
+fn logout(mut cookies:Cookies) -> Redirect {
+    cookies.remove(Cookie::named(COOKIE_NAME));
+    Redirect::to("/")
 }
 
 #[get("/register")]
-fn register_get() -> Template {
-    Template::render("register",Context::empty()) // CHANGE THIS
+fn register_get( flash: Option<FlashMessage> ) -> Template {
+    let msg = flash.map(|msg| Some(msg.msg().to_string()))
+                   .unwrap_or_else(|| None);
+        
+    Template::render("register",Context::flash(msg))
 }
 
-#[post("/register")]
-fn register_post() -> Redirect {
-    Redirect::to("/register")
+#[post("/register", data = "<form>")]
+fn register_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
+    if let Some(c) = config.establish_connection() {
+        // match User::from_username(&c,&form.username) {
+        //     Some(u) if u.login(&form.password) => {
+        //         match u.to_token() {
+        //             Ok(token) => {
+        //                 cookies.add(Cookie::new(COOKIE_NAME,token));
+        //                 Ok(Redirect::to("/profile"))
+        //             }
+        //             _ => Err(Flash::error(Redirect::to("/login"), "There was a problem"))
+        //         }
+        //     }
+        //     _ => Err(Flash::error(Redirect::to("/login"), "Invalid username or password"))
+        // }
+        Err(Flash::error(Redirect::to("/register"), "Server is unavailable"))
+    }
+    else {
+        flash!("/register", "Server is unavailable")
+    }
 }
 
 #[post("/unregister")]
