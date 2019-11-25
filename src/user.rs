@@ -50,7 +50,7 @@ macro_rules! query_by {
 #[derive(Insertable,Debug,Serialize)]
 #[table_name="users"]
 pub struct User {
-    pub email:    String,
+    pub email:    Option<String>,
     pub username: String,
     pub passhash: String
 }
@@ -82,10 +82,18 @@ pub enum TokenError {
 }
 
 impl User {
+
+    pub fn new() -> Self {
+        User {
+            email:    None,
+            username: String::new(),
+            passhash: String::new()
+        }
+    }
     
     pub fn create(t_conn: &PgConnection, t_email: &str, t_username: &str, t_passhash: &str) -> Result<User,DieselError> {
         let new_user = User {
-            email:    t_email.into(),
+            email:    Some(t_email.into()),
             username: t_username.into(),
             passhash: t_passhash.into()
         };
@@ -95,6 +103,10 @@ impl User {
             .get_result(t_conn)
             .or_else(|e|  Err(e))
             .and_then(|m: UserModel| Ok(m.into()))
+    }
+
+    pub fn create_from(t_conn: &PgConnection, t_username: &str, t_password: &str) -> Result<User,DieselError> {
+        User::create(t_conn,"",t_username,&encode(&hash!(t_password)))
     }
 
     pub fn from_email(t_conn: &PgConnection, t_email: &str) -> Option<User> {
@@ -174,19 +186,27 @@ impl User {
 
     pub fn to_claims( &self ) -> UserClaims {
         UserClaims {
-            email: self.email.clone(),
+            email: self.email.as_ref().unwrap_or(&String::new()).clone(),
             username: self.username.clone()
         }
     }
 
     pub fn from_claims( t_claims: &UserClaims ) -> User {
         User{
-            email: t_claims.email.clone(),
+            email:    Some(t_claims.email.clone()),
             username: t_claims.username.clone(),
             passhash: String::new(),
         }
     }
 
+}
+
+pub struct LoggedIn {
+    pub user: Option<User>
+}
+
+pub struct LoggedOut {
+    pub user: Option<User>
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for User {

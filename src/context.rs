@@ -31,7 +31,7 @@ impl Context {
     pub fn test() -> Self {
         let mut context = Context::empty();
         context.user = Some(User {
-            email:    String::from("test@test.com"),
+            email:    Some(String::from("test@test.com")),
             username: String::from("Username"),
             passhash: String::new()
         });

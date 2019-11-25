@@ -16,8 +16,8 @@
     {% endif %}
     <br/>
     <input name="username" type="text" placeholder="Username" tabindex="4" required/>
-    <input name="password" type="password1" placeholder="Password" tabindex="5" required/>
-    <input name="password" type="password2" placeholder="Password (Again)" tabindex="5" required/>
+    <input name="password1" type="password" placeholder="Password" tabindex="5" required/>
+    <input name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
     <button type="submit" tabindex="6">Register</button>
 
     <p>

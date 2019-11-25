@@ -62,22 +62,22 @@ fn login_get( flash: Option<FlashMessage> ) -> Template {
 
 #[post("/login", data = "<form>")]
 fn login_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<LoginForm> ) -> Result<Redirect,Flash<Redirect>> {
-    if let Some(c) = config.establish_connection() {
-        match User::from_username(&c,&form.username) {
-            Some(u) if u.validate(&form.password) => {
-                match u.to_token() {
-                    Ok(token) => {
-                        cookies.add(Cookie::new(COOKIE_NAME,token));
-                        Ok(Redirect::to("/profile"))
-                    }
-                    _ => flash!("/login", "There was a problem")
-                }
-            }
-            _ => flash!("/login", "Invalid username or password")
-        }
-    }
-    else {
-        flash!("/login", "Server is unavailable")
+    let c = match config.establish_connection() {
+        Some(c) => c,
+        _ => return flash!("/login", "Server is unavailable")
+    };
+
+    let u = match User::from_username(&c,&form.username) {
+        Some(u) if u.validate(&form.password) => u,
+        _ => return flash!("/login", "Invalid username or password")
+    };
+
+    match u.to_token() {
+        Ok(t) => {
+            cookies.add(Cookie::new(COOKIE_NAME,t));
+            Ok(Redirect::to("/profile"))
+        },
+        _ => flash!("/login", "There was a problem")
     }
 }
 
@@ -97,23 +97,18 @@ fn register_get( flash: Option<FlashMessage> ) -> Template {
 
 #[post("/register", data = "<form>")]
 fn register_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
-    if let Some(c) = config.establish_connection() {
-        // match User::from_username(&c,&form.username) {
-        //     Some(u) if u.login(&form.password) => {
-        //         match u.to_token() {
-        //             Ok(token) => {
-        //                 cookies.add(Cookie::new(COOKIE_NAME,token));
-        //                 Ok(Redirect::to("/profile"))
-        //             }
-        //             _ => Err(Flash::error(Redirect::to("/login"), "There was a problem"))
-        //         }
-        //     }
-        //     _ => Err(Flash::error(Redirect::to("/login"), "Invalid username or password"))
-        // }
-        Err(Flash::error(Redirect::to("/register"), "Server is unavailable"))
+    let c = match config.establish_connection() {
+        Some(c) => c,
+        _ => return flash!("/register", "Server is unavailable")
+    };
+
+    if form.password1 != form.password2 {
+        return flash!("/register", "Passwords don't match");
     }
-    else {
-        flash!("/register", "Server is unavailable")
+
+    match User::create_from(&c,&form.username,&form.password1) {
+        Ok(_) => Ok(Redirect::to("/login")), 
+        _ => flash!("/register", "Username is taken")
     }
 }
 
@@ -129,11 +124,9 @@ fn recover() -> Template {
 
 // -----------------------------------------
 
-
-
 #[get("/profile")]
 fn profile( user: User ) -> Template {
-    Template::render("profile",{})
+    Template::render("profile",Context::empty())
 }
 
 fn main() {

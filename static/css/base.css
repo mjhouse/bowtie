@@ -7,9 +7,6 @@ body {
 .main-wrapper { 
     background-color:rgba(255,255,255,0.08); 
     padding-top: 0 10px 10px 10px;
-    max-width: 80vw;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 input:focus, a, body {
@@ -17,7 +14,6 @@ input:focus, a, body {
 }
 
 .main-wrapper {
-    max-width: 80vw;
     min-height: 100vh;
     margin-left: auto;
     margin-right: auto;
