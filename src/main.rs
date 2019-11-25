@@ -7,6 +7,7 @@ extern crate dotenv;
 extern crate medallion;
 extern crate base64;
 
+use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
 
@@ -18,18 +19,20 @@ use rocket_contrib::{
 use rocket::{
     State,
     http::{Cookies},
-    request::{Form},
+    request::{LenientForm},
     response::{Redirect}
 };
 
 mod schema;
 mod models;
 mod user;
+mod config;
+mod context;
 
 use user::*;
 use models::*;
-use schema::users::dsl::*;
-use diesel::prelude::*;
+use config::*;
+use context::*;
 
 const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
 const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
@@ -38,12 +41,26 @@ const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 #[get("/")]
 fn index() -> Template {
-    Template::render("index",{})
+    Template::render("index",Context::empty())
 }
 
+// -----------------------------------------
+// Authentication
 #[get("/login")]
-fn login() -> Template {
-    Template::render("login",{})
+fn login_get() -> Template {
+    Template::render("login",Context::empty())
+}
+
+#[post("/login", data = "<form>")]
+fn login_post( config: State<Config>, cookies:Cookies, form: LenientForm<LoginForm> ) -> Redirect {
+    let conn = config.establish_connection().unwrap();
+    match User::from_username(&conn,&form.username) {
+        Some(u) if u.validate(&form.password) => {
+            dbg!(&u);
+            Redirect::to("/login")
+        } 
+        _ => Redirect::to("/login")
+    }
 }
 
 #[get("/logout")]
@@ -51,42 +68,50 @@ fn logout() -> Redirect {
     Redirect::to("/login")
 }
 
-#[get("/profile")]
-fn profile() -> Template {
-    Template::render("profile",{})
+#[get("/register")]
+fn register_get() -> Template {
+    Template::render("register",Context::empty()) // CHANGE THIS
 }
 
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
+#[post("/register")]
+fn register_post() -> Redirect {
+    Redirect::to("/register")
+}
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+#[post("/unregister")]
+fn unregister() -> Template {
+    Template::render("unregister",Context::empty())
+}
+
+#[get("/recover")]
+fn recover() -> Template {
+    Template::render("recover",Context::empty())
+}
+
+// -----------------------------------------
+
+
+
+#[get("/profile")]
+fn profile( user: User ) -> Template {
+    Template::render("profile",{})
 }
 
 fn main() {
     dotenv().ok();
 
-    let connection = establish_connection();
-
-    //let new_user = User::create(&connection,"TESTY3","TEST","MCTEST");
-    let all_user = User::all_slice(&connection,1,2);
-
-    println!("Displaying {} users", all_user.len());
-    for user in all_user {
-        println!("{}: {}", user.username, user.email);
-    }
-
-
-    // rocket::ignite()
-    //     .attach(Template::fairing())
-    //     .mount("/", routes![
-    //         index, login, logout, profile
-    //     ])
-    //     .mount("/css",  StaticFiles::from(STATIC_CSS ))
-    //     .mount("/js",   StaticFiles::from(STATIC_JS  ))
-    //     .mount("/img",  StaticFiles::from(STATIC_IMG ))
-    //     .mount("/font", StaticFiles::from(STATIC_FONT))
-    //     .launch();
+    rocket::ignite()
+        .attach(Template::fairing())
+        .manage(Config::new())
+        .mount("/", routes![
+            index, 
+            login_get, login_post, logout,
+            register_get, register_post, unregister, 
+            profile
+        ])
+        .mount("/css",  StaticFiles::from(STATIC_CSS ))
+        .mount("/js",   StaticFiles::from(STATIC_JS  ))
+        .mount("/img",  StaticFiles::from(STATIC_IMG ))
+        .mount("/font", StaticFiles::from(STATIC_FONT))
+        .launch();
 }

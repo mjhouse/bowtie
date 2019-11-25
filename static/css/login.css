@@ -1,78 +1,36 @@
-.auth-wrapper {
-    display:flex;
-    margin-top: 10px;
-    justify-content: center;
+
+.content {
+    height: 60vh;
 }
 
-.auth-panel {
-    width: 500px;
-    padding: 10px;
-    color:black;
-
-    border:1px solid gray;
-}
-
-.auth-panel > table {
-    border-collapse:collapse;
-}
-
-.auth-tabs,
-.auth-tabs > td {
-    padding: 0;
-    margin:0;
-}
-
-.auth-tabs > td {
-    width:50%;
-}
-
-.auth-tab-label {
-    background-color: inherit;
+.login-form {
     padding:10px;
-    margin: 0;
-    cursor:pointer;
-    color:lightgray;
-    text-align: center;
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE10+/Edge */
-    user-select: none; /* Standard */
+    display:flex;
+    flex-direction: column;
+
+    align-items: stretch;
+    justify-items: stretch;
+
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+
+    box-shadow: 5px 5px 20px black;
 }
 
-.auth-tab-label.auth-tab-active {
-    background-color: white;
-    color:black;
+.login-form > * {
+    margin-bottom: 10px;
 }
 
-.auth-form {
-    margin-top: 10px;
+.login-form > button {
+    width:60px;
+    margin-left:auto;
 }
 
-.auth-panel tr > td {
-    text-align: right;
-    width:50%;
+.login-form > input {
+    background-color: rgba(0, 0, 0, 0.35);
 }
 
-.auth-panel tr p {
-    text-align: left;
-}
-
-.auth-panel .auth-input {
-    width:100%;
-    margin:5px;
-    padding:5px;
-}
-
-.auth-panel button[type="submit"] {
-    background-color: white;
-    color:black;
-    height:30px;
-    width:90px;
-    margin-top: 5px;
-    border:1px solid gray;
-}
-
-.auth-panel button[type="submit"]:hover {
-    background-color: lightgray;
-    color:black;
+.login-form > input:focus {
+    background-color:#121212;
 }

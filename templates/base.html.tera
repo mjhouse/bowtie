@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="author"      content="Michael House"/>
+        <meta name="description" content="A social media site with a focus on speed and simplicity"/>
+        <meta name="keywords"    content="social, media, bowtie"/>
+        <title>Bowtie</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <link rel="stylesheet" href="css/base.css"/>
+        {% block stylesheet %}
+        {% endblock stylesheet %}
+    </head>
+    <body>
+        <div class="main-wrapper">
+            <div class="main-header">
+                    {% if user %} <img class="main-header-image" src="img/square-placeholder.jpg"/> {% endif %}
+                <div class="main-header-name">
+                    {% if user %} {{user.username}} 
+                    {% else    %} Bowtie 
+                    {% endif %}
+                </div>
+                <nav class="main-menu">
+                    <div class="main-header-search">
+                        <form action="search" method="post">
+                            <input placeholder="Search" type="text" tabindex="1"/>
+                        </form>
+                    </div>
+                    <div class="main-header-links">
+                        {% if user %}
+                        <a href="/logout"   class="main-menu-item" title="Logout of your account" tabindex="2">Logout</a>
+                        <a href="/profile"  class="main-menu-item" title="Go to your profile page" tabindex="3">Profile</a>
+                        {% else %}
+                        <a href="/login"    class="main-menu-item" title="Go to the login page" tabindex="2">Login</a>
+                        <a href="/register" class="main-menu-item" title="Go to the registration page" tabindex="3">Register</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+            <div class="content">
+                {% block content %}
+                {% endblock content %}
+            </div>
+            <nav class="main-footer">
+                <div>
+                    <a href="/about" title="Go to the About page">About</a>
+                    <a href="/search" title="Search for people or posts">Search</a>                
+                </div>
+                <div>
+                    {% if user %}
+                    <a href="/logout" title="Logout of your account">Logout</a>
+                    <a href="/profile" title="Go to your profile page">Profile</a>
+                    {% else %}
+                    <a href="/login" title="Go to the login page">Login</a>
+                    <a href="/register" title="Go to the registration page">Register</a>
+                    {% endif %}
+                </div>
+                <div class="main-footer-copyright">
+                    &copy; {{ datetime }} Michael House 
+                </div>
+            </nav>
+        </div>
+    </body>
+</html>

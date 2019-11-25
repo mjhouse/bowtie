@@ -1,0 +1,16 @@
+{% extends 'base' %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="css/index.css"/>
+{% endblock stylesheet %}
+
+{% block content %}
+<div class="index-wrapper">
+    <div class="recent-people">
+        
+    </div>
+    <div class="recent-posts">
+
+    </div>
+</div>
+{% endblock content %}
