@@ -7,12 +7,12 @@
 {% block content %}
 <div class="profile-wrapper">
     <nav class="profile-menu">
-        <a href="/profile/post">Post</a>
-        <a href="#">Wall</a>
-        <a href="#">Messages</a>
-        <a href="#">Friends</a>
-        <a href="#">Groups</a>
-        <a href="#">Settings</a>
+        <a href="/profile/write">Post</a>
+        <a href="/profile/wall">Wall</a>
+        <a href="/profile/messages">Messages</a>
+        <a href="/profile/friends">Friends</a>
+        <a href="/profile/groups">Groups</a>
+        <a href="/profile/settings">Settings</a>
     </nav>
     <div class="profile-body">
         {% block body %}

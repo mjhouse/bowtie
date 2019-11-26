@@ -1,0 +1,5 @@
+{% extends 'profile/base' %}
+
+{% block body %}
+WALL
+{% endblock body %}

@@ -25,6 +25,7 @@ use rocket::{
 mod schema;
 mod models;
 mod user;
+mod post;
 mod config;
 mod context;
 
@@ -139,22 +140,48 @@ fn recover( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
     })
 }
 
-#[get("/profile")]
-fn profile( user: User, msg: Option<FlashMessage>  ) -> Template {
-    Template::render("profile",Context {
-        user: Some(user),
-        flash: unflash!(msg),
-        ..Default::default()
-    })
-}
+mod profile {
 
-#[get("/profile/post")]
-fn profile_post( user: User, msg: Option<FlashMessage>  ) -> Template {
-    Template::render("profile_post",Context {
-        user: Some(user),
-        flash: unflash!(msg),
-        ..Default::default()
-    })
+    use rocket_contrib::{
+        templates::Template
+    };
+
+    use rocket::{
+        request::{FlashMessage,LenientForm},
+        response::{Flash,Redirect}
+    };
+
+    use crate::user::*;
+    use crate::post::*;
+    use crate::context::*;
+
+    #[get("/profile")]
+    pub fn main( user: User ) -> Redirect {
+        Redirect::to("/profile/wall")
+    }
+    
+    #[get("/profile/wall")]
+    pub fn wall( user: User, msg: Option<FlashMessage>  ) -> Template {
+        Template::render("profile/wall",Context {
+            user: Some(user),
+            flash: unflash!(msg),
+            ..Default::default()
+        })
+    }
+    
+    #[get("/profile/write")]
+    pub fn write( user: User, msg: Option<FlashMessage>  ) -> Template {
+        Template::render("profile/write",Context {
+            user: Some(user),
+            flash: unflash!(msg),
+            ..Default::default()
+        })
+    }
+
+    #[post("/profile/write", data = "<form>")]
+    pub fn write_post( user: User, form: LenientForm<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
+        Ok(Redirect::to("/profile/write"))
+    }
 }
 
 fn main() {
@@ -177,8 +204,10 @@ fn main() {
             unregister,
             
             // profile routes
-            profile,
-            profile_post
+            profile::main,
+            profile::wall,
+            profile::write,
+            profile::write_post
         ])
         .mount("/css",  StaticFiles::from(STATIC_CSS ))
         .mount("/js",   StaticFiles::from(STATIC_JS  ))

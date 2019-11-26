@@ -1,0 +1,14 @@
+{% extends 'profile/base' %}
+
+{% block body %}
+<form class="editor-form" action="/profile/write" method="post">
+    
+    <div class="editor-menu">
+        <input type="text" name="title"/>
+        <input type="checkbox" name="publish"/>
+        <button type="submit">Post</button>
+    </div>
+
+    <textarea class="editor-field" name="body"></textarea>
+</form>
+{% endblock body %}

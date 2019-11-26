@@ -1,0 +1,5 @@
+{% extends 'profile/base' %}
+
+{% block body %}
+FRIENDS
+{% endblock body %}
