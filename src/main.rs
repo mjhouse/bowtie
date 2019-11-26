@@ -7,7 +7,6 @@ extern crate dotenv;
 extern crate medallion;
 extern crate base64;
 
-use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
 
@@ -30,7 +29,6 @@ mod config;
 mod context;
 
 use user::*;
-use models::*;
 use config::*;
 use context::*;
 
@@ -45,19 +43,29 @@ macro_rules! flash {
     ( $p:expr, $m:expr ) => { Err(Flash::error(Redirect::to($p), $m)) }
 }
 
-#[get("/")]
-fn index() -> Template {
-    Template::render("index",Context::empty())
+macro_rules! unflash {
+    ( $f:expr ) => { 
+        $f.map(|msg| Some(msg.msg().to_string()))
+          .unwrap_or_else(|| None)
+    }
 }
 
-// -----------------------------------------
-// Authentication
+#[get("/")]
+fn index( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+    Template::render("index",Context {
+        user: user,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
+}
+
 #[get("/login")]
-fn login_get( flash: Option<FlashMessage> ) -> Template {
-    let msg = flash.map(|msg| Some(msg.msg().to_string()))
-                   .unwrap_or_else(|| None);
-        
-    Template::render("login",Context::flash(msg))
+fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+    Template::render("login",Context {
+        user:  user,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
 }
 
 #[post("/login", data = "<form>")]
@@ -88,15 +96,16 @@ fn logout(mut cookies:Cookies) -> Redirect {
 }
 
 #[get("/register")]
-fn register_get( flash: Option<FlashMessage> ) -> Template {
-    let msg = flash.map(|msg| Some(msg.msg().to_string()))
-                   .unwrap_or_else(|| None);
-        
-    Template::render("register",Context::flash(msg))
+fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+    Template::render("register",Context {
+        user:  user,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
 }
 
 #[post("/register", data = "<form>")]
-fn register_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
+fn register_post( config: State<Config>, form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
     let c = match config.establish_connection() {
         Some(c) => c,
         _ => return flash!("/register", "Server is unavailable")
@@ -113,20 +122,39 @@ fn register_post( config: State<Config>, mut cookies:Cookies, form: LenientForm<
 }
 
 #[post("/unregister")]
-fn unregister() -> Template {
-    Template::render("unregister",Context::empty())
+fn unregister( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+    Template::render("unregister",Context {
+        user:  user,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
 }
 
 #[get("/recover")]
-fn recover() -> Template {
-    Template::render("recover",Context::empty())
+fn recover( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+    Template::render("recover",Context {
+        user:  user,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
 }
 
-// -----------------------------------------
-
 #[get("/profile")]
-fn profile( user: User ) -> Template {
-    Template::render("profile",Context::empty())
+fn profile( user: User, msg: Option<FlashMessage>  ) -> Template {
+    Template::render("profile",Context {
+        user: Some(user),
+        flash: unflash!(msg),
+        ..Default::default()
+    })
+}
+
+#[get("/profile/post")]
+fn profile_post( user: User, msg: Option<FlashMessage>  ) -> Template {
+    Template::render("profile_post",Context {
+        user: Some(user),
+        flash: unflash!(msg),
+        ..Default::default()
+    })
 }
 
 fn main() {
@@ -136,10 +164,21 @@ fn main() {
         .attach(Template::fairing())
         .manage(Config::new())
         .mount("/", routes![
+            // public routes
             index, 
-            login_get, login_post, logout,
-            register_get, register_post, unregister, 
-            profile
+            // about,
+            
+            // authentication routes
+            login_get, 
+            login_post, 
+            logout,
+            register_get, 
+            register_post, 
+            unregister,
+            
+            // profile routes
+            profile,
+            profile_post
         ])
         .mount("/css",  StaticFiles::from(STATIC_CSS ))
         .mount("/js",   StaticFiles::from(STATIC_JS  ))

@@ -1,7 +1,7 @@
 {% extends 'base' %}
 
 {% block stylesheet %}
-<link rel="stylesheet" href="css/register.css"/>
+<link rel="stylesheet" href="/css/register.css"/>
 {% endblock stylesheet %}
 
 {% block content %}

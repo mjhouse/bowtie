@@ -1,9 +1,22 @@
 {% extends 'base' %}
 
 {% block stylesheet %}
-<!-- <link rel="stylesheet" href="css/register.css"/> -->
+<link rel="stylesheet" href="/css/profile.css"/>
 {% endblock stylesheet %}
 
 {% block content %}
-PROFILE
+<div class="profile-wrapper">
+    <nav class="profile-menu">
+        <a href="/profile/post">Post</a>
+        <a href="#">Wall</a>
+        <a href="#">Messages</a>
+        <a href="#">Friends</a>
+        <a href="#">Groups</a>
+        <a href="#">Settings</a>
+    </nav>
+    <div class="profile-body">
+        {% block body %}
+        {% endblock body %}
+    </div>
+</div>
 {% endblock content %}

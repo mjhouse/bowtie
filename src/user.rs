@@ -201,14 +201,6 @@ impl User {
 
 }
 
-pub struct LoggedIn {
-    pub user: Option<User>
-}
-
-pub struct LoggedOut {
-    pub user: Option<User>
-}
-
 impl<'a, 'r> FromRequest<'a, 'r> for User {
     type Error = ();
 
