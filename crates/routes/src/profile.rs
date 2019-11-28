@@ -35,8 +35,16 @@ pub fn main( _user: User ) -> Redirect {
 
 #[get("/profile/wall")]
 pub fn wall( user: User, msg: Option<FlashMessage>  ) -> Template {
+    let posts = match database!("DATABASE_URL") {
+        Some(c) => {
+            user.posts(&c)
+        },
+        _ => vec![]
+    };
+
     Template::render("profile/wall",Context {
-        user: Some(user),
+        user:  Some(user),
+        posts: posts,
         flash: unflash!(msg),
         ..Default::default()
     })

@@ -1,4 +1,4 @@
-use bowtie_data::schema::*;
+pub use bowtie_data::schema::*;
 use crate::user::User;
 
 use diesel::prelude::*;
@@ -37,6 +37,22 @@ impl Post {
             .get_result(t_conn)
             .or_else(|e|  Err(e))
             .and_then(|p: PostModel| Ok(p.into()))
+    }
+
+    pub fn for_user( t_conn: &PgConnection, t_id: i32 ) -> Vec<Post> {
+        match posts::table
+        .filter(posts::user_id.eq(t_id))
+        .load::<PostModel>(t_conn) {
+            Ok(p) => {
+                p.into_iter()
+                 .map(|m| m.into())
+                 .collect()
+            },
+            Err(e) => {
+                warn!("{}",e);
+                vec![]
+            }
+        }
     }
 
 }

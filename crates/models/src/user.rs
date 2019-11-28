@@ -1,4 +1,6 @@
-use bowtie_data::schema::*;
+pub use bowtie_data::schema::*;
+use crate::post::Post;
+
 use diesel::prelude::*;
 
 use serde::{Serialize, Deserialize};
@@ -127,6 +129,15 @@ impl User {
 
     pub fn from_id(t_conn: &PgConnection, t_id: i32) -> Option<User> {
         query_by!(t_conn,users::id.eq(t_id))
+    }
+
+    pub fn posts(&self, t_conn: &PgConnection) -> Vec<Post> {
+        match self.id {
+            Some(id) => {
+                Post::for_user(t_conn,id)
+            },
+            None => vec![]
+        }
     }
 
     pub fn validate( &self, t_password:&str ) -> bool {
