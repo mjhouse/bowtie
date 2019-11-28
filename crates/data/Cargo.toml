@@ -1,0 +1,9 @@
+[package]
+name = "bowtie_data"
+version = "0.1.0"
+authors = ["Michael House <mjhouse@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.2"
+diesel = { version = "1.0.0", features = ["postgres"] }

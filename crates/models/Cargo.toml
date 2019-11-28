@@ -1,0 +1,23 @@
+[package]
+name = "bowtie_models"
+version = "0.1.0"
+authors = ["Michael House <mjhouse@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.2"
+whirlpool = "0.8.1"
+base64 = "0.11.0"
+log = "0.4.8"
+chrono = "0.4.9"
+paste = "0.1.6"
+medallion = "2.3.1"
+serde = { version = "1.0", features = ["derive"] }
+diesel = { version = "1.0.0", features = ["postgres"] }
+
+bowtie_data = { path = "../data" }
+
+[dependencies.rocket_contrib]
+version = "0.4.2"
+default-features = false
+features = ["tera_templates","serve"]

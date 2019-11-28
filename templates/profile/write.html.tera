@@ -4,11 +4,10 @@
 <form class="editor-form" action="/profile/write" method="post">
     
     <div class="editor-menu">
-        <input type="text" name="title"/>
-        <input type="checkbox" name="publish"/>
-        <button type="submit">Post</button>
+        <input type="text" name="title" tabindex="4"/>
+        <button type="submit" tabindex="6">Post</button>
     </div>
 
-    <textarea class="editor-field" name="body"></textarea>
+    <textarea class="editor-field" name="body" tabindex="5"></textarea>
 </form>
 {% endblock body %}

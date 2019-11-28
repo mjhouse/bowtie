@@ -49,6 +49,12 @@
     padding-bottom:10px;
 }
 
+.editor-menu > input {
+    flex-grow:2;
+    margin-right: 10px;
+    padding-left: 10px;
+}
+
 .editor-field {
     flex-grow: 2;
     background-color: rgba(0,0,0,0.1);

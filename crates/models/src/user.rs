@@ -1,6 +1,5 @@
-use crate::schema::users;
+use bowtie_data::schema::*;
 use diesel::prelude::*;
-use crate::models::*;
 
 use serde::{Serialize, Deserialize};
 use whirlpool::{Whirlpool, Digest};
@@ -47,16 +46,19 @@ macro_rules! query_by {
     }
 }
 
-#[derive(Insertable,Debug,Serialize)]
-#[table_name="users"]
-pub struct User {
-    pub email:    Option<String>,
-    pub username: String,
-    pub passhash: String
-}
+model!(
+    table:  "users", 
+    traits: [Identifiable],
+    owner:  (),
+    User {
+        email:    Option<String>,
+        username: String,
+        passhash: String
+});
 
 #[derive(Default,Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserClaims {
+    pub id:       i32,
     pub email:    String,
     pub username: String
 }
@@ -85,6 +87,7 @@ impl User {
 
     pub fn new() -> Self {
         User {
+            id:       None,
             email:    None,
             username: String::new(),
             passhash: String::new()
@@ -93,6 +96,7 @@ impl User {
     
     pub fn create(t_conn: &PgConnection, t_email: &str, t_username: &str, t_passhash: &str) -> Result<User,DieselError> {
         let new_user = User {
+            id:       None,
             email:    Some(t_email.into()),
             username: t_username.into(),
             passhash: t_passhash.into()
@@ -186,13 +190,15 @@ impl User {
 
     pub fn to_claims( &self ) -> UserClaims {
         UserClaims {
-            email: self.email.as_ref().unwrap_or(&String::new()).clone(),
+            id:       self.id.unwrap_or(0).clone(),
+            email:    self.email.as_ref().unwrap_or(&String::new()).clone(),
             username: self.username.clone()
         }
     }
 
     pub fn from_claims( t_claims: &UserClaims ) -> User {
         User{
+            id:       Some(t_claims.id.clone()),
             email:    Some(t_claims.email.clone()),
             username: t_claims.username.clone(),
             passhash: String::new(),
@@ -206,7 +212,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
 
     fn from_request(request: &'a Request<'r>) -> Outcome<User,()> {
         match request.method(){
-            Method::Get => {
+            Method::Get | Method::Post => {
                 match request
                     .cookies()
                     .get(COOKIE)
@@ -226,25 +232,4 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
         }
     }
 
-}
-
-impl From<UserModel> for User {
-    fn from(model: UserModel) -> Self {
-        User {
-            email: model.email,
-            username: model.username,
-            passhash: model.passhash
-        }
-    }
-}
-
-impl From<User> for UserModel {
-    fn from(user: User) -> Self {
-        UserModel {
-            id: -1,
-            email: user.email,
-            username: user.username,
-            passhash: user.passhash
-        }
-    }
 }
