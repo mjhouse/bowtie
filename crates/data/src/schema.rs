@@ -4,6 +4,7 @@ table! {
         user_id -> Int4,
         title -> Varchar,
         body -> Text,
+        created -> Timestamp,
     }
 }
 

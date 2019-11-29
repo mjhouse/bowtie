@@ -9,11 +9,11 @@ rocket = "0.4.2"
 whirlpool = "0.8.1"
 base64 = "0.11.0"
 log = "0.4.8"
-chrono = "0.4.9"
+chrono = { version = "0.4.9", features = ["serde"] }
 paste = "0.1.6"
 medallion = "2.3.1"
 serde = { version = "1.0", features = ["derive"] }
-diesel = { version = "1.0.0", features = ["postgres"] }
+diesel = { version = "1.0.0", features = ["postgres","chrono"] }
 
 bowtie_data = { path = "../data" }
 

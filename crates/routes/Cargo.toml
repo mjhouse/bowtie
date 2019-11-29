@@ -6,9 +6,11 @@ edition = "2018"
 
 [dependencies]
 rocket = "0.4.2"
+log = "0.4.8"
 diesel = { version = "1.0.0", features = ["postgres"] }
 
 bowtie_models = { path = "../models" }
+bowtie_data = { path = "../data" }
 
 [dependencies.rocket_contrib]
 version = "0.4.2"

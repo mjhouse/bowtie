@@ -10,7 +10,7 @@ use rocket_contrib::{
 use dotenv::dotenv;
 use bowtie_routes::public;
 use bowtie_routes::profile;
-use bowtie_routes::validation;
+use bowtie_routes::auth;
 
 const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
 const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
@@ -25,21 +25,22 @@ fn main() {
         .mount("/", routes![
             // public routes
             public::index, 
-            // about,
+            public::about,
             
             // authentication routes
-            validation::login_get, 
-            validation::login_post, 
-            validation::logout,
-            validation::register_get, 
-            validation::register_post, 
-            validation::unregister,
+            auth::login_get, 
+            auth::login_post, 
+            auth::logout,
+            auth::register_get, 
+            auth::register_post, 
+            auth::unregister,
             
             // profile routes
             profile::main,
-            profile::wall,
+            profile::feed,
             profile::write,
-            profile::write_post
+            profile::write_post,
+            profile::delete
         ])
         .mount("/css",  StaticFiles::from(STATIC_CSS ))
         .mount("/js",   StaticFiles::from(STATIC_JS  ))

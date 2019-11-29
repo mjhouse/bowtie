@@ -1,13 +1,21 @@
 {% extends 'profile/base' %}
 
+{% block script %}
+<script type="text/javascript" src="/js/editor.js"></script>
+{% endblock script %}
+
 {% block body %}
 <form class="editor-form" action="/profile/write" method="post">
     
     <div class="editor-menu">
-        <input type="text" name="title" tabindex="4"/>
+        <input type="text" name="title" tabindex="4" required/>
         <button type="submit" tabindex="6">Post</button>
     </div>
-
-    <textarea class="editor-field" name="body" tabindex="5"></textarea>
+    <div id="toolbar" class="js-editor-toolbar">
+        <button type="button" id="italic">I</button>
+        <button type="button" id="bold">B</button>
+    </div>
+    <div id="editor" class="js-editor-field editor-field" contentEditable="true" tabindex="5"></div>
+    <textarea id="field" class="editor-field" name="body" tabindex="5"></textarea>
 </form>
 {% endblock body %}

@@ -16,23 +16,9 @@ use bowtie_models::context::*;
 
 const COOKIE_NAME: &str = "bowtie_session_token";
 
-macro_rules! database {
-    ( $e:expr ) => {
-        match env::var($e) {
-            Ok(p) => {
-                match PgConnection::establish(&p) {
-                    Ok(c) => Some(c),
-                    _ => None
-                } 
-            },
-            _ => None
-        }
-    }
-}
-
 #[get("/login")]
 pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("login",Context {
+    Template::render("auth/login",Context {
         user:  user,
         flash: unflash!(msg),
         ..Default::default()
@@ -41,10 +27,7 @@ pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
 
 #[post("/login", data = "<form>")]
 pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> Result<Redirect,Flash<Redirect>> {
-    let c = match database!("DATABASE_URL") {
-        Some(c) => c,
-        _ => return flash!("/login", "Server is unavailable")
-    };
+    let c = db_or!(flash!("/login", "Server is unavailable"));
 
     let u = match User::from_username(&c,&form.username) {
         Some(u) if u.validate(&form.password) => u,
@@ -68,7 +51,7 @@ pub fn logout(mut cookies:Cookies) -> Redirect {
 
 #[get("/register")]
 pub fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("register",Context {
+    Template::render("auth/register",Context {
         user:  user,
         flash: unflash!(msg),
         ..Default::default()
@@ -77,10 +60,7 @@ pub fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template
 
 #[post("/register", data = "<form>")]
 pub fn register_post( form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
-    let c = match database!("DATABASE_URL") {
-        Some(c) => c,
-        _ => return flash!("/register", "Server is unavailable")
-    };
+    let c = db_or!(flash!("/register", "Server is unavailable"));
 
     if form.password1 != form.password2 {
         return flash!("/register", "Passwords don't match");
@@ -94,7 +74,7 @@ pub fn register_post( form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash
 
 #[post("/unregister")]
 pub fn unregister( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("unregister",Context {
+    Template::render("auth/unregister",Context {
         user:  user,
         flash: unflash!(msg),
         ..Default::default()
@@ -103,7 +83,7 @@ pub fn unregister( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
 
 #[get("/recover")]
 pub fn recover( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("recover",Context {
+    Template::render("auth/recover",Context {
         user:  user,
         flash: unflash!(msg),
         ..Default::default()

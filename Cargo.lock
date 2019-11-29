@@ -135,8 +135,10 @@ dependencies = [
 name = "bowtie_routes"
 version = "0.1.0"
 dependencies = [
+ "bowtie_data 0.1.0",
  "bowtie_models 0.1.0",
  "diesel 1.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_contrib 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -169,6 +171,7 @@ dependencies = [
  "libc 0.2.65 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -224,6 +227,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel_derives 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pq-sys 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

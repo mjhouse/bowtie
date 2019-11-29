@@ -14,40 +14,38 @@ use bowtie_models::user::*;
 use bowtie_models::post::*;
 use bowtie_models::context::*;
 
-macro_rules! database {
-    ( $e:expr ) => {
-        match env::var($e) {
-            Ok(p) => {
-                match PgConnection::establish(&p) {
-                    Ok(c) => Some(c),
-                    _ => None
-                } 
-            },
-            _ => None
-        }
-    }
-}
-
 #[get("/profile")]
 pub fn main( _user: User ) -> Redirect {
-    Redirect::to("/profile/wall")
+    Redirect::to("/profile/feed")
 }
 
-#[get("/profile/wall")]
-pub fn wall( user: User, msg: Option<FlashMessage>  ) -> Template {
-    let posts = match database!("DATABASE_URL") {
-        Some(c) => {
-            user.posts(&c)
-        },
+#[get("/profile/feed")]
+pub fn feed( user: User, msg: Option<FlashMessage>  ) -> Template {
+    let posts = match db!() {
+        Some(c) => user.posts(&c),
         _ => vec![]
     };
 
-    Template::render("profile/wall",Context {
+    Template::render("profile/feed",Context {
         user:  Some(user),
         posts: posts,
         flash: unflash!(msg),
         ..Default::default()
     })
+}
+
+#[get("/profile/delete?<id>")]
+pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
+    let conn = db_or!(flash!("/profile/feed","Database not availabe"));
+    match Post::from_id(&conn,id) {
+        Some(post) => {
+            post.delete(&conn);
+            Ok(Redirect::to("/profile/feed"))
+        },
+        None => {
+            flash!("/profile/feed","No post with that id")
+        }
+    }
 }
 
 #[get("/profile/write")]
@@ -61,13 +59,10 @@ pub fn write( user: User, msg: Option<FlashMessage>  ) -> Template {
 
 #[post("/profile/write", data = "<form>")]
 pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
-    let c = match database!("DATABASE_URL") {
-        Some(c) => c,
-        _ => return flash!("/profile/write", "Server is unavailable")
-    };
+    let c = db_or!(flash!("/profile/write", "Server is unavailable"));
 
     match Post::create(&c,&user,&form.title,&form.body) {
-        Ok(_) => Ok(Redirect::to("/profile/wall")), 
+        Ok(_) => Ok(Redirect::to("/profile/feed")), 
         Err(_) => flash!("/profile/write", "Couldn't create post")
     }
 }

@@ -1,0 +1,33 @@
+{% extends 'profile/base' %}
+
+{% block body %}
+<div class="feed">
+{% if posts %}
+    {% for post in posts %}
+        <article class="post">
+            <h1 class="post-title">
+                {{ post.title }}
+            </h1>
+            <div class="post-body">
+                {{ post.body|safe }}
+            </div>
+            <div class="post-info">
+                created: {{ post.created | date(format="%Y-%m-%d %I:%M %P") }}
+            </div>
+            <nav class="post-toolbar">
+                <a href="">edit</a>
+                <a href="/profile/delete?id={{ post.id }}">delete</a>
+            </nav>
+        </article>
+    {% endfor %}
+{% else %}
+    Nothing here!
+{% endif %}
+</div>
+<div class="feed">
+    Nothing here!
+</div>
+<div class="feed">
+    Nothing here!
+</div>
+{% endblock body %}

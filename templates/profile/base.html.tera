@@ -8,10 +8,9 @@
 <div class="profile-wrapper">
     <nav class="profile-menu">
         <a href="/profile/write">Post</a>
-        <a href="/profile/wall">Wall</a>
+        <a href="/profile/feed">Feed</a>
         <a href="/profile/messages">Messages</a>
         <a href="/profile/friends">Friends</a>
-        <a href="/profile/groups">Groups</a>
         <a href="/profile/settings">Settings</a>
     </nav>
     <div class="profile-body">

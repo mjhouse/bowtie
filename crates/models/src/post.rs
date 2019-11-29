@@ -1,8 +1,10 @@
 pub use bowtie_data::schema::*;
+
 use crate::user::User;
 
 use diesel::prelude::*;
 use serde::{Serialize};
+use chrono::prelude::*;
 
 use diesel::result::Error as DieselError;
 
@@ -12,6 +14,21 @@ pub struct PostForm {
     pub body:    String,
 }
 
+macro_rules! query_by {
+    ( $c:expr, $q:expr ) => {
+        match posts::table
+            .filter($q)
+            .first::<PostModel>($c)
+        {
+            Ok(u) => Some(u.into()),
+            Err(e) => {
+                warn!("Error during query: {}",e);
+                None
+            }
+        }
+    }
+}
+
 model!(
     table:  "posts",
     traits: [Identifiable,Associations],
@@ -19,7 +36,8 @@ model!(
     Post {
         user_id: i32,
         title:   String,
-        body:    String
+        body:    String,
+        created: NaiveDateTime
 });
 
 impl Post {
@@ -29,7 +47,8 @@ impl Post {
             id:      None,
             user_id: user.id.unwrap_or(-1),
             title:   t_title.into(),
-            body:    t_body.into()
+            body:    t_body.into(),
+            created: Utc::now().naive_utc()
         };
     
         diesel::insert_into(posts::table)
@@ -37,6 +56,24 @@ impl Post {
             .get_result(t_conn)
             .or_else(|e|  Err(e))
             .and_then(|p: PostModel| Ok(p.into()))
+    }
+
+    pub fn delete(&self, t_conn: &PgConnection) -> Result<(),DieselError> {
+        match self.id {
+            Some(id) => {
+                match diesel::delete(
+                        posts::dsl::posts.filter(posts::id.eq(id)))
+                        .execute(t_conn) {
+                            Ok(_)  => Ok(()),
+                            Err(e) => Err(e)
+                        }
+            }
+            None => Err(DieselError::NotFound)
+        }
+    }
+
+    pub fn from_id(t_conn: &PgConnection, t_id: i32) -> Option<Post> {
+        query_by!(t_conn,posts::id.eq(t_id))
     }
 
     pub fn for_user( t_conn: &PgConnection, t_id: i32 ) -> Vec<Post> {
