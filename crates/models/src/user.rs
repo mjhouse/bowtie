@@ -33,25 +33,9 @@ macro_rules! hash {
     ( $s:expr ) => { Whirlpool::new().chain(&$s).result(); }
 }
 
-macro_rules! query_by {
-    ( $c:expr, $q:expr ) => {
-        match users::table
-            .filter($q)
-            .first::<UserModel>($c)
-        {
-            Ok(u) => Some(u.into()),
-            Err(e) => {
-                warn!("Error during query: {}",e);
-                None
-            }
-        }
-    }
-}
-
 model!(
-    table:  "users", 
+    table:  users,
     traits: [Identifiable],
-    owner:  (),
     User {
         email:    Option<String>,
         username: String,
@@ -116,25 +100,25 @@ impl User {
     }
 
     pub fn from_email(t_conn: &PgConnection, t_email: &str) -> Option<User> {
-        query_by!(t_conn,users::email.eq(t_email))
+        query!(one: t_conn,users::email.eq(t_email))
     }
 
     pub fn from_username(t_conn: &PgConnection, t_username: &str) -> Option<User> {
-        query_by!(t_conn,users::username.eq(t_username))
+        query!(one: t_conn,users::username.eq(t_username))
     }
 
     pub fn from_passhash(t_conn: &PgConnection, t_passhash: &str) -> Option<User> {
-        query_by!(t_conn,users::passhash.eq(t_passhash))
+        query!(one: t_conn,users::passhash.eq(t_passhash))
     }
 
     pub fn from_id(t_conn: &PgConnection, t_id: i32) -> Option<User> {
-        query_by!(t_conn,users::id.eq(t_id))
+        query!(one: t_conn,users::id.eq(t_id))
     }
 
     pub fn posts(&self, t_conn: &PgConnection) -> Vec<Post> {
         match self.id {
             Some(id) => {
-                Post::for_user(t_conn,id)
+                Post::all_for_user(t_conn,id)
             },
             None => vec![]
         }

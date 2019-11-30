@@ -37,12 +37,12 @@ pub fn feed( user: User, msg: Option<FlashMessage>  ) -> Template {
 #[get("/profile/delete?<id>")]
 pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
     let conn = db_or!(flash!("/profile/feed","Database not availabe"));
-    match Post::from_id(&conn,id) {
-        Some(post) => {
+    match (Post::from_id(&conn,id), user.id) {
+        (Some(post),Some(uid)) if uid == post.user_id => {
             post.delete(&conn);
             Ok(Redirect::to("/profile/feed"))
         },
-        None => {
+        _ => {
             flash!("/profile/feed","No post with that id")
         }
     }

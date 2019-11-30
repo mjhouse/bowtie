@@ -14,25 +14,10 @@ pub struct PostForm {
     pub body:    String,
 }
 
-macro_rules! query_by {
-    ( $c:expr, $q:expr ) => {
-        match posts::table
-            .filter($q)
-            .first::<PostModel>($c)
-        {
-            Ok(u) => Some(u.into()),
-            Err(e) => {
-                warn!("Error during query: {}",e);
-                None
-            }
-        }
-    }
-}
-
 model!(
-    table:  "posts",
-    traits: [Identifiable,Associations],
+    table:  posts,
     owner:  (User),
+    traits: [Identifiable,Associations],
     Post {
         user_id: i32,
         title:   String,
@@ -73,23 +58,15 @@ impl Post {
     }
 
     pub fn from_id(t_conn: &PgConnection, t_id: i32) -> Option<Post> {
-        query_by!(t_conn,posts::id.eq(t_id))
+        query!(one: t_conn, posts::id.eq(t_id))
     }
 
-    pub fn for_user( t_conn: &PgConnection, t_id: i32 ) -> Vec<Post> {
-        match posts::table
-        .filter(posts::user_id.eq(t_id))
-        .load::<PostModel>(t_conn) {
-            Ok(p) => {
-                p.into_iter()
-                 .map(|m| m.into())
-                 .collect()
-            },
-            Err(e) => {
-                warn!("{}",e);
-                vec![]
-            }
-        }
+    pub fn from_id_for_user(t_conn: &PgConnection, t_pid:i32, t_uid: i32) -> Option<Post> {
+        query!(one: t_conn, posts::user_id.eq(t_uid).and(posts::id.eq(t_pid)))
+    }
+
+    pub fn all_for_user(t_conn: &PgConnection, t_id: i32) -> Vec<Post> {
+        query!(many: t_conn, posts::user_id.eq(t_id))
     }
 
 }
