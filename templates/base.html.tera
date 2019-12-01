@@ -26,8 +26,8 @@
                 </div>
                 <nav class="main-menu">
                     <div class="main-header-search">
-                        <form action="search" method="post">
-                            <input placeholder="Search" type="text" tabindex="1"/>
+                        <form action="/search" method="get">
+                            <input name="value" placeholder="Search" type="text" tabindex="1"/>
                         </form>
                     </div>
                     <div class="main-header-links">

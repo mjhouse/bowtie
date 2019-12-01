@@ -90,8 +90,9 @@ macro_rules! model {
                                 warn!("Error during query: {}",e);
                                 vec![]
                             }
-                        }      
+                        }
                 }
+                
             }
 
             // Define the object struct that is
@@ -132,7 +133,6 @@ macro_rules! model {
                     }
                 }
             }
-
         }
     }
 }

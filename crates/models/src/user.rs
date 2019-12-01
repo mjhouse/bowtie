@@ -1,4 +1,4 @@
-pub use bowtie_data::schema::*;
+pub use bowtie_data::{schema::*,traits::*};
 use crate::post::Post;
 
 use diesel::prelude::*;

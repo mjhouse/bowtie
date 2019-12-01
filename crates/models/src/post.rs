@@ -1,5 +1,4 @@
-pub use bowtie_data::schema::*;
-
+pub use bowtie_data::{schema::*,traits::*};
 use crate::user::User;
 
 use diesel::prelude::*;
@@ -66,7 +65,7 @@ impl Post {
     }
 
     pub fn all_for_user(t_conn: &PgConnection, t_id: i32) -> Vec<Post> {
-        query!(many: t_conn, posts::user_id.eq(t_id))
+        query!(many: t_conn, posts::user_id.eq(t_id), posts::created.asc())
     }
 
 }

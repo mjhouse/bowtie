@@ -26,6 +26,7 @@ fn main() {
             // public routes
             public::index, 
             public::about,
+            public::search,
             
             // authentication routes
             auth::login_get, 

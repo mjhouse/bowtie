@@ -1,0 +1,45 @@
+{% extends 'base' %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="/css/public/search.css"/>
+{% endblock stylesheet %}
+
+{% block content %}
+<div class="search-result-wrapper">
+    <div class="search-results people-results">
+    <h1 class="result-title">People</h1>
+        {% if search.users|length > 0 %}
+            {% for user in search.users %}
+            <div class="person">
+                <img class="avatar" src="/img/square-placeholder.jpg"/>
+                <h1 class="name">{{user.username}}</h1>
+            </div>
+            {% endfor %}
+        {% else %}
+        No Results
+        {% endif %}
+    </div>
+    <div class="search-results posts-results">
+    <h1 class="result-title">Posts</h1>
+        {% if search.posts|length > 0 %}
+            {% for post in search.posts %}
+            <div class="post">
+                <h1 class="title">{{post.title}}</h1>
+                <p  class="body">{{post.body}}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+        No Results
+        {% endif %}
+    </div>
+    <div class="search-results groups-results">
+        {# {% if search.groups|length > 0 %}
+            {% for group in search.groups %}
+            <h1>{{group.name}}</h1>
+            {% endfor %}
+        {% else %}
+        No Results
+        {% endif %} #}
+    </div>
+</div>
+{% endblock content %}
