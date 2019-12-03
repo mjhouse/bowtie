@@ -4,8 +4,67 @@
 <link rel="stylesheet" href="/css/public/search.css"/>
 {% endblock stylesheet %}
 
+{%block mainbar%}{% endblock %}
+
 {% block content %}
-<div class="search-result-wrapper">
+
+{% set people_checked = '' %}
+{% set posts_checked = '' %}
+{% set groups_checked = '' %}
+{% set name_checked = '' %}
+{% set email_checked = '' %}
+{% set title_checked = '' %}
+{% set body_checked = '' %}
+{% set grid_checked = '' %}
+{% set rows_checked = '' %}
+
+{% if search.query.targets is containing('People') %}{% set people_checked = 'checked' %}{% endif %}
+{% if search.query.targets is containing('Posts') %}{% set posts_checked = 'checked' %}{% endif %}
+{% if search.query.targets is containing('Groups') %}{% set groups_checked = 'checked' %}{% endif %}
+
+{% if search.query.fields is containing('Name') %}{% set name_checked = 'checked' %}{% endif %}
+{% if search.query.fields is containing('Email') %}{% set email_checked = 'checked' %}{% endif %}
+{% if search.query.fields is containing('Title') %}{% set title_checked = 'checked' %}{% endif %}
+{% if search.query.fields is containing('Body') %}{% set body_checked = 'checked' %}{% endif %}
+
+{% if search.query.display == 'Grid' %}{% set grid_checked = 'checked' %}{% endif %}
+{% if search.query.display == 'Rows' %}{% set rows_checked = 'checked' %}{% endif %}
+
+<form class="search-bar" action="/search" method="get">
+    <div class="search-bar-input">
+        <input name="value" type="text" placeholder="Search" value="{{search.query.value}}"/>
+        <button type="submit">Submit</button>
+    </div>
+    <div class="search-bar-advanced">
+        <input type="checkbox" id="toggle-advanced" class="hidden-toggle"/>
+        <label class="title" for="toggle-advanced">Advanced</label>
+        <div class="advanced">
+            <div class="advanced-left">
+                <h2>Find</h2>
+                <label><input type="checkbox" name="people" {{people_checked}}/> People</label>
+                <label><input type="checkbox" name="posts"  {{posts_checked}}/> Posts</label>
+                <label><input type="checkbox" name="groups" {{groups_checked}}/> Groups</label>
+                <h2>Search in</h2>
+                <label><input type="checkbox" name="name"  {{name_checked}}/> Names</label>
+                <label><input type="checkbox" name="email" {{email_checked}}/> Emails</label>
+                <label><input type="checkbox" name="title" {{title_checked}}/> Post titles</label>
+                <label><input type="checkbox" name="body"  {{body_checked}}/> Post content</label>
+            </div>
+            <div class="advanced-right">
+                <h2>Display</h2>
+                <label><input type="radio" name="display" value="grid" {{grid_checked}}/> Grid</label>
+                <label><input type="radio" name="display" value="rows" {{rows_checked}}/> Rows</label>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="search-results">
+{{search.query.value}}<br/>
+{{search.query.targets}}<br/>
+{{search.query.fields}}
+</div>
+
+{# <div class="search-result-wrapper">
     <div class="search-results people-results">
     <h1 class="result-title">People</h1>
         {% if search.users|length > 0 %}
@@ -16,7 +75,7 @@
             </div>
             {% endfor %}
         {% else %}
-        No Results
+        <div class="placeholder">No Results</div>
         {% endif %}
     </div>
     <div class="search-results posts-results">
@@ -29,17 +88,11 @@
             </div>
             {% endfor %}
         {% else %}
-        No Results
+        <div class="placeholder">No Results</div>
         {% endif %}
     </div>
     <div class="search-results groups-results">
-        {# {% if search.groups|length > 0 %}
-            {% for group in search.groups %}
-            <h1>{{group.name}}</h1>
-            {% endfor %}
-        {% else %}
-        No Results
-        {% endif %} #}
+
     </div>
-</div>
+</div> #}
 {% endblock content %}

@@ -25,11 +25,13 @@
                     {% endif %}
                 </div>
                 <nav class="main-menu">
+                    {% block mainbar %}
                     <div class="main-header-search">
                         <form action="/search" method="get">
                             <input name="value" placeholder="Search" type="text" tabindex="1"/>
                         </form>
                     </div>
+                    {% endblock %}
                     <div class="main-header-links">
                         {% if user %}
                         <a href="/logout"   class="main-menu-item" title="Logout of your account" tabindex="2">Logout</a>
