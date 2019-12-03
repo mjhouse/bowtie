@@ -1,0 +1,16 @@
+
+.page__content {
+    padding-top:0;
+}
+
+.line-menu {
+    display:flex;
+    align-items: stretch;
+    margin-bottom: 10px;
+}
+
+.line-menu__item {
+    text-decoration: none;
+    padding:2px 5px 2px 5px;
+    font-size: 0.8em;
+}

@@ -7,6 +7,8 @@
         <title>Bowtie</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        
+        <link rel="stylesheet" href="/css/themes/bowtie-light.css"/>
         <link rel="stylesheet" href="/css/base.css"/>
 
         {# don't request a favicon #}
@@ -16,52 +18,44 @@
         {% endblock stylesheet %}
     </head>
     <body>
-        <div class="main-wrapper">
-            <div class="main-header">
-                    {% if user %} <img class="main-header-image" src="/img/square-placeholder.jpg"/> {% endif %}
-                <div class="main-header-name">
-                    {% if user %} {{user.username}} 
-                    {% else    %} Bowtie 
-                    {% endif %}
+        <div class="page">
+            <div class="page__header">
+                <a class="page__header__title" href="/">Bowtie</a>
+                <div class="page__header__search">
+                    <form class="form" action="/search" method="get">
+                        <input class="form__input--blue" name="value" placeholder="Search" type="text" tabindex="1"/>
+                    </form>
                 </div>
-                <nav class="main-menu">
-                    {% block mainbar %}
-                    <div class="main-header-search">
-                        <form action="/search" method="get">
-                            <input name="value" placeholder="Search" type="text" tabindex="1"/>
-                        </form>
-                    </div>
-                    {% endblock %}
-                    <div class="main-header-links">
+                <nav class="page__header__menu">
                         {% if user %}
-                        <a href="/logout"   class="main-menu-item" title="Logout of your account" tabindex="2">Logout</a>
-                        <a href="/profile"  class="main-menu-item" title="Go to your profile page" tabindex="3">Profile</a>
+                        <a href="/logout"   class="menu__item" title="Log out" tabindex="2">Logout</a>
+                        <a href="/profile"  class="menu__item" title="Profile page" tabindex="3">Profile</a>
+                        
                         {% else %}
-                        <a href="/login"    class="main-menu-item" title="Go to the login page" tabindex="2">Login</a>
-                        <a href="/register" class="main-menu-item" title="Go to the registration page" tabindex="3">Register</a>
+                        <a href="/login"    class="menu__item" title="Login page" tabindex="2">Login</a>
+                        <a href="/register" class="menu__item" title="Registration page" tabindex="3">Register</a>
                         {% endif %}
-                    </div>
                 </nav>
             </div>
-            <div class="content">
+            <div class="page__content">
                 {% block content %}
                 {% endblock content %}
             </div>
-            <nav class="main-footer">
-                <div>
-                    <a href="/about" title="Go to the About page">About</a>
-                    <a href="/search" title="Search for people or posts">Search</a>                
+            <nav class="page__footer">
+                <div class="page__footer__column">
+                    <a href="/about" title="About page">About</a>
+                    <a href="/search" title="Search page">Search</a>                
                 </div>
-                <div>
+                <div class="page__footer__column">
                     {% if user %}
-                    <a href="/logout" title="Logout of your account">Logout</a>
-                    <a href="/profile" title="Go to your profile page">Profile</a>
+                    <a href="/logout" title="Logout">Logout</a>
+                    <a href="/profile" title="Profile page">Profile</a>
                     {% else %}
-                    <a href="/login" title="Go to the login page">Login</a>
-                    <a href="/register" title="Go to the registration page">Register</a>
+                    <a href="/login" title="Login page">Login</a>
+                    <a href="/register" title="Registration page">Register</a>
                     {% endif %}
                 </div>
-                <div class="main-footer-copyright">
+                <div class="page__footer__column">
                     &copy; {{ datetime }} Michael House 
                 </div>
             </nav>

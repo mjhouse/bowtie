@@ -6,10 +6,8 @@
 
 .recent-people {
     flex-grow: 1;
-    border:1px solid black;
 }
 
 .recent-posts {
     flex-grow: 2;
-    border:1px solid black;
 }

@@ -1,0 +1,98 @@
+
+/* BASE PAGE THEME */
+* {
+    font-family: -apple-system, 
+                  BlinkMacSystemFont, 
+                  "Segoe UI", 
+                  Roboto, 
+                  Oxygen-Sans, 
+                  Ubuntu, 
+                  Cantarell, 
+                  "Helvetica Neue", 
+                  sans-serif;
+    color:inherit;
+}
+
+/* 
+#B23850 -> red
+#3B8BEB -> blue
+#E7E3D4 -> tan
+#C4DBF6 -> green
+#8590AA -> gray 
+#000000 -> black
+*/
+
+body {
+    background-color: #3B8BEB;
+}
+
+.page {
+
+}
+
+.page__header {
+    background-color: rgb(50, 100, 200);
+    color:rgb(255, 255, 255);
+}
+
+.menu__item {
+    background-color: rgb(50, 100, 200);
+}
+
+.menu__item:hover {
+    background-color: rgb(70, 120, 220);
+}
+
+.line-menu__item {
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
+}
+
+.line-menu__item:hover {
+    background-color: rgb(200, 210, 230);
+}
+
+.page__content {
+    background-color: rgb(255, 255, 255);
+}
+
+.page__footer {
+    color:rgb(255, 255, 255);
+}
+
+.form__input--blue {
+    color:rgb(255, 255, 255);
+    background-color: rgb(40, 80, 170);
+    border: 1px solid rgb(30, 60, 170);
+}
+
+.form__input--blue:focus {
+    background-color: rgb(30, 40, 120);
+    border: 1px solid rgb(10, 20, 100);
+}
+
+.form__input--white {
+    color:rgb(50, 50, 50);
+    background-color:rgb(255, 255, 255);
+    border:1px solid rgb(150, 150, 150);
+}
+
+.form__input--white:focus {
+    color:rgb(0, 0, 0);
+    background-color:rgb(215, 215, 215);
+    border:1px solid rgb(110, 110, 110);
+}
+
+.form__button--blue {
+    background-color: rgb(50, 100, 200);
+    color:rgb(255, 255, 255);
+    border:none;
+}
+
+.form__button--blue:hover {
+    background-color: rgb(75, 125, 200);
+}
+
+.flash {
+
+}

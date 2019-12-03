@@ -20,7 +20,6 @@
 .search-bar-input > input {
     flex-grow: 1;
     margin-right: 10px;
-    background-color: rgba(0,0,0,0.5);
 }
 
 .search-bar-input > button {

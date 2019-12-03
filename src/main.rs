@@ -8,6 +8,7 @@ use rocket_contrib::{
 };
 
 use dotenv::dotenv;
+
 use bowtie_routes::public;
 use bowtie_routes::profile;
 use bowtie_routes::auth;

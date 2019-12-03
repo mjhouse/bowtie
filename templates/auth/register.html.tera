@@ -1,26 +1,22 @@
 {% extends 'base' %}
 
 {% block stylesheet %}
-<link rel="stylesheet" href="/css/register.css"/>
+<link rel="stylesheet" href="/css/auth/register.css"/>
 {% endblock stylesheet %}
 
 {% block content %}
-<form class="register-form" action="/register" method="post">
+<form class="form--register" action="/register" method="post">
     <h1>Register</h1>
-    <p>
-        You can register here. If you already have an account
-        just click the 'Login' link.
-    </p>
     {% if flash %}
-    <p class="flash-message">{{ flash }}</p>
+    <p class="form--register__flash flash">{{ flash }}</p>
     {% endif %}
     <br/>
-    <input name="username" type="text" placeholder="Username" tabindex="4" required/>
-    <input name="password1" type="password" placeholder="Password" tabindex="5" required/>
-    <input name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
-    <button type="submit" tabindex="6">Register</button>
+    <input class="form__input--white" name="username" type="text" placeholder="Username" tabindex="4" required/>
+    <input class="form__input--white" name="password1" type="password" placeholder="Password" tabindex="5" required/>
+    <input class="form__input--white" name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
+    <button class="form__button form__button--blue" type="submit" tabindex="6">Register</button>
 
-    <p>
+    <p class="form--register__footer">
         <a href="/login" tabindex="8">Login</a>
     </p>
 </form>

@@ -9,6 +9,7 @@ extern crate failure;
 // models
 pub mod user;
 pub mod post;
+pub mod view;
 
 // handling
 pub mod context;
@@ -16,3 +17,4 @@ pub mod search;
 
 pub use user::{User,UserModel};
 pub use post::{Post,PostModel};
+pub use view::{View,ViewModel};
