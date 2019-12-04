@@ -18,35 +18,33 @@
         {% endblock stylesheet %}
     </head>
     <body>
-        <div class="page">
-            <div class="page__header">
-                <a class="page__header__title" href="/">Bowtie</a>
-                <div class="page__header__search">
-                    <form class="form" action="/search" method="get">
-                        <input class="form__input--blue" name="value" placeholder="Search" type="text" tabindex="1"/>
-                    </form>
-                </div>
-                <nav class="page__header__menu">
+        <div class="page l r col">
+            <div class="page__header row">
+                <a href="/">Bowtie</a>
+                <form class="l" action="/search" method="get">
+                    <input class="form__input--blue" name="value" placeholder="Search" type="text" tabindex="1"/>
+                </form>
+                <nav class="l10 row">
                         {% if user %}
-                        <a href="/logout"   class="menu__item" title="Log out" tabindex="2">Logout</a>
-                        <a href="/profile"  class="menu__item" title="Profile page" tabindex="3">Profile</a>
+                        <a href="/logout"   class="menu__item p5" title="Log out" tabindex="2">Logout</a>
+                        <a href="/profile"  class="menu__item p5" title="Profile page" tabindex="3">Profile</a>
                         
                         {% else %}
-                        <a href="/login"    class="menu__item" title="Login page" tabindex="2">Login</a>
-                        <a href="/register" class="menu__item" title="Registration page" tabindex="3">Register</a>
+                        <a href="/login"    class="menu__item p5" title="Login page" tabindex="2">Login</a>
+                        <a href="/register" class="menu__item p5" title="Registration page" tabindex="3">Register</a>
                         {% endif %}
                 </nav>
             </div>
-            <div class="page__content">
+            <div class="page__content col x1">
                 {% block content %}
                 {% endblock content %}
             </div>
-            <nav class="page__footer">
-                <div class="page__footer__column">
+            <nav class="page__footer f1 row">
+                <div class="r5 col">
                     <a href="/about" title="About page">About</a>
                     <a href="/search" title="Search page">Search</a>                
                 </div>
-                <div class="page__footer__column">
+                <div class="r5 col">
                     {% if user %}
                     <a href="/logout" title="Logout">Logout</a>
                     <a href="/profile" title="Profile page">Profile</a>
@@ -55,7 +53,7 @@
                     <a href="/register" title="Registration page">Register</a>
                     {% endif %}
                 </div>
-                <div class="page__footer__column">
+                <div class="r5 col">
                     &copy; {{ datetime }} Michael House 
                 </div>
             </nav>

@@ -3,14 +3,85 @@
     padding-top:0;
 }
 
-.line-menu {
-    display:flex;
-    align-items: stretch;
-    margin-bottom: 10px;
+
+.line-menu__item { padding:5px; }
+
+.feed {
+    display:flex;    
 }
 
-.line-menu__item {
-    text-decoration: none;
-    padding:2px 5px 2px 5px;
-    font-size: 0.8em;
+.feed__column {
+    display:flex;
+    flex-grow:1;
+    flex-direction: column;
+    align-items: stretch;
+    padding:10px;
+}
+
+.feed__placeholder {
+    text-align: center;
+}
+
+.post {
+    padding:5px;
+    margin:5px 5px 10px 5px;
+}
+
+.post__title {
+    font-size:1.125em;
+    margin:0;
+}
+
+.post__body {
+    padding:10px;
+}
+
+.post__info {
+    display:flex;
+    font-size: 0.75em;
+}
+
+.post__info > .post__date {
+    margin-right:auto;
+}
+
+.page__content,
+.profile__body,
+.form--editor {
+    flex-grow:2;
+    display:flex;
+    flex-direction:column;
+    justify-content: stretch;
+}
+
+.form--editor__header {
+    display: flex;
+    justify-content: right;
+}
+
+.form--editor__toolbar {
+    flex-grow:2;
+    text-align: right;
+    display:flex;
+    align-items: stretch;
+}
+
+.form--editor__header > .form__input {
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.form--editor__header > .form__button {
+    margin-left: 10px;
+}
+
+.form--editor__body {
+    flex-grow: 1;
+    display:flex;
+}
+
+.editor__input {
+    flex-grow: 1;
+    padding:10px;
+    margin:10px 2px 2px 2px;
 }

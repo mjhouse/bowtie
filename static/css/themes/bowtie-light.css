@@ -93,6 +93,33 @@ body {
     background-color: rgb(75, 125, 200);
 }
 
+.post {
+    border:1px solid rgb(150, 150, 150);
+    box-shadow:5px 5px 5px rgb(230, 230, 230);
+    border-radius: 3px;
+}
+
+.post__title {
+    background-color: rgb(255, 255, 255);
+    color:rgb(0, 0, 0);
+}
+
+.post__info {
+    color:rgb(100, 100, 100);
+}
+
+.feed__placeholder {
+    color:rgb(100, 100, 100);
+}
+
+.editor__input {
+    border: 1px solid gray;
+}
+
+.editor__input:focus {
+    border: 1px solid black;
+}
+
 .flash {
 
 }

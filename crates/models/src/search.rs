@@ -122,6 +122,18 @@ impl Search {
         result: PostModel -> Post
     );
 
+    pub fn execute<'a,M:'a,O>(t_conn: &PgConnection,t_query: &SearchQuery) -> Vec<O>
+        where 
+            O: From<&'a M> {
+        vec![]
+    }
+
+}
+
+#[derive(Serialize,Debug,Clone)]
+pub enum Display {
+    Grid,
+    Rows
 }
 
 #[derive(Serialize,Debug,Clone)]
@@ -136,13 +148,7 @@ pub enum Field {
 pub enum Target {
     People,
     Posts,
-    Groups
-}
-
-#[derive(Serialize,Debug,Clone)]
-pub enum Display {
-    Grid,
-    Rows
+    // Groups
 }
 
 #[derive(Debug)]
@@ -153,6 +159,13 @@ pub enum FieldType {
     Body(posts::body)
 }
 
+#[derive(Debug)]
+pub enum TargetType {
+    People(users::table),
+    Posts(posts::table)
+//    Groups(groups::table)
+}
+
 impl From<&Field> for FieldType {
     fn from(t_field: &Field) -> Self {
         match t_field {
@@ -160,6 +173,15 @@ impl From<&Field> for FieldType {
             Field::Email => FieldType::Email(users::email),
             Field::Title => FieldType::Title(posts::title),
             Field::Body  => FieldType::Body(posts::body)
+        }
+    }
+}
+
+impl From<&Target> for TargetType {
+    fn from(t_target: &Target) -> Self {
+        match t_target {
+            Target::People => TargetType::People(users::table),
+            Target::Posts  => TargetType::Posts(posts::table),
         }
     }
 }
@@ -184,7 +206,7 @@ impl<'a,'f> FromForm<'f> for SearchQuery {
                 ("body"  ,_) => fields.push(Field::Body),
                 ("people",_) => targets.push(Target::People),
                 ("posts" ,_) => targets.push(Target::Posts),
-                ("groups",_) => targets.push(Target::Groups),
+                // ("groups",_) => targets.push(Target::Groups),
                 ("display","grid") => display = Display::Grid,
                 ("display","rows") => display = Display::Rows,
                 _ if strict => return Err(SearchError::UnknownFields),

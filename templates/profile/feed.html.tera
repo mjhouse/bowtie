@@ -2,32 +2,33 @@
 
 {% block body %}
 <div class="feed">
-{% if posts %}
-    {% for post in posts %}
-        <article class="post">
-            <h1 class="post-title">
-                {{ post.title }}
-            </h1>
-            <div class="post-body">
-                {{ post.body|safe }}
-            </div>
-            <div class="post-info">
-                created: {{ post.created | date(format="%Y-%m-%d %I:%M %P") }}
-            </div>
-            <nav class="post-toolbar">
-                <a href="">edit</a>
-                <a href="/profile/delete?id={{ post.id }}">delete</a>
-            </nav>
-        </article>
-    {% endfor %}
-{% else %}
-    Nothing here!
-{% endif %}
-</div>
-<div class="feed">
-    Nothing here!
-</div>
-<div class="feed">
-    Nothing here!
+    <div class="feed__column">
+    {% if posts %}
+        {% for post in posts %}
+            <article class="post">
+                <h1 class="post__title">
+                    {{ post.title }}
+                </h1>
+                <div class="post__body">
+                    {{ post.body|safe }}
+                </div>
+                <nav class="post__info">
+                    <span class="post__date">
+                    {{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
+                    {% if post.user_id == user.id %}
+                    <a href="/profile/delete?id={{ post.id }}">delete</a>
+                    {% endif %}
+                </nav>
+            </article>
+        {% endfor %}
+    {% else %}
+        <span class="feed__placeholder">Nothing here!</span>
+    {% endif %}
+    </div>
+
+    {# FOR SUBSCRIBED - REVERSE CHRONO #}
+    <div class="feed__column">
+        <span class="feed__placeholder">Nothing here!</span>
+    </div>
 </div>
 {% endblock body %}
