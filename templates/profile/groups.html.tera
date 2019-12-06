@@ -1,5 +1,0 @@
-{% extends 'profile/base' %}
-
-{% block body %}
-GROUPS
-{% endblock body %}

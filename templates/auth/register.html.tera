@@ -1,22 +1,18 @@
 {% extends 'base' %}
 
-{% block stylesheet %}
-<link rel="stylesheet" href="/css/auth/register.css"/>
-{% endblock stylesheet %}
-
 {% block content %}
-<form class="form--register" action="/register" method="post">
-    <h1>Register</h1>
+<form class="l r col" action="/register" method="post">
+    <h1 class="p5">Register</h1>
     {% if flash %}
-    <p class="form--register__flash flash">{{ flash }}</p>
+    <p class="flash">{{ flash }}</p>
     {% endif %}
     <br/>
-    <input class="form__input--white" name="username" type="text" placeholder="Username" tabindex="4" required/>
-    <input class="form__input--white" name="password1" type="password" placeholder="Password" tabindex="5" required/>
-    <input class="form__input--white" name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
-    <button class="form__button form__button--blue" type="submit" tabindex="6">Register</button>
+    <input class="txt-med m5" name="username" type="text" placeholder="Username" tabindex="4" required/>
+    <input class="txt-med m5" name="password1" type="password" placeholder="Password" tabindex="5" required/>
+    <input class="txt-med m5" name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
+    <button class="l m5 btn-med" type="submit" tabindex="6">Register</button>
 
-    <p class="form--register__footer">
+    <p class="m5 f1">
         <a href="/login" tabindex="8">Login</a>
     </p>
 </form>

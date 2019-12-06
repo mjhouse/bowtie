@@ -17,7 +17,6 @@ const KeyCode = {
 
 (( 
     // structure
-    toolbar,
     element,
     field,
     
@@ -26,7 +25,8 @@ const KeyCode = {
     bold ) => {
 
     // make the javascript editor visible
-    toolbar.style.display = "block";
+    italic.style.display  = "block";
+    bold.style.display    = "block";
     element.style.display = "block";
     field.style.display   = "none";
 
@@ -75,7 +75,6 @@ const KeyCode = {
     })
 })(
     // structure
-    $("toolbar"),
     $("editor"),
     $("field"),
     

@@ -1,34 +1,35 @@
 {% extends 'profile/base' %}
 
 {% block body %}
-<div class="feed">
-    <div class="feed__column">
+<div class="row x1">
+
+    <div class="col x1 w50">
     {% if posts %}
         {% for post in posts %}
-            <article class="post">
-                <h1 class="post__title">
+            <article class="card col p10 m5">
+                <h1 class="m5 p5">
                     {{ post.title }}
                 </h1>
-                <div class="post__body">
+                <div class="m5 p10">
                     {{ post.body|safe }}
                 </div>
-                <nav class="post__info">
-                    <span class="post__date">
+                <nav class="row m5 p5 f1">
+                    <span class="">
                     {{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
                     {% if post.user_id == user.id %}
-                    <a href="/profile/delete?id={{ post.id }}">delete</a>
+                    <a class="l" href="/profile/delete?id={{ post.id }}">delete</a>
                     {% endif %}
                 </nav>
             </article>
         {% endfor %}
     {% else %}
-        <span class="feed__placeholder">Nothing here!</span>
+        <span class="p10 l r">Nothing here!</span>
     {% endif %}
     </div>
 
     {# FOR SUBSCRIBED - REVERSE CHRONO #}
-    <div class="feed__column">
-        <span class="feed__placeholder">Nothing here!</span>
+    <div class="col x1 w50">
+        <span class="p10 l r">Nothing here!</span>
     </div>
 </div>
 {% endblock body %}

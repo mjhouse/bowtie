@@ -35,91 +35,38 @@ body {
     color:rgb(255, 255, 255);
 }
 
-.menu__item {
-    background-color: rgb(50, 100, 200);
+.profile__menu > a:hover { background-color: rgb(230, 230, 230); }
+.page__content { background-color: rgb(255, 255, 255); }
+
+.page__footer  a:hover { text-decoration: underline; }
+.page__footer  { color:rgb(255, 255, 255); }
+
+.btn-med {
+    background-color: rgba(0,0,0,0);
+    border: 1px solid rgba(0,0,0,0);
 }
 
-.menu__item:hover {
-    background-color: rgb(70, 120, 220);
+.btn-med:hover {
+    background-color: rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.125);
 }
 
-.line-menu__item {
-    color: rgb(0, 0, 0);
-    background-color: rgb(255, 255, 255);
+.txt-med {
+    background-color: rgba(0,0,0,0.015);
+    border: 1px solid rgba(0,0,0,0.125);
 }
 
-.line-menu__item:hover {
-    background-color: rgb(200, 210, 230);
+.txt-med:focus {
+    background-color: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.25);
 }
 
-.page__content {
-    background-color: rgb(255, 255, 255);
+.card {
+    border:1px solid rgba(0,0,0,0.5);
+    box-shadow:5px 5px 5px rgba(0,0,0,0.1);
 }
 
-.page__footer {
-    color:rgb(255, 255, 255);
-}
-
-.form__input--blue {
-    color:rgb(255, 255, 255);
-    background-color: rgb(40, 80, 170);
-    border: 1px solid rgb(30, 60, 170);
-}
-
-.form__input--blue:focus {
-    background-color: rgb(30, 40, 120);
-    border: 1px solid rgb(10, 20, 100);
-}
-
-.form__input--white {
-    color:rgb(50, 50, 50);
-    background-color:rgb(255, 255, 255);
-    border:1px solid rgb(150, 150, 150);
-}
-
-.form__input--white:focus {
-    color:rgb(0, 0, 0);
-    background-color:rgb(215, 215, 215);
-    border:1px solid rgb(110, 110, 110);
-}
-
-.form__button--blue {
-    background-color: rgb(50, 100, 200);
-    color:rgb(255, 255, 255);
-    border:none;
-}
-
-.form__button--blue:hover {
-    background-color: rgb(75, 125, 200);
-}
-
-.post {
-    border:1px solid rgb(150, 150, 150);
-    box-shadow:5px 5px 5px rgb(230, 230, 230);
-    border-radius: 3px;
-}
-
-.post__title {
-    background-color: rgb(255, 255, 255);
-    color:rgb(0, 0, 0);
-}
-
-.post__info {
-    color:rgb(100, 100, 100);
-}
-
-.feed__placeholder {
-    color:rgb(100, 100, 100);
-}
-
-.editor__input {
-    border: 1px solid gray;
-}
-
-.editor__input:focus {
-    border: 1px solid black;
-}
-
-.flash {
-
+.toggle { cursor:pointer; }
+.toggle-state:checked + .toggle {
+    background-color: rgba(0,0,0,0.25);
 }

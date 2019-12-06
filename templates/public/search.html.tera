@@ -1,11 +1,5 @@
 {% extends 'base' %}
 
-{% block stylesheet %}
-<link rel="stylesheet" href="/css/public/search.css"/>
-{% endblock stylesheet %}
-
-{%block mainbar%}{% endblock %}
-
 {% block content %}
 
 {% set people_checked = '' %}
@@ -30,69 +24,42 @@
 {% if search.query.display == 'Grid' %}{% set grid_checked = 'checked' %}{% endif %}
 {% if search.query.display == 'Rows' %}{% set rows_checked = 'checked' %}{% endif %}
 
-<form class="search-bar" action="/search" method="get">
-    <div class="search-bar-input">
-        <input name="value" type="text" placeholder="Search" value="{{search.query.value}}"/>
-        <button type="submit">Submit</button>
-    </div>
-    <div class="search-bar-advanced">
-        <input type="checkbox" id="toggle-advanced" class="hidden-toggle"/>
-        <label class="title" for="toggle-advanced">Advanced</label>
-        <div class="advanced">
-            <div class="advanced-left">
-                <h2>Find</h2>
-                <label><input type="checkbox" name="people" {{people_checked}}/> People</label>
-                <label><input type="checkbox" name="posts"  {{posts_checked}}/> Posts</label>
-                <label><input type="checkbox" name="groups" {{groups_checked}}/> Groups</label>
-                <h2>Search in</h2>
-                <label><input type="checkbox" name="name"  {{name_checked}}/> Names</label>
-                <label><input type="checkbox" name="email" {{email_checked}}/> Emails</label>
-                <label><input type="checkbox" name="title" {{title_checked}}/> Post titles</label>
-                <label><input type="checkbox" name="body"  {{body_checked}}/> Post content</label>
-            </div>
-            <div class="advanced-right">
-                <h2>Display</h2>
-                <label><input type="radio" name="display" value="grid" {{grid_checked}}/> Grid</label>
-                <label><input type="radio" name="display" value="rows" {{rows_checked}}/> Rows</label>
-            </div>
+<form class="row p5 w40 l r" action="/search" method="get">
+    <div class="col x1">
+        <div class="row">
+            <input id="people" class="toggle-state h" type="checkbox" name="people" {{people_checked}}/> 
+            <label class="toggle p5" for="people">People</label>
+            <input id="posts"  class="toggle-state h" type="checkbox" name="posts"  {{posts_checked}} /> 
+            <label class="toggle p5" for="posts">Posts</label>
         </div>
+        <input class="txt-med x1" name="value" type="text" placeholder="Search" value="{{search.query.value}}"/>
+        <div class="row">
+            <input id="grid" class="toggle-state h" type="radio" name="display" value="grid" {{grid_checked}}/> 
+            <label class="toggle p5 l" for="grid">Grid</label>
+            <input id="rows" class="toggle-state h" type="radio" name="display" value="rows" {{rows_checked}}/> 
+            <label class="toggle p5" for="rows">Rows</label>    
+        </div>
+    </div>    
+    <div class="col t b">
+        <button class="btn-med l10 t b" type="submit">Submit</button>    
     </div>
 </form>
-<div class="search-results">
-{{search.query.value}}<br/>
-{{search.query.targets}}<br/>
-{{search.query.fields}}
+<div class="row">
+    {% if people_checked %}
+    <div class="col x1">
+        {% for user in search.users %}
+            {{user.username}}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if posts_checked %}
+    <div class="col x2">
+        Posts
+    </div>
+    {% endif %}
+    {% if not posts_checked and not people_checked %}
+    <div class="l r p10">Try selecting one or more catagories!</div>
+    {% endif %}
 </div>
 
-{# <div class="search-result-wrapper">
-    <div class="search-results people-results">
-    <h1 class="result-title">People</h1>
-        {% if search.users|length > 0 %}
-            {% for user in search.users %}
-            <div class="person">
-                <img class="avatar" src="/img/square-placeholder.jpg"/>
-                <h1 class="name">{{user.username}}</h1>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="placeholder">No Results</div>
-        {% endif %}
-    </div>
-    <div class="search-results posts-results">
-    <h1 class="result-title">Posts</h1>
-        {% if search.posts|length > 0 %}
-            {% for post in search.posts %}
-            <div class="post">
-                <h1 class="title">{{post.title}}</h1>
-                <p  class="body">{{post.body}}</p>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="placeholder">No Results</div>
-        {% endif %}
-    </div>
-    <div class="search-results groups-results">
-
-    </div>
-</div> #}
 {% endblock content %}

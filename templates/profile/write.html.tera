@@ -5,18 +5,16 @@
 {% endblock script %}
 
 {% block body %}
-<form class="form--editor" action="/profile/write" method="post">
-    <div class="form--editor__header">
-        <div id="toolbar" class="form--editor__toolbar">
-            <button class="line-menu__item" type="button" id="italic">I</button>
-            <button class="line-menu__item" type="button" id="bold">B</button>
-        </div>
-        <input  class="form__input  form__input--white" type="text" name="title" placeholder="Title" tabindex="4" required/>
-        <button class="form__button form__button--blue" type="submit" tabindex="6">Post</button>
+<form class="col x1" action="/profile/write" method="post">
+    <div class="row row-l">
+        <button class="btn-med l r5" type="button" id="italic">I</button>
+        <button class="btn-med r5" type="button" id="bold">B</button>
+        <input  class="txt-med w30" type="text" name="title" placeholder="Title" tabindex="4" required/>
+        <button class="btn-med l5 r10" type="submit" tabindex="6">Post</button>
     </div>
-    <div class="form--editor__body">
-        <div id="editor" class="js-editor-field editor__input" contentEditable="true" tabindex="5"></div>
-        <textarea id="field" class="editor__input" name="body" tabindex="5"></textarea>
+    <div class="col x1 p5 m5">
+        <div id="editor" class="txt-med x1" contentEditable="true" tabindex="5"></div>
+        <textarea id="field" class="x1" name="body" tabindex="5"></textarea>
     </div>
 </form>
 {% endblock body %}

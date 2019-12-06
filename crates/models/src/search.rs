@@ -42,11 +42,15 @@ macro_rules! apply {
 macro_rules! impl_search {
     (   
         name:   $n:ident,
-        table:  $t:expr,
+        table:  $t:path,
+        target: $a:path,
         fields: [ $( $f:path ),* ],
         result: $m:ident -> $o:ident
     ) => {
         pub fn $n(t_conn: &PgConnection, t_query: &SearchQuery) -> Vec<$o> {
+            if !t_query.targets.contains(&$a) {
+                return vec![]; }
+
             let mut query = $t.into_boxed::<Pg>();
             let mut applicable = false;
             for field in t_query.fields
@@ -109,6 +113,7 @@ impl Search {
     impl_search!(
         name:   for_users,
         table:  users::table,
+        target: Target::People,
         fields: [ FieldType::Name,
                   FieldType::Email ],
         result: UserModel -> User
@@ -117,16 +122,11 @@ impl Search {
     impl_search!(
         name:   for_posts,
         table:  posts::table,
+        target: Target::Posts,
         fields: [ FieldType::Title,
                   FieldType::Body ],
         result: PostModel -> Post
     );
-
-    pub fn execute<'a,M:'a,O>(t_conn: &PgConnection,t_query: &SearchQuery) -> Vec<O>
-        where 
-            O: From<&'a M> {
-        vec![]
-    }
 
 }
 
@@ -144,7 +144,7 @@ pub enum Field {
     Body
 }
 
-#[derive(Serialize,Debug,Clone)]
+#[derive(Serialize,Debug,PartialEq,Clone)]
 pub enum Target {
     People,
     Posts,
