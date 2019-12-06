@@ -21,44 +21,51 @@
 {% if search.query.fields is containing('Title') %}{% set title_checked = 'checked' %}{% endif %}
 {% if search.query.fields is containing('Body') %}{% set body_checked = 'checked' %}{% endif %}
 
-{% if search.query.display == 'Grid' %}{% set grid_checked = 'checked' %}{% endif %}
-{% if search.query.display == 'Rows' %}{% set rows_checked = 'checked' %}{% endif %}
-
-<form class="row p5 w40 l r" action="/search" method="get">
-    <div class="col x1">
-        <div class="row">
-            <input id="people" class="toggle-state h" type="checkbox" name="people" {{people_checked}}/> 
-            <label class="toggle p5" for="people">People</label>
-            <input id="posts"  class="toggle-state h" type="checkbox" name="posts"  {{posts_checked}} /> 
-            <label class="toggle p5" for="posts">Posts</label>
-        </div>
-        <input class="txt-med x1" name="value" type="text" placeholder="Search" value="{{search.query.value}}"/>
-        <div class="row">
-            <input id="grid" class="toggle-state h" type="radio" name="display" value="grid" {{grid_checked}}/> 
-            <label class="toggle p5 l" for="grid">Grid</label>
-            <input id="rows" class="toggle-state h" type="radio" name="display" value="rows" {{rows_checked}}/> 
-            <label class="toggle p5" for="rows">Rows</label>    
-        </div>
-    </div>    
-    <div class="col t b">
-        <button class="btn-med l10 t b" type="submit">Submit</button>    
+<form class="col p5 w40 l r" action="/search" method="get">
+    <div class="row">
+        <input id="people" class="toggle-state h" type="checkbox" name="people" {{people_checked}}/> 
+        <label class="toggle p5" for="people">People</label>
+        <input id="posts"  class="toggle-state h" type="checkbox" name="posts"  {{posts_checked}} /> 
+        <label class="toggle p5" for="posts">Posts</label>
     </div>
+    <div class="row">
+        <input class="txt-med x1" name="value" type="text" placeholder="Search" value="{{search.query.value}}"/>
+        <button class="btn-med l10 t b" type="submit">Submit</button>  
+    </div> 
 </form>
-<div class="row">
+<div class="col l r w50">
     {% if people_checked %}
-    <div class="col x1">
+    <h2>People</h2>
+    <div class="col">
         {% for user in search.users %}
-            {{user.username}}
+            <div class="card row p10 m5">
+                <img class="avatar-sm" src="/img/square-placeholder.jpg"/>
+                <a href="/users/{{user.username}}" class="name-sm l10">{{user.username}}</a>
+            </div>
         {% endfor %}
+        <div class="row">
+            <a href="#" class="r l5">< prev</a>
+            <a href="#" class="l r5">next ></a>
+        </div>
     </div>
     {% endif %}
     {% if posts_checked %}
-    <div class="col x2">
-        Posts
+    <h2>Posts</h2>
+    <div class="col">
+        {% for post in search.posts %}
+            <div class="card col p10 m5">
+                <a href="/posts/{{post.id}}">{{post.title}}</a>
+                <span class="f1">{{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
+            </div>
+        {% endfor %}
+        <div class="row">
+            <a href="#" class="r l5">< prev</a>
+            <a href="#" class="l r5">next ></a>
+        </div>
     </div>
     {% endif %}
     {% if not posts_checked and not people_checked %}
-    <div class="l r p10">Try selecting one or more catagories!</div>
+    <div class="l r p10 f3">Try selecting one or more catagories!</div>
     {% endif %}
 </div>
 

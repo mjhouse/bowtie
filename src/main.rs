@@ -28,6 +28,8 @@ fn main() {
             public::index, 
             public::about,
             public::search,
+            public::users,
+            public::posts,
             
             // authentication routes
             auth::login_get, 

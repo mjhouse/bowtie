@@ -1,7 +1,11 @@
 use rocket_contrib::templates::Template;
 use rocket::request::{FlashMessage,LenientForm};
+use rocket::response::{Redirect};
+use diesel::prelude::*;
+use std::env;
 
 use bowtie_models::user::*;
+use bowtie_models::post::*;
 use bowtie_models::context::*;
 use bowtie_models::search::*;
 
@@ -29,6 +33,43 @@ pub fn search( user: Option<User>, msg: Option<FlashMessage>, query: LenientForm
         user: user,
         flash: unflash!(msg),
         search: Search::from(&query),
+        ..Default::default()
+    })
+}
+
+#[get("/users/<name>")]
+pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> Template {
+    let conn  = db!();
+    let mut view  = None;
+    let mut posts = vec![];
+
+    if let Some(c) = conn {
+        view  = User::from_username(&c,&name);
+        
+        if let Some(User { id:Some(id), ..}) = view {
+            posts = Post::all_for_user(&c,id)
+        }
+    }
+
+    Template::render("public/user",Context {
+        user: user,
+        view_user: view,
+        posts: posts,
+        flash: unflash!(msg),
+        ..Default::default()
+    })
+}
+
+#[get("/posts/<id>")]
+pub fn posts( user: Option<User>, msg: Option<FlashMessage>, id: i32 ) -> Template {
+    let viewing = db!().and_then(|c|{
+            Post::from_id(&c,id)
+        });
+
+    Template::render("public/post",Context {
+        user: user,
+        view_post: viewing,
+        flash: unflash!(msg),
         ..Default::default()
     })
 }

@@ -3,7 +3,8 @@
 
 /* STRUCTURE */
 .col,
-.row {
+.row,
+.grid {
     display:flex;
     justify-content: stretch;
     align-items: stretch;
@@ -11,8 +12,8 @@
     margin:0;
 }
 
-.col { flex-direction: column; }
-.row { flex-direction: row; }
+.col  { flex-direction: column; }
+.row  { flex-direction: row; }
 
 .x1 { flex-grow:1; }
 .x2 { flex-grow:2; }
@@ -23,6 +24,7 @@
 .p5 { padding: 5px; }
 .p10{ padding: 10px; }
 
+.m0 { margin: 0; }
 .m5 { margin: 5px; }
 .m10{ margin: 10px; }
 
@@ -79,3 +81,13 @@ body {
 .card {
     padding:5px;
     border-radius:3px; }
+
+.avatar-sm {
+    border-radius: 5px;
+    max-height:40px;
+    max-width:40px;
+}
+
+.name-sm {
+    line-height:40px;
+}

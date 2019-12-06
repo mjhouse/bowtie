@@ -36,7 +36,7 @@ macro_rules! into {
 }
 
 macro_rules! apply {
-    ( $q:ident, $c:ident, $v:ident ) => { $q.or_filter($c.like(format!("%{}%",&$v.value))) }
+    ( $q:ident, $c:path, $v:ident ) => { $q.or_filter($c.like(format!("%{}%",&$v.value))) }
 }
 
 macro_rules! impl_search {
@@ -47,31 +47,21 @@ macro_rules! impl_search {
         fields: [ $( $f:path ),* ],
         result: $m:ident -> $o:ident
     ) => {
-        pub fn $n(t_conn: &PgConnection, t_query: &SearchQuery) -> Vec<$o> {
-            if !t_query.targets.contains(&$a) {
+        pub fn $n(t_conn: &PgConnection, t_search: &SearchQuery) -> Vec<$o> {
+            if !t_search.targets.contains(&$a) {
                 return vec![]; }
 
             let mut query = $t.into_boxed::<Pg>();
-            let mut applicable = false;
-            for field in t_query.fields
-                .iter()
-                .map(|f| f.into())
-                .collect::<Vec<FieldType>>() {
-                match field {
-                    $( $f(c) => { query = apply!(query,c,t_query); applicable = true; }, )*
-                    _ => ()
-                };
-            }
-            if applicable {
-                match query.load::<$m>(t_conn) {
-                    Ok(r)  => into!(r),
-                    Err(e) => {
-                        warn!("{}",e);
-                        vec![]
-                    }
+            $( 
+                query = apply!(query,$f,t_search); 
+            )*
+
+            match query.load::<$m>(t_conn) {
+                Ok(r)  => into!(r),
+                Err(e) => {
+                    warn!("{}",e);
+                    vec![]
                 }
-            } else {
-                vec![]
             }
         } 
     }
@@ -87,9 +77,7 @@ pub enum SearchError {
 #[derive(Serialize,Debug,Clone)]
 pub struct SearchQuery {
     value:   String,
-    fields:  Vec<Field>,
-    targets: Vec<Target>,
-    display: Display
+    targets: Vec<Target>
 }
 
 #[derive(Serialize,Debug)]
@@ -114,8 +102,8 @@ impl Search {
         name:   for_users,
         table:  users::table,
         target: Target::People,
-        fields: [ FieldType::Name,
-                  FieldType::Email ],
+        fields: [ users::username,
+                  users::email   ],
         result: UserModel -> User
     );
 
@@ -123,67 +111,17 @@ impl Search {
         name:   for_posts,
         table:  posts::table,
         target: Target::Posts,
-        fields: [ FieldType::Title,
-                  FieldType::Body ],
+        fields: [ posts::title,
+                  posts::body ],
         result: PostModel -> Post
     );
 
 }
 
-#[derive(Serialize,Debug,Clone)]
-pub enum Display {
-    Grid,
-    Rows
-}
-
-#[derive(Serialize,Debug,Clone)]
-pub enum Field {
-    Name,
-    Email,
-    Title,
-    Body
-}
-
 #[derive(Serialize,Debug,PartialEq,Clone)]
 pub enum Target {
     People,
-    Posts,
-    // Groups
-}
-
-#[derive(Debug)]
-pub enum FieldType {
-    Name(users::username),
-    Email(users::email),
-    Title(posts::title),
-    Body(posts::body)
-}
-
-#[derive(Debug)]
-pub enum TargetType {
-    People(users::table),
-    Posts(posts::table)
-//    Groups(groups::table)
-}
-
-impl From<&Field> for FieldType {
-    fn from(t_field: &Field) -> Self {
-        match t_field {
-            Field::Name  => FieldType::Name(users::username),
-            Field::Email => FieldType::Email(users::email),
-            Field::Title => FieldType::Title(posts::title),
-            Field::Body  => FieldType::Body(posts::body)
-        }
-    }
-}
-
-impl From<&Target> for TargetType {
-    fn from(t_target: &Target) -> Self {
-        match t_target {
-            Target::People => TargetType::People(users::table),
-            Target::Posts  => TargetType::Posts(posts::table),
-        }
-    }
+    Posts
 }
 
 // parse a request into a search query that holds the 
@@ -192,23 +130,14 @@ impl<'a,'f> FromForm<'f> for SearchQuery {
     type Error = SearchError;
 
     fn from_form(items: &mut FormItems<'f>, strict: bool) -> Result<SearchQuery, SearchError> {
-        let mut value   = String::from("%");
-        let mut fields  = vec![];
+        let mut value   = String::new();
         let mut targets = vec![];
-        let mut display = Display::Grid;
 
         for item in items {
             match unpack!(item) {
                 ("value" ,s) => value = s.to_string(),
-                ("name"  ,_) => fields.push(Field::Name),
-                ("email" ,_) => fields.push(Field::Email),
-                ("title" ,_) => fields.push(Field::Title),
-                ("body"  ,_) => fields.push(Field::Body),
                 ("people",_) => targets.push(Target::People),
                 ("posts" ,_) => targets.push(Target::Posts),
-                // ("groups",_) => targets.push(Target::Groups),
-                ("display","grid") => display = Display::Grid,
-                ("display","rows") => display = Display::Rows,
                 _ if strict => return Err(SearchError::UnknownFields),
                 _ => ()
             }
@@ -216,9 +145,7 @@ impl<'a,'f> FromForm<'f> for SearchQuery {
 
         Ok(SearchQuery {
             value:   value,
-            fields:  fields,
-            targets: targets,
-            display: display
+            targets: targets
         })
     }
 }
