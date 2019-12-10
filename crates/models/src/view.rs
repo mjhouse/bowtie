@@ -14,3 +14,28 @@ model!(
     View {
         user_id: i32
 });
+
+access!( View,
+    id:i32 => views::id
+);
+
+impl View {
+
+    pub fn create(t_conn: &PgConnection, t_id: i32) -> Result<Self,DieselError> {
+        let new_view = View {
+            id:      None,
+            user_id: t_id
+        };
+    
+        diesel::insert_into(views::table)
+            .values(&new_view)
+            .get_result(t_conn)
+            .or_else(|e|  Err(e))
+            .and_then(|m: ViewModel| Ok(m.into()))
+    }
+
+    pub fn for_user(t_conn: &PgConnection, t_id: i32) -> Vec<View> {
+        query!(many: t_conn, views::user_id.eq(t_id))
+    }
+
+}

@@ -1,11 +1,15 @@
 pub use bowtie_data::{schema::*,traits::*};
-use crate::post::Post;
 
 use diesel::prelude::*;
+use rocket::{
+    http::{Cookies,Cookie}
+};
 
+use bowtie_data::schema::users::dsl;
 use serde::{Serialize, Deserialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
+use std::env;
 
 use rocket::{
     request::{FromRequest,Outcome,Request},
@@ -18,12 +22,13 @@ use medallion::{
     Token,
 };
 
+use diesel::ConnectionError as ConnectionError;
 use diesel::result::Error as DieselError;
+use failure::*;
 
 const SERVER_KEY: &[u8;10] = b"secret_key";
 const ISSUER:  &str = "bowtie.com";
 const SUBJECT: &str = "user";
-const COOKIE:  &str = "bowtie_session_token";
 
 macro_rules! logs {
     ( $s:expr ) => { |e| { error!("{}",e); Err($s) } }
@@ -33,20 +38,31 @@ macro_rules! hash {
     ( $s:expr ) => { Whirlpool::new().chain(&$s).result(); }
 }
 
+// generate an insertion and query struct (User/UserModel),
+// From implementations and basic helper macros/methods.
 model!(
     table:  users,
-    traits: [Identifiable],
+    traits: [Identifiable,Default,AsChangeset],
     User {
         email:    Option<String>,
         username: String,
-        passhash: String
+        passhash: String,
+        view:     Option<i32>
 });
+
+access!( User,
+    id:i32        => users::id,
+    email:&str    => users::email,
+    username:&str => users::username,
+    view:i32      => users::view
+);
 
 #[derive(Default,Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserClaims {
     pub id:       i32,
     pub email:    String,
-    pub username: String
+    pub username: String,
+    pub view:     Option<i32>
 }
 
 #[derive(FromForm)]
@@ -70,58 +86,51 @@ pub enum TokenError {
 }
 
 impl User {
+    pub const COOKIE_NAME: &'static str = "bowtie_session_token";
 
-    pub fn new() -> Self {
+    pub fn new(t_name: &str, t_password: &str) -> Self {
         User {
             id:       None,
+            view:     None,
             email:    None,
-            username: String::new(),
-            passhash: String::new()
+            username: t_name.into(),
+            passhash: encode(&hash!(t_password))
         }
     }
-    
-    pub fn create(t_conn: &PgConnection, t_email: &str, t_username: &str, t_passhash: &str) -> Result<User,DieselError> {
-        let new_user = User {
-            id:       None,
-            email:    Some(t_email.into()),
-            username: t_username.into(),
-            passhash: t_passhash.into()
-        };
-    
+
+    pub fn create(t_user: User) -> Result<User,Error> {
+        let uri  = env::var("DATABASE_URL")?;
+        let conn = PgConnection::establish(&uri)?;
+
+        let model: UserModel = 
         diesel::insert_into(users::table)
-            .values(&new_user)
-            .get_result(t_conn)
-            .or_else(|e|  Err(e))
-            .and_then(|m: UserModel| Ok(m.into()))
+            .values(&t_user)
+            .get_result(&conn)?;
+
+        Ok(model.into())
     }
 
-    pub fn create_from(t_conn: &PgConnection, t_username: &str, t_password: &str) -> Result<User,DieselError> {
-        User::create(t_conn,"",t_username,&encode(&hash!(t_password)))
+    pub fn destroy(t_id:i32) -> Result<User,Error> {
+        let uri  = env::var("DATABASE_URL")?;
+        let conn = PgConnection::establish(&uri)?;
+
+        let model: UserModel = 
+        diesel::delete(dsl::users.filter(users::id.eq(t_id)))
+            .get_result(&conn)?;
+
+        Ok(model.into())
     }
 
-    pub fn from_email(t_conn: &PgConnection, t_email: &str) -> Option<User> {
-        query!(one: t_conn,users::email.eq(t_email))
-    }
+    pub fn update(t_user: &User) -> Result<User,Error> {
+        let uri  = env::var("DATABASE_URL")?;
+        let conn = PgConnection::establish(&uri)?;
 
-    pub fn from_username(t_conn: &PgConnection, t_username: &str) -> Option<User> {
-        query!(one: t_conn,users::username.eq(t_username))
-    }
+        let model: UserModel = 
+        diesel::update(users::table)
+            .set(t_user)
+            .get_result(&conn)?;
 
-    pub fn from_passhash(t_conn: &PgConnection, t_passhash: &str) -> Option<User> {
-        query!(one: t_conn,users::passhash.eq(t_passhash))
-    }
-
-    pub fn from_id(t_conn: &PgConnection, t_id: i32) -> Option<User> {
-        query!(one: t_conn,users::id.eq(t_id))
-    }
-
-    pub fn posts(&self, t_conn: &PgConnection) -> Vec<Post> {
-        match self.id {
-            Some(id) => {
-                Post::all_for_user(t_conn,id)
-            },
-            None => vec![]
-        }
+        Ok(model.into())
     }
 
     pub fn validate( &self, t_password:&str ) -> bool {
@@ -129,28 +138,31 @@ impl User {
         self.passhash == given_hash
     }
 
-    pub fn all(t_conn: &PgConnection) -> Vec<User> {
-        match users::table.load::<UserModel>(t_conn) {
-            Ok(v)  => v.into_iter().map(|m| m.into()).collect(),
-            Err(e) => {
-                warn!("Error during query: {}",e);
-                vec![]
-            }
+
+
+
+
+
+
+
+
+
+
+    pub fn to_cookie( &self, t_cookies: &mut Cookies ) {
+        if let Ok(t) = self.to_token() {
+            t_cookies.add(Cookie::new(User::COOKIE_NAME,t));
         }
     }
 
-    pub fn all_slice(t_conn: &PgConnection, t_offset: i64, t_limit: i64) -> Vec<User> {            
-        match users::table
-            .offset(t_offset)
-            .limit(t_limit)
-            .load::<UserModel>(t_conn)
-        {
-            Ok(v)  => v.into_iter().map(|m| m.into()).collect(),
-            Err(e) => {
-                warn!("Error during query: {}",e);
-                vec![]
-            }
-        }
+    pub fn from_cookie( t_cookies: &Cookies ) -> Option<Self> {
+        t_cookies.get(User::COOKIE_NAME)
+        .or(None)
+        .and_then(|t|{ 
+            User::from_token(t.value())
+            .ok()
+            .or(None)
+            .and_then(|u| Some(u)) 
+        })
     }
 
     pub fn to_token( &self ) -> Result<String,TokenError> {
@@ -187,7 +199,8 @@ impl User {
         UserClaims {
             id:       self.id.unwrap_or(0).clone(),
             email:    self.email.as_ref().unwrap_or(&String::new()).clone(),
-            username: self.username.clone()
+            username: self.username.clone(),
+            view:     self.view
         }
     }
 
@@ -197,6 +210,7 @@ impl User {
             email:    Some(t_claims.email.clone()),
             username: t_claims.username.clone(),
             passhash: String::new(),
+            view:     t_claims.view
         }
     }
 
@@ -206,24 +220,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<User,()> {
-        match request.method(){
-            Method::Get | Method::Post => {
-                match request
-                    .cookies()
-                    .get(COOKIE)
-                    .or(None)
-                    .and_then(|t|{ 
-                        User::from_token(t.value())
-                        .ok()
-                        .or(None)
-                        .and_then(|u| Some(u)) 
-                    })
-                    {
-                        Some(u) => Outcome::Success(u),
-                        None => Outcome::Forward(())
-                    }
-            },
-            _ => Outcome::Forward(())
+        match User::from_cookie(&request.cookies()){
+            Some(u) => Outcome::Success(u),
+            None => Outcome::Forward(())
         }
     }
 

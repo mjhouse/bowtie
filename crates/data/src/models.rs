@@ -134,5 +134,23 @@ macro_rules! model {
                 }
             }
         }
+
+    }
+}
+
+#[macro_export]
+macro_rules! access {
+    ( $s:ty,
+      $( $n:ident:$t:ty => $p:path ),*
+    ) => {
+        impl $s {
+            paste::item! {
+                $(
+                    pub fn [<for_ $n>](t_conn: &PgConnection, t_value: $t) -> Option<Self> {
+                        query!(one: t_conn,$p.eq(t_value))
+                    } 
+                )*
+            }
+        } 
     }
 }

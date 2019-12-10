@@ -29,14 +29,14 @@ pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
 pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> Result<Redirect,Flash<Redirect>> {
     let c = db_or!(flash!("/login", "Server is unavailable"));
 
-    let u = match User::from_username(&c,&form.username) {
+    let u = match User::for_username(&c,&form.username) {
         Some(u) if u.validate(&form.password) => u,
         _ => return flash!("/login", "Invalid username or password")
     };
 
     match u.to_token() {
         Ok(t) => {
-            cookies.add(Cookie::new(COOKIE_NAME,t));
+            cookies.add(Cookie::new(User::COOKIE_NAME,t));
             Ok(Redirect::to("/profile"))
         },
         _ => flash!("/login", "There was a problem")
@@ -45,7 +45,7 @@ pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> Result
 
 #[get("/logout")]
 pub fn logout(mut cookies:Cookies) -> Redirect {
-    cookies.remove(Cookie::named(COOKIE_NAME));
+    cookies.remove(Cookie::named(User::COOKIE_NAME));
     Redirect::to("/")
 }
 
@@ -60,13 +60,11 @@ pub fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> Template
 
 #[post("/register", data = "<form>")]
 pub fn register_post( form: LenientForm<RegisterForm> ) -> Result<Redirect,Flash<Redirect>> {
-    let c = db_or!(flash!("/register", "Server is unavailable"));
-
     if form.password1 != form.password2 {
         return flash!("/register", "Passwords don't match");
     }
 
-    match User::create_from(&c,&form.username,&form.password1) {
+    match User::create(User::new(&form.username,&form.password1)) {
         Ok(_) => Ok(Redirect::to("/login")), 
         _ => flash!("/register", "Username is taken")
     }
