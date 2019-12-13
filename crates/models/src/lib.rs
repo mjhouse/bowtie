@@ -3,6 +3,7 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate failure;
+#[macro_use] extern crate failure_derive;
 
 extern crate chrono;
 
@@ -15,6 +16,7 @@ pub mod view;
 pub mod context;
 pub mod search;
 pub mod session;
+pub mod error;
 
 pub use user::{User,UserModel};
 pub use post::{Post,PostModel};

@@ -23,41 +23,34 @@ const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 fn main() {
     dotenv().ok();
-
-    let mut user = User::create(User::new("mjhouse","test")).unwrap();
-    dbg!(&user);
-
-    user.email = Some("mjhouse@protonmail.com".to_string());
-    User::update(&user);
-
-    // rocket::ignite()
-    //     .attach(Template::fairing())
-    //     .mount("/", routes![
-    //         // public routes
-    //         public::index, 
-    //         public::about,
-    //         public::search,
-    //         public::users,
-    //         public::posts,
+    rocket::ignite()
+        .attach(Template::fairing())
+        .mount("/", routes![
+            // public routes
+            public::index, 
+            public::about,
+            public::search,
+            public::users,
+            public::posts,
             
-    //         // authentication routes
-    //         auth::login_get, 
-    //         auth::login_post, 
-    //         auth::logout,
-    //         auth::register_get, 
-    //         auth::register_post, 
-    //         auth::unregister,
+            // authentication routes
+            auth::login_get, 
+            auth::login_post, 
+            auth::logout,
+            auth::register_get, 
+            auth::register_post, 
+            auth::unregister,
             
-    //         // profile routes
-    //         profile::main,
-    //         profile::feed,
-    //         profile::write,
-    //         profile::write_post,
-    //         profile::delete
-    //     ])
-    //     .mount("/css",  StaticFiles::from(STATIC_CSS ))
-    //     .mount("/js",   StaticFiles::from(STATIC_JS  ))
-    //     .mount("/img",  StaticFiles::from(STATIC_IMG ))
-    //     .mount("/font", StaticFiles::from(STATIC_FONT))
-    //     .launch();
+            // profile routes
+            profile::main,
+            profile::feed,
+            profile::write,
+            profile::write_post,
+            profile::delete
+        ])
+        .mount("/css",  StaticFiles::from(STATIC_CSS ))
+        .mount("/js",   StaticFiles::from(STATIC_JS  ))
+        .mount("/img",  StaticFiles::from(STATIC_IMG ))
+        .mount("/font", StaticFiles::from(STATIC_FONT))
+        .launch();
 }

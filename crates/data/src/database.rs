@@ -14,11 +14,7 @@ macro_rules! db {
                 None
             }
         }
-    }
-}
-
-#[macro_export]
-macro_rules! db_or {
+    };
     ( $r:expr ) => {
         match db!() {
             Some(c) => c,

@@ -4,6 +4,7 @@ use crate::user::User;
 use diesel::prelude::*;
 use serde::{Serialize};
 use chrono::prelude::*;
+use std::env;
 
 use diesel::result::Error as DieselError;
 
@@ -16,10 +17,18 @@ model!(
 });
 
 access!( View,
-    id:i32 => views::id
+    id:i32 => views::id,
+    user_id:i32 => views::user_id
 );
 
 impl View {
+
+    pub fn new() -> Self {
+        Self {
+            id: None,
+            user_id: 0
+        }
+    }
 
     pub fn create(t_conn: &PgConnection, t_id: i32) -> Result<Self,DieselError> {
         let new_view = View {

@@ -37,8 +37,8 @@ pub fn feed( user: User, msg: Option<FlashMessage> ) -> Template {
 
 #[get("/profile/delete?<id>")]
 pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
-    let conn = db_or!(flash!("/profile/feed","Database not availabe"));
-    match (Post::for_id(&conn,id), user.id) {
+    let conn = db!(flash!("/profile/feed","Database not availabe"));
+    match (Post::for_id(id), user.id) {
         (Some(post),Some(uid)) if uid == post.view_id => {
             match post.delete(&conn) {
                 Ok(_) => Ok(Redirect::to("/profile/feed")),
@@ -62,7 +62,7 @@ pub fn write( user: User, msg: Option<FlashMessage>  ) -> Template {
 
 #[post("/profile/write", data = "<form>")]
 pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
-    let c = db_or!(flash!("/profile/write", "Server is unavailable"));
+    let c = db!(flash!("/profile/write", "Server is unavailable"));
 
     // match Post::create(&c,&user,&form.title,&form.body) {
     //     Ok(_) => Ok(Redirect::to("/profile/feed")), 

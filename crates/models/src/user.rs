@@ -1,4 +1,6 @@
 pub use bowtie_data::{schema::*,traits::*};
+use crate::view::*;
+use crate::error::*;
 
 use diesel::prelude::*;
 use rocket::{
@@ -31,7 +33,7 @@ const ISSUER:  &str = "bowtie.com";
 const SUBJECT: &str = "user";
 
 macro_rules! logs {
-    ( $s:expr ) => { |e| { error!("{}",e); Err($s) } }
+    ( $s:expr ) => { |e| { error!("{}",e); Err($s)? } }
 }
 
 macro_rules! hash {
@@ -133,39 +135,44 @@ impl User {
         Ok(model.into())
     }
 
+    pub fn get_view( &self ) -> Result<View,Error> {
+        let uri  = env::var("DATABASE_URL")?;
+        let conn = PgConnection::establish(&uri)?;
+
+        match self.id {
+            Some(id) => {
+                match View::for_user_id(id) {
+                    Some(v) => Ok(v),
+                    None => Err(BowtieError::RecordNotFound)?
+                }},
+            None => Err(BowtieError::NoId)?
+        }
+    }
+
     pub fn validate( &self, t_password:&str ) -> bool {
         let given_hash = encode(&hash!(t_password));
         self.passhash == given_hash
     }
 
-
-
-
-
-
-
-
-
-
-
-    pub fn to_cookie( &self, t_cookies: &mut Cookies ) {
-        if let Ok(t) = self.to_token() {
-            t_cookies.add(Cookie::new(User::COOKIE_NAME,t));
+    pub fn to_cookie( &self, t_cookies: &mut Cookies ) -> Result<Cookie,Error> {
+        match self.to_token() {
+            Ok(t) => {
+                let cookie = Cookie::new(User::COOKIE_NAME,t);
+                t_cookies.add(cookie.clone());
+                Ok(cookie)
+            },
+            _ => Err(BowtieError::TokenCreationFailed)?
         }
     }
 
-    pub fn from_cookie( t_cookies: &Cookies ) -> Option<Self> {
-        t_cookies.get(User::COOKIE_NAME)
-        .or(None)
-        .and_then(|t|{ 
-            User::from_token(t.value())
-            .ok()
-            .or(None)
-            .and_then(|u| Some(u)) 
-        })
+    pub fn from_cookie( t_cookies: &Cookies ) -> Result<User,Error> {
+        match t_cookies.get(User::COOKIE_NAME) {
+            Some(t) => User::from_token(t.value()),
+            _ => Err(BowtieError::NoCookieFound)?
+        }
     }
 
-    pub fn to_token( &self ) -> Result<String,TokenError> {
+    pub fn to_token( &self ) -> Result<String,Error> {
         let header: Header<()> = Default::default();
 
         let payload = Payload {
@@ -177,19 +184,19 @@ impl User {
 
         Token::new(header, payload)
             .sign(SERVER_KEY)
-            .or_else(logs!(TokenError::FailedToSign))
+            .or_else(logs!(BowtieError::FailedToSign))
     }
 
-    pub fn from_token( t_token:&str ) -> Result<User,TokenError> {
+    pub fn from_token( t_token:&str ) -> Result<User,Error> {
         Token::<(), UserClaims>::parse(t_token)
-        .or_else(logs!(TokenError::FailedToParse))
+        .or_else(logs!(BowtieError::FailedToParse))
         .and_then(|t|{
             t.verify(SERVER_KEY)
-            .or_else(logs!(TokenError::TokenNotVerified))
+            .or_else(logs!(BowtieError::TokenNotVerified))
             .and_then(|r|{
                 match t.payload.claims {
                     Some(c) if r => Ok(User::from_claims(&c)),
-                    _ => Err(TokenError::TokenNotVerified)
+                    _ => Err(BowtieError::TokenNotVerified)?
                 }
             })
         })
@@ -221,8 +228,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
 
     fn from_request(request: &'a Request<'r>) -> Outcome<User,()> {
         match User::from_cookie(&request.cookies()){
-            Some(u) => Outcome::Success(u),
-            None => Outcome::Forward(())
+            Ok(u)  => Outcome::Success(u),
+            Err(_) => Outcome::Forward(())
         }
     }
 

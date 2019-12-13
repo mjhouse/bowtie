@@ -146,8 +146,9 @@ macro_rules! access {
         impl $s {
             paste::item! {
                 $(
-                    pub fn [<for_ $n>](t_conn: &PgConnection, t_value: $t) -> Option<Self> {
-                        query!(one: t_conn,$p.eq(t_value))
+                    pub fn [<for_ $n>](t_value: $t) -> Option<Self> {
+                        let conn = db!(None);
+                        query!(one: &conn,$p.eq(t_value))
                     } 
                 )*
             }

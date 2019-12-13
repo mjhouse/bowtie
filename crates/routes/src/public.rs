@@ -44,7 +44,7 @@ pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> T
     let mut posts = vec![];
 
     if let Some(c) = conn {
-        view  = User::for_username(&c,&name);
+        view  = User::for_username(&name);
         
         if let Some(User { id:Some(id), ..}) = view {
             posts = Post::for_user(&c,id)
@@ -63,7 +63,7 @@ pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> T
 #[get("/posts/<id>")]
 pub fn posts( user: Option<User>, msg: Option<FlashMessage>, id: i32 ) -> Template {
     let viewing = db!().and_then(|c|{
-            Post::for_id(&c,id)
+            Post::for_id(id)
         });
 
     Template::render("public/post",Context {
