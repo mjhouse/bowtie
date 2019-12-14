@@ -73,7 +73,7 @@ impl Post {
             };
 
             // @todo delete comments when post is deleted
-            // @body not need to create comment model first
+            // @body need to create comment model first
 
             // delete the post
             let model: PostModel = 

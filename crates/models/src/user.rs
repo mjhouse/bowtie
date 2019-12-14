@@ -1,5 +1,6 @@
 pub use bowtie_data::{schema::*,traits::*};
 use crate::view::*;
+use crate::post::*;
 use crate::error::*;
 
 use diesel::prelude::*;
@@ -98,6 +99,9 @@ pub enum TokenError {
 impl User {
     pub const COOKIE_NAME: &'static str = "bowtie_session_token";
 
+    // @todo Make macro to generate common model create/delete functions
+    // @body `create_from`, `create` and `delete` are common to all models
+
     pub fn create_from(t_name: &str, t_password: &str) -> Result<User,Error> {
         User::create(User {
             id:       None,
@@ -109,8 +113,7 @@ impl User {
     }
 
     pub fn create(t_user: User) -> Result<User,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+        let conn = db!(Err(BowtieError::NoConnection)?);
 
         conn.transaction::<_, Error, _>(|| {
             // create model
@@ -142,8 +145,7 @@ impl User {
     }
 
     pub fn delete(t_user: User) -> Result<User,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+        let conn = db!(Err(BowtieError::NoConnection)?);
 
         conn.transaction::<_, Error, _>(|| {
             let id = match t_user.id {
@@ -181,23 +183,45 @@ impl User {
         })
     }
 
-    pub fn get_view( &self ) -> Result<View,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+    pub fn views( &self ) -> Vec<View> {
+        let conn = db!(vec![]);
 
-        match self.view {
-            Some(id) => {
-                match View::for_id(id) {
-                    Some(v) => Ok(v),
-                    None => Err(BowtieError::RecordNotFound)?
-                }},
-            None => Err(BowtieError::NoId)?
-        }
+        let id = match self.id {
+            Some(id) => id,
+            _ => return vec![]
+        };
+
+        match views::table
+            .filter(views::user_id.eq(id))
+            .load::<ViewModel>(&conn) {
+                Ok(v)  => v.into_iter()
+                           .map(|m| m.into())
+                           .collect(),
+                Err(_) => vec![]
+            }
+    }
+
+    pub fn posts( &self ) -> Vec<Post> {
+        let conn = db!(vec![]);
+
+        let id = match self.view {
+            Some(id) => id,
+            _ => return vec![]
+        };
+
+        match posts::table
+            .filter(posts::view_id.eq(id))
+            .load::<PostModel>(&conn) {
+                Ok(p)  => p.into_iter()
+                           .map(|m| m.into())
+                           .collect(),
+                Err(_) => vec![]
+            }
     }
 
     pub fn validate( &self, t_password:&str ) -> bool {
-        let given_hash = encode(&hash!(t_password));
-        self.passhash == given_hash
+        let hash = encode(&hash!(t_password));
+        self.passhash == hash
     }
 
     pub fn to_cookie( &self, t_cookies: &mut Cookies ) -> Result<Cookie,Error> {

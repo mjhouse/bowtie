@@ -78,9 +78,4 @@ impl View {
         })
     }
 
-    pub fn for_user(t_id: i32) -> Vec<View> {
-        let conn = db!(vec![]);
-        query!(many: &conn, views::user_id.eq(t_id))
-    }
-
 }

@@ -4,6 +4,9 @@ use std::fmt;
 
 #[derive(Debug,Fail)]
 pub enum BowtieError {
+    #[fail(display = "Failed to connect to database")]
+    NoConnection,
+
     #[fail(display = "Record not found")]
     RecordNotFound,
 

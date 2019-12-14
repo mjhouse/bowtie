@@ -78,11 +78,7 @@ pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<
 
 #[get("/profile/settings")]
 pub fn settings_get( user: User, msg: Option<FlashMessage>  ) -> Template {
-    let views = match user.id {
-        Some(id) => View::for_user(id),
-        None => vec![]
-    };
-
+    let views = user.views();
     Template::render("profile/settings",Context {
         user: Some(user),
         views: views,
