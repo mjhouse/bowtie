@@ -1,5 +1,24 @@
 {% extends 'profile/base' %}
 
 {% block body %}
-SETTINGS
+<div>
+    <div class="card m10 p10">
+        <h2 class="m5">Views</h2>
+        {% for view in views %}
+            {% if view.id == user.view %}
+            <div class="p5 m10 row" style="border: 1px solid green;">
+            {% else %}
+            <div class="p5 m10 row">
+            {% endif %}
+                <span>ID: {{ view.name }}</span>
+                <a class="l" href="/profile/views?current={{view.id}}">active</a>
+                <a class="l5" href="/profile/views?delete={{view.id}}">delete</a>
+            </div>
+        {% endfor %}
+        <form method="/profile/views" method="post" class="row m10">
+            <input class="txt-med" placeholder="Display name" type="text"/>
+            <button class="btn-med l5" type="submit" value="view">Create</button> 
+        </form>
+    </div>
+</div>
 {% endblock body %}

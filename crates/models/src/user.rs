@@ -7,7 +7,10 @@ use rocket::{
     http::{Cookies,Cookie}
 };
 
-use bowtie_data::schema::users::dsl;
+use bowtie_data::schema::users::dsl::users as users_dsl;
+use bowtie_data::schema::views::dsl::views as views_dsl;
+use bowtie_data::schema::posts::dsl::posts as posts_dsl;
+
 use serde::{Serialize, Deserialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
@@ -52,10 +55,15 @@ model!(
         view:     Option<i32>
 });
 
-access!( User,
+impl_for!( User,
     id:i32        => users::id,
     email:&str    => users::email,
     username:&str => users::username,
+    view:i32      => users::view
+);
+
+impl_set!( User,
+    email:&str    => users::email,
     view:i32      => users::view
 );
 
@@ -104,44 +112,82 @@ impl User {
         let uri  = env::var("DATABASE_URL")?;
         let conn = PgConnection::establish(&uri)?;
 
-        let model: UserModel = 
-        diesel::insert_into(users::table)
-            .values(&t_user)
-            .get_result(&conn)?;
+        conn.transaction::<_, Error, _>(|| {
+            // create model
+            let mut model: UserModel = 
+                diesel::insert_into(users::table)
+                .values(&t_user)
+                .get_result(&conn)?;
 
-        Ok(model.into())
+            // create default view
+            let view = View {
+                id: None,
+                user_id: model.id,
+                name: model.username.clone()
+            };
+        
+            let vmodel: ViewModel = 
+            diesel::insert_into(views::table)
+                .values(&view)
+                .get_result(&conn)?;
+
+            // update view id in user record
+            model = diesel::update(users::table)
+                .filter(users::id.eq(model.id))
+                .set(users::view.eq(vmodel.id))
+                .get_result(&conn)?;
+
+            Ok(model.into())
+        })
     }
 
-    pub fn destroy(t_id:i32) -> Result<User,Error> {
+    pub fn destroy(t_user: User) -> Result<User,Error> {
         let uri  = env::var("DATABASE_URL")?;
         let conn = PgConnection::establish(&uri)?;
 
-        let model: UserModel = 
-        diesel::delete(dsl::users.filter(users::id.eq(t_id)))
-            .get_result(&conn)?;
+        conn.transaction::<_, Error, _>(|| {
+            let id = match t_user.id {
+                Some(id) => id,
+                _ => Err(BowtieError::NoId)?
+            };
 
-        Ok(model.into())
-    }
+            // find all view models
+            let ids = views::table
+                .filter(views::user_id.eq(id))
+                .select(views::id)
+                .load::<i32>(&conn)?;
 
-    pub fn update(t_user: &User) -> Result<User,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+            // delete all posts associated with the user's views
+            diesel::delete(
+                posts_dsl.filter(
+                    posts::view_id.eq_any(ids)))
+                .execute(&conn)?;
 
-        let model: UserModel = 
-        diesel::update(users::table)
-            .set(t_user)
-            .get_result(&conn)?;
+            // delete all views associated with the user
+            diesel::delete(
+                views_dsl.filter(
+                    views::user_id.eq(id)))
+                .execute(&conn)?;
 
-        Ok(model.into())
+            // delete the user
+            let model: UserModel = 
+            diesel::delete(
+                users_dsl.filter(
+                    users::id.eq(id)))
+                .get_result(&conn)?;
+
+            // return the deleted user
+            Ok(model.into())
+        })
     }
 
     pub fn get_view( &self ) -> Result<View,Error> {
         let uri  = env::var("DATABASE_URL")?;
         let conn = PgConnection::establish(&uri)?;
 
-        match self.id {
+        match self.view {
             Some(id) => {
-                match View::for_user_id(id) {
+                match View::for_id(id) {
                     Some(v) => Ok(v),
                     None => Err(BowtieError::RecordNotFound)?
                 }},

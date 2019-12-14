@@ -52,6 +52,22 @@ macro_rules! model {
     }) => {
         paste::item! {
 
+            macro_rules! update {
+                ( $d:expr, $i:ident, $q:expr ) => {
+                    match diesel::update($tn::table)
+                    .filter($tn::id.eq($i))
+                    .set($q)
+                    .get_result::<[<$n Model>]>($d)
+                    {
+                        Ok(m) => Some(m.into()),
+                        Err(e) => {
+                            warn!("Error during update: {}",e);
+                            None
+                        }
+                    }
+                }
+            }
+
             macro_rules! query {
 
                 // A query macro that returns an Option<Object>
@@ -139,7 +155,7 @@ macro_rules! model {
 }
 
 #[macro_export]
-macro_rules! access {
+macro_rules! impl_for {
     ( $s:ty,
       $( $n:ident:$t:ty => $p:path ),*
     ) => {
@@ -149,6 +165,27 @@ macro_rules! access {
                     pub fn [<for_ $n>](t_value: $t) -> Option<Self> {
                         let conn = db!(None);
                         query!(one: &conn,$p.eq(t_value))
+                    } 
+                )*
+            }
+        } 
+    }
+}
+
+#[macro_export]
+macro_rules! impl_set {
+    ( $s:ty,
+      $( $n:ident:$t:ty => $p:path ),*
+    ) => {
+        impl $s {
+            paste::item! {
+                $(
+                    pub fn [<set_ $n>](&self,t_value: $t) -> Option<$s> {
+                        let conn = db!(None);
+                        match self.id {
+                            Some(id) => update!(&conn,id,$p.eq(t_value)),
+                            None => None
+                        }
                     } 
                 )*
             }

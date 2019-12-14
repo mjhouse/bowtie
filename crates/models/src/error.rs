@@ -7,6 +7,12 @@ pub enum BowtieError {
     #[fail(display = "Record not found")]
     RecordNotFound,
 
+    #[fail(display = "Could not create record")]
+    CannotCreateRecord,
+
+    #[fail(display = "Could not update record")]
+    CannotUpdateRecord,
+
     #[fail(display = "Model does not have an id")]
     NoId,
 

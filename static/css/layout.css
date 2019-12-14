@@ -72,15 +72,28 @@ body {
 }
 
 /* CONTROLS */
+.btn-lg,
 .btn-med,
 .txt-med { 
     padding:5px;
-    border-radius: 3px; }
+    border-radius: 3px; 
+}
+
+.btn-lg,
 .btn-med { 
-    cursor:pointer; }
+    cursor:pointer; 
+}
+
+.btn-lg {
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 1.1em;
+}
+
 .card {
     padding:5px;
-    border-radius:3px; }
+    border-radius:3px; 
+}
 
 .avatar-sm {
     border-radius: 5px;

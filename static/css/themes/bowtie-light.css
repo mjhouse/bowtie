@@ -51,6 +51,17 @@ body {
     border: 1px solid rgba(0,0,0,0.125);
 }
 
+.btn-lg {
+    background-color: rgb(50, 100, 200);
+    border: 1px solid rgb(40, 70, 150);
+    color:white;
+}
+
+.btn-lg:hover {
+    background-color: rgb(70, 120, 220);
+    border: 1px solid rgb(50, 100, 200);
+}
+
 .txt-med {
     background-color: rgba(0,0,0,0.015);
     border: 1px solid rgba(0,0,0,0.125);

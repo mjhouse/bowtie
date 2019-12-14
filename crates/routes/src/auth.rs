@@ -14,8 +14,6 @@ use std::env;
 use bowtie_models::user::*;
 use bowtie_models::context::*;
 
-const COOKIE_NAME: &str = "bowtie_session_token";
-
 type GetResponse  = Result<Template,Flash<Redirect>>;
 type PostResponse = Result<Redirect,Flash<Redirect>>;
 

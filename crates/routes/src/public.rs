@@ -46,8 +46,8 @@ pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> T
     if let Some(c) = conn {
         view  = User::for_username(&name);
         
-        if let Some(User { id:Some(id), ..}) = view {
-            posts = Post::for_user(&c,id)
+        if let Some(User { view:Some(id), ..}) = view {
+            posts = Post::for_view(&c,id);
         }
     }
 
