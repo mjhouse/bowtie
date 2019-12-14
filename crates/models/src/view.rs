@@ -27,12 +27,12 @@ impl_for!( View,
 
 impl View {
 
-    pub fn new( t_user: i32, t_name:String ) -> Self {
-        Self {
+    pub fn create_from(t_user: i32, t_name:&str) -> Result<View,Error> {
+        View::create(View {
             id: None,
             user_id: t_user,
-            name: t_name
-        }
+            name: t_name.into()
+        })
     }
 
     pub fn create(t_view: View) -> Result<View,Error> {
@@ -41,7 +41,7 @@ impl View {
 
         conn.transaction::<_, Error, _>(|| {
             // create model
-            let mut model: ViewModel = 
+            let model: ViewModel = 
                 diesel::insert_into(views::table)
                 .values(&t_view)
                 .get_result(&conn)?;
@@ -50,7 +50,7 @@ impl View {
         })
     }
 
-    pub fn destroy(t_view: View) -> Result<View,Error> {
+    pub fn delete(t_view: View) -> Result<View,Error> {
         let uri  = env::var("DATABASE_URL")?;
         let conn = PgConnection::establish(&uri)?;
 

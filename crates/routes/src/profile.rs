@@ -41,7 +41,7 @@ pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
     let conn = db!(flash!("/profile/feed","Database not availabe"));
     match (Post::for_id(id), user.view) {
         (Some(post),Some(vid)) if vid == post.view_id => {
-            match post.delete(&conn) {
+            match Post::delete(post) {
                 Ok(_) => Ok(Redirect::to("/profile/feed")),
                 _ => flash!("/profile/feed","Could not delete post")
             }
@@ -65,7 +65,7 @@ pub fn write( user: User, msg: Option<FlashMessage>  ) -> Template {
 pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
     match user.view {
         Some(id) => {
-            match Post::create(id,&form.title,&form.body) {
+            match Post::create_from(id,&form.title,&form.body) {
                 Ok(_)  => Ok(Redirect::to("/profile/feed")), 
                 Err(_) => flash!("/profile/write", "Couldn't create post")
             }

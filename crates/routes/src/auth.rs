@@ -58,7 +58,7 @@ pub fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> GetRespo
 pub fn register_post( form: LenientForm<RegisterForm> ) -> PostResponse {
     match form.password1 == form.password2 {
         true => {
-            match User::create(User::new(&form.username,&form.password1)) {
+            match User::create_from(&form.username,&form.password1) {
                 Ok(_) => Ok(Redirect::to("/login")), 
                 _ => flash!("/register", "Username is taken")
             }

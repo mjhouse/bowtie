@@ -98,14 +98,14 @@ pub enum TokenError {
 impl User {
     pub const COOKIE_NAME: &'static str = "bowtie_session_token";
 
-    pub fn new(t_name: &str, t_password: &str) -> Self {
-        User {
+    pub fn create_from(t_name: &str, t_password: &str) -> Result<User,Error> {
+        User::create(User {
             id:       None,
             view:     None,
             email:    None,
             username: t_name.into(),
             passhash: encode(&hash!(t_password))
-        }
+        })
     }
 
     pub fn create(t_user: User) -> Result<User,Error> {
@@ -141,7 +141,7 @@ impl User {
         })
     }
 
-    pub fn destroy(t_user: User) -> Result<User,Error> {
+    pub fn delete(t_user: User) -> Result<User,Error> {
         let uri  = env::var("DATABASE_URL")?;
         let conn = PgConnection::establish(&uri)?;
 

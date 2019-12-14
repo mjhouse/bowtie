@@ -24,12 +24,12 @@ const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 fn main() {
     dotenv().ok();
 
-    let user = User::create(User::new("test1","test")).unwrap();
-    let view = View::create(View::new(user.id.unwrap(),"test2".to_string())).unwrap();
-    let post1 = Post::create(user.view.unwrap(),"Default View Post","Body").unwrap();
-    let post2 = Post::create(view.id.unwrap(),"Custom View Post","Body").unwrap();
+    let user = User::create_from("test1","test").unwrap();
+    let view = View::create_from(user.id.unwrap(),"test2").unwrap();
+    let post1 = Post::create_from(user.view.unwrap(),"Default View Post","Body").unwrap();
+    let post2 = Post::create_from(view.id.unwrap(),"Custom View Post","Body").unwrap();
 
-    dbg!(User::destroy(user));
+    dbg!(User::delete(user));
     
 
     // rocket::ignite()
