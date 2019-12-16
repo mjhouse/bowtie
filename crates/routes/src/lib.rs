@@ -5,6 +5,8 @@
 #[macro_use] extern crate log;
 #[macro_use] mod macros;
 
+mod forms;
+
 pub mod profile;
 pub mod public;
 pub mod auth;

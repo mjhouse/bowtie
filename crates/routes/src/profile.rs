@@ -3,9 +3,9 @@ use rocket_contrib::{
 };
 
 use rocket::{
-    http::{Cookies,Cookie},
     request::{FlashMessage,Form},
-    response::{Flash,Redirect}
+    response::{Flash,Redirect},
+    http::{Cookies}
 };
 
 use diesel::prelude::*;
@@ -15,31 +15,33 @@ use bowtie_models::user::*;
 use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::context::*;
+use bowtie_models::session::*;
+
+use crate::forms::*;
 
 #[get("/profile")]
-pub fn main( _user: User ) -> Redirect {
+pub fn main( session: Session ) -> Redirect {
     Redirect::to("/profile/feed")
 }
 
 #[get("/profile/feed")]
-pub fn feed( user: User, msg: Option<FlashMessage> ) -> Template {
-    let posts = match (db!(),user.view) {
+pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
+    let posts = match (db!(),session.view) {
         (Some(c),Some(id)) => Post::for_view(&c,id),
         _ => vec![]
     };
 
     Template::render("profile/feed",Context {
-        user:  Some(user),
-        posts: posts,
-        flash: unflash!(msg),
+        session: Some(session),
+        posts:   posts,
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }
 
 #[get("/profile/delete?<id>")]
-pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
-    let conn = db!(flash!("/profile/feed","Database not availabe"));
-    match (Post::for_id(id), user.view) {
+pub fn delete( session: Session, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
+    match (Post::for_id(id), session.view) {
         (Some(post),Some(vid)) if vid == post.view_id => {
             match Post::delete(post) {
                 Ok(_) => Ok(Redirect::to("/profile/feed")),
@@ -53,17 +55,17 @@ pub fn delete( user: User, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
 }
 
 #[get("/profile/write")]
-pub fn write( user: User, msg: Option<FlashMessage>  ) -> Template {
+pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
     Template::render("profile/write",Context {
-        user: Some(user),
-        flash: unflash!(msg),
+        session: Some(session),
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }
 
 #[post("/profile/write", data = "<form>")]
-pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
-    match user.view {
+pub fn write_post( session: Session, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
+    match session.view {
         Some(id) => {
             match Post::create_from(id,&form.title,&form.body) {
                 Ok(_)  => Ok(Redirect::to("/profile/feed")), 
@@ -77,38 +79,55 @@ pub fn write_post( user: User, form: Form<PostForm>  ) -> Result<Redirect,Flash<
 }
 
 #[get("/profile/settings")]
-pub fn settings_get( user: User, msg: Option<FlashMessage>  ) -> Template {
-    let views = user.views();
+pub fn settings_get( session: Session, msg: Option<FlashMessage>  ) -> Template {
+    let views = match session.id {
+        Some(id) => View::for_user(id),
+        None => vec![]
+    };
+
     Template::render("profile/settings",Context {
-        user: Some(user),
-        views: views,
-        flash: unflash!(msg),
+        session: Some(session),
+        views:   views,
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }
 
-#[get("/profile/views?<current>&<delete>")]
-pub fn views_get( mut user: User, current: Option<i32>, delete: Option<i32> ) -> Result<Redirect,Flash<Redirect>> {
-    // if let Some(id) = current {
-    //     if let Some(view) = View::for_id(id){
-    //         if let Some(uid) = user.id {
-    //             if view.user_id == uid {
-    //                 user.view = view.id;
-    //                 User::update(&user);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // if let Some(id) = delete {
-    //     let view = View::for_id(id);
-    //     dbg!(view);
-    // }
-
-    Ok(Redirect::to("/profile/settings"))
-}
-
-#[post("/profile/views")]
-pub fn views_post( user: User ) -> Result<Redirect,Flash<Redirect>> {
-    Ok(Redirect::to("/profile/settings"))
+#[post("/profile/views", data = "<form>")]
+pub fn views_post( mut session: Session, mut cookies: Cookies, form: Form<ViewForm> ) -> Result<Redirect,Flash<Redirect>> {
+    match (Action::from(form),session.id,session.view) {
+        (Action::Create(name),Some(uid),_) => {
+            match View::create_from(uid,&name) {
+                Ok(_)  => Ok(Redirect::to("/profile/settings")),
+                _ => flash!("/profile/settings","Could not create view")
+            }
+        },
+        (Action::Delete(vid),Some(uid),cv)  => {
+            match View::for_id(vid) {
+                // if view to delete: 
+                //      is owned by the current user
+                //      is not the active view
+                Some(v) if v.user_id == uid && v.id != cv => {
+                    match View::delete(v) {
+                        Ok(_)  => Ok(Redirect::to("/profile/settings")),
+                        _ => flash!("/profile/settings","Could not delete view")
+                    }
+                },
+                _ => flash!("/profile/settings","Could not delete view")
+            }
+        },
+        (Action::Active(vid),Some(uid),_)  => {
+            match View::for_id(vid) {
+                Some(v) if v.user_id == uid => {
+                    session.view = v.id;
+                    match session.set(&mut cookies) {
+                        Ok(_) => Ok(Redirect::to("/profile/settings")),
+                        _ => flash!("/profile/settings","Could not activate view")
+                    }
+                }
+                _ => flash!("/profile/settings","Could not activate view")
+            }
+        },
+        _ => flash!("/profile/settings","Couldn't understand request")
+    }
 }

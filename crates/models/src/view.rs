@@ -7,7 +7,6 @@ use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
-use chrono::prelude::*;
 use failure::*;
 use std::env;
 
@@ -76,6 +75,11 @@ impl View {
             // return the deleted view
             Ok(model.into())
         })
+    }
+
+    pub fn for_user(t_id: i32) -> Vec<View> {
+        let conn = db!(vec![]);
+        query!(many: &conn, views::user_id.eq(t_id))
     }
 
 }

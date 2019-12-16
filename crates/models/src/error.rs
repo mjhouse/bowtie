@@ -1,6 +1,3 @@
-use failure;
-use std::error;
-use std::fmt;
 
 #[derive(Debug,Fail)]
 pub enum BowtieError {

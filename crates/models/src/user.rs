@@ -2,11 +2,9 @@ pub use bowtie_data::{schema::*,traits::*};
 use crate::view::*;
 use crate::post::*;
 use crate::error::*;
+use crate::session::*;
 
 use diesel::prelude::*;
-use rocket::{
-    http::{Cookies,Cookie}
-};
 
 use bowtie_data::schema::users::dsl::users as users_dsl;
 use bowtie_data::schema::views::dsl::views as views_dsl;
@@ -18,27 +16,10 @@ use base64::encode;
 use std::env;
 
 use rocket::{
-    request::{FromRequest,Outcome,Request},
-    http::{Method}
+    request::{FromRequest,Outcome,Request}
 };
 
-use medallion::{
-    Header,
-    Payload,
-    Token,
-};
-
-use diesel::ConnectionError as ConnectionError;
-use diesel::result::Error as DieselError;
 use failure::*;
-
-const SERVER_KEY: &[u8;10] = b"secret_key";
-const ISSUER:  &str = "bowtie.com";
-const SUBJECT: &str = "user";
-
-macro_rules! logs {
-    ( $s:expr ) => { |e| { error!("{}",e); Err($s)? } }
-}
 
 macro_rules! hash {
     ( $s:expr ) => { Whirlpool::new().chain(&$s).result(); }
@@ -74,26 +55,6 @@ pub struct UserClaims {
     pub email:    String,
     pub username: String,
     pub view:     Option<i32>
-}
-
-#[derive(FromForm)]
-pub struct LoginForm {
-    pub username: String,
-    pub password: String
-}
-
-#[derive(FromForm)]
-pub struct RegisterForm {
-    pub username:  String,
-    pub password1: String,
-    pub password2: String
-}
-
-#[derive(Debug)]
-pub enum TokenError {
-    FailedToSign,
-    FailedToParse,
-    TokenNotVerified
 }
 
 impl User {
@@ -224,81 +185,19 @@ impl User {
         self.passhash == hash
     }
 
-    pub fn to_cookie( &self, t_cookies: &mut Cookies ) -> Result<Cookie,Error> {
-        match self.to_token() {
-            Ok(t) => {
-                let cookie = Cookie::new(User::COOKIE_NAME,t);
-                t_cookies.add(cookie.clone());
-                Ok(cookie)
-            },
-            _ => Err(BowtieError::TokenCreationFailed)?
-        }
-    }
-
-    pub fn from_cookie( t_cookies: &Cookies ) -> Result<User,Error> {
-        match t_cookies.get(User::COOKIE_NAME) {
-            Some(t) => User::from_token(t.value()),
-            _ => Err(BowtieError::NoCookieFound)?
-        }
-    }
-
-    pub fn to_token( &self ) -> Result<String,Error> {
-        let header: Header<()> = Default::default();
-
-        let payload = Payload {
-            iss: Some(ISSUER.into()),
-            sub: Some(SUBJECT.into()),
-            claims: Some(self.to_claims()),
-            ..Payload::default()
-        };
-
-        Token::new(header, payload)
-            .sign(SERVER_KEY)
-            .or_else(logs!(BowtieError::FailedToSign))
-    }
-
-    pub fn from_token( t_token:&str ) -> Result<User,Error> {
-        Token::<(), UserClaims>::parse(t_token)
-        .or_else(logs!(BowtieError::FailedToParse))
-        .and_then(|t|{
-            t.verify(SERVER_KEY)
-            .or_else(logs!(BowtieError::TokenNotVerified))
-            .and_then(|r|{
-                match t.payload.claims {
-                    Some(c) if r => Ok(User::from_claims(&c)),
-                    _ => Err(BowtieError::TokenNotVerified)?
-                }
-            })
-        })
-    }
-
-    pub fn to_claims( &self ) -> UserClaims {
-        UserClaims {
-            id:       self.id.unwrap_or(0).clone(),
-            email:    self.email.as_ref().unwrap_or(&String::new()).clone(),
-            username: self.username.clone(),
-            view:     self.view
-        }
-    }
-
-    pub fn from_claims( t_claims: &UserClaims ) -> User {
-        User{
-            id:       Some(t_claims.id.clone()),
-            email:    Some(t_claims.email.clone()),
-            username: t_claims.username.clone(),
-            passhash: String::new(),
-            view:     t_claims.view
-        }
-    }
-
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for User {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<User,()> {
-        match User::from_cookie(&request.cookies()){
-            Ok(u)  => Outcome::Success(u),
+        match Session::get(&request.cookies()){
+            Ok(s)  => {
+                match s.user() {
+                    Ok(u) =>  Outcome::Success(u),
+                    Err(_) => Outcome::Forward(()) 
+                }
+            },
             Err(_) => Outcome::Forward(())
         }
     }

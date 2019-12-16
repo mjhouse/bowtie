@@ -16,6 +16,7 @@ pub mod view;
 pub mod context;
 pub mod search;
 pub mod error;
+pub mod session;
 
 pub use user::{User,UserModel};
 pub use post::{Post,PostModel};

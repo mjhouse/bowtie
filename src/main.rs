@@ -1,16 +1,13 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use] extern crate rocket;
+#[macro_use] 
+extern crate rocket;
 extern crate bowtie_routes;
 
-extern crate bowtie_models;
-use bowtie_models::*;
-
+use dotenv::dotenv;
 use rocket_contrib::{
     serve::StaticFiles,
     templates::Template
 };
-
-use dotenv::dotenv;
 
 use bowtie_routes::public;
 use bowtie_routes::profile;
@@ -50,7 +47,6 @@ fn main() {
             profile::delete,
 
             profile::settings_get,
-            profile::views_get,
             profile::views_post
         ])
         .mount("/css",  StaticFiles::from(STATIC_CSS ))

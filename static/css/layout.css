@@ -50,6 +50,8 @@
 .w40{ width:40%; }
 .w50{ width:50%; }
 
+.bl { align-items: baseline; }
+
 /* ELEMENTS */
 body {
     margin:0;
@@ -61,7 +63,9 @@ body {
     max-width: 80vw;
 }
 
-.page__header { align-items: baseline; }
+.page__header {
+    
+}
 
 .page__content {
 

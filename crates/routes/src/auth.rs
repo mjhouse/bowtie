@@ -8,11 +8,11 @@ use rocket::{
     response::{Flash,Redirect}
 };
 
-use diesel::prelude::*;
-use std::env;
-
 use bowtie_models::user::*;
 use bowtie_models::context::*;
+use bowtie_models::session::*;
+
+use crate::forms::*;
 
 type GetResponse  = Result<Template,Flash<Redirect>>;
 type PostResponse = Result<Redirect,Flash<Redirect>>;
@@ -30,7 +30,7 @@ pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse
 pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> PostResponse {
     match User::for_username(&form.username) {
         Some(user) if user.validate(&form.password) => {
-            match user.to_cookie(&mut cookies) {
+            match Session::from(&user).set(&mut cookies) {
                 Ok(_)  => Ok(Redirect::to("/profile")),
                 Err(_) => flash!("/login", "There was an unexpected problem logging in")
             }

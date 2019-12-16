@@ -4,6 +4,7 @@ use crate::user::*;
 use crate::view::*;
 use crate::post::*;
 use crate::search::*;
+use crate::session::*;
 
 const DATETIME_FORMAT: &str = "%Y";
 
@@ -11,6 +12,7 @@ const DATETIME_FORMAT: &str = "%Y";
 pub struct Context {
     pub datetime:  String,
     pub user:      Option<User>,
+    pub session:   Option<Session>,
     pub views:     Vec<View>,
     pub posts:     Vec<Post>,
     pub view_user: Option<User>,
@@ -25,6 +27,7 @@ impl Context {
         Self {
             datetime:  Utc::now().format(DATETIME_FORMAT).to_string(),
             user:      None,
+            session:   None,
             views:     vec![],
             posts:     vec![],
             view_user: None,

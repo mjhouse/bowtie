@@ -16,7 +16,7 @@
                 <nav class="row m5 p5 f1">
                     <span class="">
                     {{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
-                    {% if post.view_id == user.view %}
+                    {% if post.view_id == session.view %}
                     <a class="l" href="/profile/delete?id={{ post.id }}">delete</a>
                     {% endif %}
                 </nav>

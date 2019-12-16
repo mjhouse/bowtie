@@ -8,9 +8,6 @@ use chrono::prelude::*;
 use std::env;
 
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
-
-use diesel::ConnectionError as ConnectionError;
-use diesel::result::Error as DieselError;
 use failure::*;
 
 #[derive(FromForm)]

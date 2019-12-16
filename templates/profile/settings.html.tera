@@ -5,19 +5,27 @@
     <div class="card m10 p10">
         <h2 class="m5">Views</h2>
         {% for view in views %}
-            {% if view.id == user.view %}
-            <div class="p5 m10 row" style="border: 1px solid green;">
+            {% if view.id == session.view %}
+            <div class="p5 m10 row bl" style="border: 1px solid green;">
             {% else %}
-            <div class="p5 m10 row">
+            <div class="p5 m10 row bl">
             {% endif %}
-                <span>ID: {{ view.name }}</span>
-                <a class="l" href="/profile/views?current={{view.id}}">active</a>
-                <a class="l5" href="/profile/views?delete={{view.id}}">delete</a>
+                <div class="f3">{{ view.name }}</div>
+                <form action="/profile/views" method="post" class="l">
+                    <input type="hidden" name="value" value="{{view.id}}"/>
+                    <button class="btn-med" type="submit" 
+                        name="action" value="active">active</button>
+                </form>
+                <form action="/profile/views" method="post" class="l5">
+                    <input type="hidden" name="value" value="{{view.id}}"/>
+                    <button class="btn-med" type="submit" 
+                        name="action" value="delete">delete</button>
+                </form>
             </div>
         {% endfor %}
-        <form method="/profile/views" method="post" class="row m10">
-            <input class="txt-med" placeholder="Display name" type="text"/>
-            <button class="btn-med l5" type="submit" value="view">Create</button> 
+        <form action="/profile/views" method="post" class="row m10">
+            <input class="txt-med" placeholder="Display name" name="value" type="text"/>
+            <button class="btn-med l5" type="submit" name="action" value="create">Create</button> 
         </form>
     </div>
 </div>

@@ -1,6 +1,5 @@
 use rocket_contrib::templates::Template;
 use rocket::request::{FlashMessage,LenientForm};
-use rocket::response::{Redirect};
 use diesel::prelude::*;
 use std::env;
 
@@ -62,7 +61,7 @@ pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> T
 
 #[get("/posts/<id>")]
 pub fn posts( user: Option<User>, msg: Option<FlashMessage>, id: i32 ) -> Template {
-    let viewing = db!().and_then(|c|{
+    let viewing = db!().and_then(|_|{
             Post::for_id(id)
         });
 

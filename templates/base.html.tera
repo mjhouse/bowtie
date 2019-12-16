@@ -19,7 +19,7 @@
     </head>
     <body>
         <div class="page l r col">
-            <nav class="page__header f2 p10 row">
+            <nav class="page__header f2 p10 row bl">
                 <a href="/">Bowtie</a>
                 <form class="l" action="/search" method="get">
                     <input class="txt-med" name="value" placeholder="Search" type="text" tabindex="1"/>
