@@ -6,7 +6,7 @@ use serde::{Serialize};
 use rocket::request::{FromForm, FormItems};
 
 pub use bowtie_data::schema::*;
-use crate::{Post,User,UserModel,PostModel};
+use crate::{Post,View,ViewModel,PostModel};
 
 macro_rules! conn_or {
     ( $v:expr ) => {
@@ -82,7 +82,7 @@ pub struct SearchQuery {
 
 #[derive(Serialize,Debug)]
 pub struct Search {
-    pub users: Vec<User>,
+    pub views: Vec<View>,
     pub posts: Vec<Post>,
     pub query: SearchQuery
 }
@@ -92,19 +92,18 @@ impl Search {
     pub fn from( t_query: &SearchQuery ) -> Option<Self> {
         let conn = conn_or!(None);
         Some(Self {
-            users: Search::for_users(&conn,t_query),
+            views: Search::for_views(&conn,t_query),
             posts: Search::for_posts(&conn,t_query),
             query: t_query.clone()
         })
     }
 
     impl_search!(
-        name:   for_users,
-        table:  users::table,
+        name:   for_views,
+        table:  views::table,
         target: Target::People,
-        fields: [ users::username,
-                  users::email   ],
-        result: UserModel -> User
+        fields: [ views::name ],
+        result: ViewModel -> View
     );
 
     impl_search!(

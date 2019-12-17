@@ -8,6 +8,7 @@ use rocket::{
 };
 
 use crate::{
+    view::{View},
     user::{User},
     error::{BowtieError}
 };
@@ -46,6 +47,23 @@ impl Session {
                 }
             },
             None => Err(BowtieError::NoId)? 
+        }
+    }
+
+    pub fn update( t_user:i32, t_view: i32, cookies: &mut Cookies ) -> Result<Session,Error> {
+        match View::find_from(t_user,t_view) {
+            Ok(v) => {
+                let session = Session {
+                    id: Some(t_user),
+                    view: Some(t_view),
+                    username: v.name.clone(),
+                };
+                match session.set(cookies) {
+                    Ok(_)  => Ok(session),
+                    Err(e) => Err(e)
+                }
+            }
+            Err(e) => Err(e)
         }
     }
 
@@ -103,7 +121,7 @@ impl From<&User> for Session {
     fn from(t_user: &User) -> Self {
         Session {
             id:       t_user.id,
-            view:     t_user.view,
+            view:     None,
             username: t_user.username.clone()
         }
     }

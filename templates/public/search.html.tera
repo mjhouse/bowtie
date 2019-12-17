@@ -5,21 +5,10 @@
 {% set people_checked = '' %}
 {% set posts_checked = '' %}
 {% set groups_checked = '' %}
-{% set name_checked = '' %}
-{% set email_checked = '' %}
-{% set title_checked = '' %}
-{% set body_checked = '' %}
-{% set grid_checked = '' %}
-{% set rows_checked = '' %}
 
 {% if search.query.targets is containing('People') %}{% set people_checked = 'checked' %}{% endif %}
 {% if search.query.targets is containing('Posts') %}{% set posts_checked = 'checked' %}{% endif %}
 {% if search.query.targets is containing('Groups') %}{% set groups_checked = 'checked' %}{% endif %}
-
-{% if search.query.fields is containing('Name') %}{% set name_checked = 'checked' %}{% endif %}
-{% if search.query.fields is containing('Email') %}{% set email_checked = 'checked' %}{% endif %}
-{% if search.query.fields is containing('Title') %}{% set title_checked = 'checked' %}{% endif %}
-{% if search.query.fields is containing('Body') %}{% set body_checked = 'checked' %}{% endif %}
 
 <form class="col p5 w40 l r" action="/search" method="get">
     <div class="row">
@@ -37,10 +26,10 @@
     {% if people_checked %}
     <h2>People</h2>
     <div class="col">
-        {% for user in search.users %}
+        {% for view in search.views %}
             <div class="card row p10 m5">
                 <img class="avatar-sm" src="/img/square-placeholder.jpg"/>
-                <a href="/users/{{user.username}}" class="name-sm l10">{{user.username}}</a>
+                <a href="/users/{{view.name}}" class="name-sm l10">{{view.name}}</a>
             </div>
         {% endfor %}
         <div class="row">

@@ -9,6 +9,7 @@ use rocket_contrib::{
     templates::Template
 };
 
+use bowtie_routes::errors;
 use bowtie_routes::public;
 use bowtie_routes::profile;
 use bowtie_routes::auth;
@@ -53,5 +54,8 @@ fn main() {
         .mount("/js",   StaticFiles::from(STATIC_JS  ))
         .mount("/img",  StaticFiles::from(STATIC_IMG ))
         .mount("/font", StaticFiles::from(STATIC_FONT))
+        .register(catchers![
+            errors::handler_404
+        ])
         .launch();
 }

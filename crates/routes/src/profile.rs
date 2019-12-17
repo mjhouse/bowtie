@@ -11,7 +11,6 @@ use rocket::{
 use diesel::prelude::*;
 use std::env;
 
-use bowtie_models::user::*;
 use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::context::*;
@@ -20,7 +19,7 @@ use bowtie_models::session::*;
 use crate::forms::*;
 
 #[get("/profile")]
-pub fn main( session: Session ) -> Redirect {
+pub fn main( _session: Session ) -> Redirect {
     Redirect::to("/profile/feed")
 }
 
@@ -94,40 +93,29 @@ pub fn settings_get( session: Session, msg: Option<FlashMessage>  ) -> Template 
 }
 
 #[post("/profile/views", data = "<form>")]
-pub fn views_post( mut session: Session, mut cookies: Cookies, form: Form<ViewForm> ) -> Result<Redirect,Flash<Redirect>> {
+pub fn views_post( session: Session, mut cookies: Cookies, form: Form<ViewForm> ) -> Result<Redirect,Flash<Redirect>> {
     match (Action::from(form),session.id,session.view) {
+        // create a view
         (Action::Create(name),Some(uid),_) => {
             match View::create_from(uid,&name) {
                 Ok(_)  => Ok(Redirect::to("/profile/settings")),
                 _ => flash!("/profile/settings","Could not create view")
             }
         },
-        (Action::Delete(vid),Some(uid),cv)  => {
-            match View::for_id(vid) {
-                // if view to delete: 
-                //      is owned by the current user
-                //      is not the active view
-                Some(v) if v.user_id == uid && v.id != cv => {
-                    match View::delete(v) {
-                        Ok(_)  => Ok(Redirect::to("/profile/settings")),
-                        _ => flash!("/profile/settings","Could not delete view")
-                    }
-                },
+        // delete the view if it isn't the current view
+        (Action::Delete(vid),Some(uid),Some(cv)) if vid != cv  => {
+            match View::delete_from(uid,vid) {
+                Ok(_) => Ok(Redirect::to("/profile/settings")),
                 _ => flash!("/profile/settings","Could not delete view")
             }
         },
+        // verify that the view exists and update session
         (Action::Active(vid),Some(uid),_)  => {
-            match View::for_id(vid) {
-                Some(v) if v.user_id == uid => {
-                    session.view = v.id;
-                    match session.set(&mut cookies) {
-                        Ok(_) => Ok(Redirect::to("/profile/settings")),
-                        _ => flash!("/profile/settings","Could not activate view")
-                    }
-                }
+            match Session::update(uid,vid,&mut cookies) {
+                Ok(_) => Ok(Redirect::to("/profile/settings")),
                 _ => flash!("/profile/settings","Could not activate view")
             }
         },
-        _ => flash!("/profile/settings","Couldn't understand request")
+        _ => flash!("/profile/settings","Could not perform action")
     }
 }

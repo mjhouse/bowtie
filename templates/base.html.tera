@@ -20,11 +20,16 @@
     <body>
         <div class="page l r col">
             <nav class="page__header f2 p10 row bl">
-                <a href="/">Bowtie</a>
+                <a href="/"><b>Bowtie</b></a> 
+                {% if session %}
+                :<a href="/profile" class="l10">{{session.username}}</a>
+                {% endif %}
                 <form class="l" action="/search" method="get">
+                    <input type="hidden" name="posts" value="on"/>
+                    <input type="hidden" name="people" value="on"/>
                     <input class="txt-med" name="value" placeholder="Search" type="text" tabindex="1"/>
                 </form>
-                {% if user %}
+                {% if session %}
                 <a href="/logout"   class="l10 btn-med p5" title="Log out" tabindex="2">Logout</a>
                 <a href="/profile"  class="l10 btn-med p5" title="Profile page" tabindex="3">Profile</a>
                 
@@ -43,7 +48,7 @@
                     <a href="/search" title="Search page">Search</a>                
                 </div>
                 <div class="f1 r5 col">
-                    {% if user %}
+                    {% if session %}
                     <a href="/logout" title="Logout">Logout</a>
                     <a href="/profile" title="Profile page">Profile</a>
                     {% else %}

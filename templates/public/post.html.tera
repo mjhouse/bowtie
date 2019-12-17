@@ -1,9 +1,9 @@
 {% extends 'base' %}
 
 {% block content %}
-{% if view_post %}
-    POST: {{view_post.title}}
-{% else %}
-    POST: not found
-{% endif %}
+    {% if post %}
+        POST: {{post.title}}
+    {% else %}
+        POST: not found
+    {% endif %}
 {% endblock content %}

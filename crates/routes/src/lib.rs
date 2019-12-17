@@ -7,6 +7,7 @@
 
 mod forms;
 
+pub mod errors;
 pub mod profile;
 pub mod public;
 pub mod auth;

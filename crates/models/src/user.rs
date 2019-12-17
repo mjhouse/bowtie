@@ -1,6 +1,5 @@
 pub use bowtie_data::{schema::*,traits::*};
 use crate::view::*;
-use crate::post::*;
 use crate::error::*;
 use crate::session::*;
 
@@ -156,24 +155,6 @@ impl User {
             .filter(views::user_id.eq(id))
             .load::<ViewModel>(&conn) {
                 Ok(v)  => v.into_iter()
-                           .map(|m| m.into())
-                           .collect(),
-                Err(_) => vec![]
-            }
-    }
-
-    pub fn posts( &self ) -> Vec<Post> {
-        let conn = db!(vec![]);
-
-        let id = match self.view {
-            Some(id) => id,
-            _ => return vec![]
-        };
-
-        match posts::table
-            .filter(posts::view_id.eq(id))
-            .load::<PostModel>(&conn) {
-                Ok(p)  => p.into_iter()
                            .map(|m| m.into())
                            .collect(),
                 Err(_) => vec![]

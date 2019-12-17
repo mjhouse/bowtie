@@ -1,9 +1,5 @@
 {% extends 'base' %}
 
-{% block stylesheet %}
-{# <link rel="stylesheet" href="/css/about.css"/> #}
-{% endblock stylesheet %}
-
 {% block content %}
 ABOUT
 {% endblock content %}

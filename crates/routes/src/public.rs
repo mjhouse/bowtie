@@ -1,74 +1,63 @@
 use rocket_contrib::templates::Template;
 use rocket::request::{FlashMessage,LenientForm};
-use diesel::prelude::*;
-use std::env;
 
-use bowtie_models::user::*;
+use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::context::*;
+use bowtie_models::session::*;
 use bowtie_models::search::*;
 
 #[get("/")]
-pub fn index( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+pub fn index( session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
     Template::render("public/index",Context {
-        user: user,
-        flash: unflash!(msg),
+        session:  session,
+        flash:    unflash!(msg),
         ..Default::default()
     })
 }
 
 #[get("/about")]
-pub fn about( user: Option<User>, msg: Option<FlashMessage> ) -> Template {
+pub fn about( session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
     Template::render("public/about",Context {
-        user: user,
-        flash: unflash!(msg),
+        session: session,
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }
 
 #[get("/search?<query..>")]
-pub fn search( user: Option<User>, msg: Option<FlashMessage>, query: LenientForm<SearchQuery> ) -> Template {
+pub fn search( session: Option<Session>, msg: Option<FlashMessage>, query: LenientForm<SearchQuery> ) -> Template {
     Template::render("public/search",Context {
-        user: user,
-        flash: unflash!(msg),
-        search: Search::from(&query),
+        session: session,
+        flash:   unflash!(msg),
+        search:  Search::from(&query),
         ..Default::default()
     })
 }
 
 #[get("/users/<name>")]
-pub fn users( user: Option<User>, msg: Option<FlashMessage>, name: String ) -> Template {
-    let conn  = db!();
-    let mut view  = None;
-    let mut posts = vec![];
-
-    if let Some(c) = conn {
-        view  = User::for_username(&name);
-        
-        if let Some(User { view:Some(id), ..}) = view {
-            posts = Post::for_view(&c,id);
-        }
-    }
+pub fn users( session: Option<Session>, msg: Option<FlashMessage>, name: String ) -> Template {
+    let (posts,view) = match View::for_name(&name) {
+        Some(v) => (v.posts(),Some(v)),
+        None    => (vec![],None)
+    };
 
     Template::render("public/user",Context {
-        user: user,
-        view_user: view,
-        posts: posts,
-        flash: unflash!(msg),
+        session: session,
+        view:    view,
+        posts:   posts,
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }
 
 #[get("/posts/<id>")]
-pub fn posts( user: Option<User>, msg: Option<FlashMessage>, id: i32 ) -> Template {
-    let viewing = db!().and_then(|_|{
-            Post::for_id(id)
-        });
-
+pub fn posts( session: Option<Session>, msg: Option<FlashMessage>, id: i32 ) -> Template {
+    let post = Post::for_id(id);
     Template::render("public/post",Context {
-        user: user,
-        view_post: viewing,
-        flash: unflash!(msg),
+        session: session,
+        post:    post,
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }

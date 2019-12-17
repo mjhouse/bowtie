@@ -9,6 +9,7 @@ use rocket::{
 };
 
 use bowtie_models::user::*;
+use bowtie_models::view::*;
 use bowtie_models::context::*;
 use bowtie_models::session::*;
 
@@ -18,10 +19,10 @@ type GetResponse  = Result<Template,Flash<Redirect>>;
 type PostResponse = Result<Redirect,Flash<Redirect>>;
 
 #[get("/login")]
-pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse {
+pub fn login_get( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
     Ok(Template::render("auth/login",Context {
-        user:  user,
-        flash: unflash!(msg),
+        session:  session,
+        flash:    unflash!(msg),
         ..Default::default()
     }))
 }
@@ -30,7 +31,14 @@ pub fn login_get( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse
 pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> PostResponse {
     match User::for_username(&form.username) {
         Some(user) if user.validate(&form.password) => {
-            match Session::from(&user).set(&mut cookies) {
+            let mut session  = Session::from(&user);
+            let id = match session.id {
+                Some(id) => id,
+                None => return flash!("/login","There was an unexpected problem logging in")
+            };
+
+            session.view = View::first(id);
+            match session.set(&mut cookies) {
                 Ok(_)  => Ok(Redirect::to("/profile")),
                 Err(_) => flash!("/login", "There was an unexpected problem logging in")
             }
@@ -46,10 +54,10 @@ pub fn logout(mut cookies:Cookies) -> PostResponse {
 }
 
 #[get("/register")]
-pub fn register_get( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse {
+pub fn register_get( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
     Ok(Template::render("auth/register",Context {
-        user:  user,
-        flash: unflash!(msg),
+        session: session,
+        flash:   unflash!(msg),
         ..Default::default()
     }))
 }
@@ -68,19 +76,19 @@ pub fn register_post( form: LenientForm<RegisterForm> ) -> PostResponse {
 }
 
 #[post("/unregister")]
-pub fn unregister( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse {
+pub fn unregister( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
     Ok(Template::render("auth/unregister",Context {
-        user:  user,
-        flash: unflash!(msg),
+        session: session,
+        flash:   unflash!(msg),
         ..Default::default()
     }))
 }
 
 #[get("/recover")]
-pub fn recover( user: Option<User>, msg: Option<FlashMessage> ) -> GetResponse {
+pub fn recover( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
     Ok(Template::render("auth/recover",Context {
-        user:  user,
-        flash: unflash!(msg),
+        session: session,
+        flash:   unflash!(msg),
         ..Default::default()
     }))
 }

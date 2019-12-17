@@ -1,9 +1,5 @@
 {% extends 'base' %}
 
-{% block stylesheet %}
-<link rel="stylesheet" href="/css/public/index.css"/>
-{% endblock stylesheet %}
-
 {% block content %}
-
+INDEX
 {% endblock content %}
