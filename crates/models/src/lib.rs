@@ -12,6 +12,7 @@ pub mod user;
 pub mod post;
 pub mod view;
 pub mod friend;
+pub mod message;
 
 // handling
 pub mod context;
@@ -23,3 +24,4 @@ pub use user::{User,UserModel};
 pub use post::{Post,PostModel};
 pub use view::{View,ViewModel};
 pub use friend::{Friend,FriendModel};
+pub use message::{Message,MessageModel};

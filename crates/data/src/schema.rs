@@ -7,6 +7,16 @@ table! {
 }
 
 table! {
+    messages (id) {
+        id -> Int4,
+        sender -> Int4,
+        receiver -> Int4,
+        body -> Text,
+        created -> Timestamp,
+    }
+}
+
+table! {
     posts (id) {
         id -> Int4,
         view_id -> Int4,
@@ -38,6 +48,7 @@ joinable!(views -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     friends,
+    messages,
     posts,
     users,
     views,

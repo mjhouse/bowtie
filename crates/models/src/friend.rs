@@ -11,7 +11,6 @@ use crate::view::*;
 
 model!(
     table:  friends,
-    owner:  (),
     traits: [Identifiable,Associations],
     Friend {
         view1: i32,
