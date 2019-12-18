@@ -9,7 +9,7 @@ use bowtie_data::schema::users::dsl::users as users_dsl;
 use bowtie_data::schema::views::dsl::views as views_dsl;
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
 use std::env;
@@ -32,29 +32,18 @@ model!(
     User {
         email:    Option<String>,
         username: String,
-        passhash: String,
-        view:     Option<i32>
+        passhash: String
 });
 
 impl_for!( User,
     id:i32        => users::id,
     email:&str    => users::email,
-    username:&str => users::username,
-    view:i32      => users::view
+    username:&str => users::username
 );
 
 impl_set!( User,
-    email:&str    => users::email,
-    view:i32      => users::view
+    email:&str    => users::email
 );
-
-#[derive(Default,Debug, Serialize, Deserialize, PartialEq)]
-pub struct UserClaims {
-    pub id:       i32,
-    pub email:    String,
-    pub username: String,
-    pub view:     Option<i32>
-}
 
 impl User {
     pub const COOKIE_NAME: &'static str = "bowtie_session_token";
@@ -65,7 +54,6 @@ impl User {
     pub fn create_from(t_name: &str, t_password: &str) -> Result<User,Error> {
         User::create(User {
             id:       None,
-            view:     None,
             email:    None,
             username: t_name.into(),
             passhash: encode(&hash!(t_password))
@@ -77,7 +65,7 @@ impl User {
 
         conn.transaction::<_, Error, _>(|| {
             // create model
-            let mut model: UserModel = 
+            let model: UserModel = 
                 diesel::insert_into(users::table)
                 .values(&t_user)
                 .get_result(&conn)?;
@@ -89,16 +77,9 @@ impl User {
                 name: model.username.clone()
             };
         
-            let vmodel: ViewModel = 
             diesel::insert_into(views::table)
                 .values(&view)
-                .get_result(&conn)?;
-
-            // update view id in user record
-            model = diesel::update(users::table)
-                .filter(users::id.eq(model.id))
-                .set(users::view.eq(vmodel.id))
-                .get_result(&conn)?;
+                .execute(&conn)?;
 
             Ok(model.into())
         })

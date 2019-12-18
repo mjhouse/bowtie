@@ -11,6 +11,7 @@ extern crate chrono;
 pub mod user;
 pub mod post;
 pub mod view;
+pub mod friend;
 
 // handling
 pub mod context;
@@ -21,3 +22,4 @@ pub mod session;
 pub use user::{User,UserModel};
 pub use post::{Post,PostModel};
 pub use view::{View,ViewModel};
+pub use friend::{Friend,FriendModel};

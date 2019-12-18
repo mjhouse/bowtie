@@ -62,8 +62,7 @@ impl View {
     }
 
     pub fn create(t_view: View) -> Result<View,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+        let conn = db!(Err(BowtieError::NoConnection)?);
 
         conn.transaction::<_, Error, _>(|| {
             // create model

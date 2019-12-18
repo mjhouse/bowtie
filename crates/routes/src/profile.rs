@@ -13,6 +13,7 @@ use std::env;
 
 use bowtie_models::view::*;
 use bowtie_models::post::*;
+use bowtie_models::friend::*;
 use bowtie_models::context::*;
 use bowtie_models::session::*;
 
@@ -33,6 +34,21 @@ pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
     Template::render("profile/feed",Context {
         session: Some(session),
         posts:   posts,
+        flash:   unflash!(msg),
+        ..Default::default()
+    })
+}
+
+#[get("/profile/friends")]
+pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
+    let friends = match session.view {
+        Some(id) => Friend::friends(id),
+        _ => vec![]
+    };
+
+    Template::render("profile/friends",Context {
+        session: Some(session),
+        views:   friends,
         flash:   unflash!(msg),
         ..Default::default()
     })

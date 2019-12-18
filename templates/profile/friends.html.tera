@@ -1,5 +1,11 @@
 {% extends 'profile/base' %}
 
 {% block body %}
-FRIENDS
+{% if views %}
+    {% for view in views %}
+        {{view.name}}
+    {% endfor %}
+{% else %}
+forever alone :(
+{% endif %}
 {% endblock body %}

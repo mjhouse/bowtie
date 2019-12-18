@@ -1,0 +1,5 @@
+CREATE TABLE friends (
+    id SERIAL PRIMARY KEY,
+    view1 INTEGER NOT NULL REFERENCES views(id),
+    view2 INTEGER NOT NULL REFERENCES views(id)
+)

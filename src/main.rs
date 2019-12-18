@@ -43,6 +43,7 @@ fn main() {
             // profile routes
             profile::main,
             profile::feed,
+            profile::friends,
             profile::write,
             profile::write_post,
             profile::delete,
