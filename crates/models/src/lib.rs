@@ -25,3 +25,6 @@ pub use post::{Post,PostModel};
 pub use view::{View,ViewModel};
 pub use friend::{Friend,FriendModel};
 pub use message::{Message,MessageModel};
+
+pub use context::{Context};
+pub use session::{Session};

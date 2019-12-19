@@ -5,7 +5,7 @@
 {% endblock script %}
 
 {% block body %}
-<form class="col x1" action="/profile/write" method="post">
+<form class="col x1" action="/api/v1/posts/create?redirect=/profile/feed" method="post">
     <div class="row row-l">
         <button class="btn-med l r5" type="button" id="italic">I</button>
         <button class="btn-med r5" type="button" id="bold">B</button>

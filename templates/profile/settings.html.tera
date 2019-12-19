@@ -11,21 +11,25 @@
             <div class="p5 m10 row bl">
             {% endif %}
                 <div class="f3">{{ view.name }}</div>
-                <form action="/profile/views" method="post" class="l">
+                <form action="/api/v1/views/update?redirect=/profile/settings" 
+                      method="post" 
+                      class="l">
                     <input type="hidden" name="value" value="{{view.id}}"/>
-                    <button class="btn-med" type="submit" 
-                        name="action" value="active">active</button>
+                    <button class="btn-med" type="submit">active</button>
                 </form>
-                <form action="/profile/views" method="post" class="l5">
+                <form action="/api/v1/views/delete?redirect=/profile/settings" 
+                      method="post" 
+                      class="l5">
                     <input type="hidden" name="value" value="{{view.id}}"/>
-                    <button class="btn-med" type="submit" 
-                        name="action" value="delete">delete</button>
+                    <button class="btn-med" type="submit">delete</button>
                 </form>
             </div>
         {% endfor %}
-        <form action="/profile/views" method="post" class="row m10">
+        <form action="/api/v1/views/create?redirect=/profile/settings" 
+              method="post" 
+              class="row m10">
             <input class="txt-med" placeholder="Display name" name="value" type="text"/>
-            <button class="btn-med l5" type="submit" name="action" value="create">Create</button> 
+            <button class="btn-med l5" type="submit">Create</button> 
         </form>
     </div>
 </div>

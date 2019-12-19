@@ -2,6 +2,7 @@ use serde::{Serialize};
 use chrono::{Utc};
 use crate::view::*;
 use crate::post::*;
+use crate::message::*;
 use crate::search::*;
 use crate::session::*;
 
@@ -16,6 +17,8 @@ pub struct Context {
     pub view:      Option<View>,
     pub posts:     Vec<Post>,
     pub post:      Option<Post>,
+    pub messages:  Vec<Message>,
+    pub message:   Option<Message>,
 
     pub search:    Option<Search>,
     pub flash:     Option<String>
@@ -32,6 +35,8 @@ impl Context {
             view:      None,
             posts:     vec![],
             post:      None,
+            messages:  vec![],
+            message:   None,
             
             search:    None,
             flash:     None

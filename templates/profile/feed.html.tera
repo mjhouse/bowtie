@@ -17,7 +17,10 @@
                     <span class="">
                     {{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
                     {% if post.view_id == session.view %}
-                    <a class="l" href="/profile/delete?id={{ post.id }}">delete</a>
+                    <form action="/api/v1/posts/delete?redirect=/profile/feed" method="post" class="l">
+                        <input type="hidden" name="value" value="{{post.id}}"/>
+                        <button class="btn-med" type="submit">delete</button>
+                    </form>
                     {% endif %}
                 </nav>
             </article>

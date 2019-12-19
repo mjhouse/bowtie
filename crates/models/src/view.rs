@@ -39,7 +39,7 @@ impl View {
 
     pub fn delete_from(t_user: i32, t_view: i32) -> Result<View,Error> {
         let conn = db!(Err(BowtieError::NoConnection)?);
-
+        
         conn.transaction::<_, Error, _>(|| {
             // delete all posts associated with the view
             diesel::delete(

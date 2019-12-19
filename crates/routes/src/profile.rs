@@ -3,21 +3,17 @@ use rocket_contrib::{
 };
 
 use rocket::{
-    request::{FlashMessage,Form},
-    response::{Flash,Redirect},
-    http::{Cookies}
+    request::{FlashMessage},
+    response::{Redirect},
 };
 
 use diesel::prelude::*;
 use std::env;
 
-use bowtie_models::view::*;
-use bowtie_models::post::*;
-use bowtie_models::friend::*;
-use bowtie_models::context::*;
-use bowtie_models::session::*;
+use bowtie_models::*;
 
-use crate::forms::*;
+// @todo Set up database connection pooling
+// @body https://api.rocket.rs/v0.5/rocket_contrib/databases/index.html
 
 #[get("/profile")]
 pub fn main( _session: Session ) -> Redirect {
@@ -54,19 +50,19 @@ pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
     })
 }
 
-#[get("/profile/delete?<id>")]
-pub fn delete( session: Session, id: i32 ) -> Result<Redirect,Flash<Redirect>> {
-    match (Post::for_id(id), session.view) {
-        (Some(post),Some(vid)) if vid == post.view_id => {
-            match Post::delete(post) {
-                Ok(_) => Ok(Redirect::to("/profile/feed")),
-                _ => flash!("/profile/feed","Could not delete post")
-            }
-        },
-        _ => {
-            flash!("/profile/feed","No post with that id")
-        }
-    }
+#[get("/profile/messages")]
+pub fn messages( session: Session, msg: Option<FlashMessage> ) -> Template {
+    let messages = match session.view {
+        Some(id) => Message::messages(id),
+        _ => vec![]
+    };
+
+    Template::render("profile/messages",Context {
+        session: Some(session),
+        messages: messages,
+        flash:    unflash!(msg),
+        ..Default::default()
+    })
 }
 
 #[get("/profile/write")]
@@ -78,23 +74,8 @@ pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
     })
 }
 
-#[post("/profile/write", data = "<form>")]
-pub fn write_post( session: Session, form: Form<PostForm>  ) -> Result<Redirect,Flash<Redirect>> {
-    match session.view {
-        Some(id) => {
-            match Post::create_from(id,&form.title,&form.body) {
-                Ok(_)  => Ok(Redirect::to("/profile/feed")), 
-                Err(_) => flash!("/profile/write", "Couldn't create post")
-            }
-        }
-        _ => {
-            flash!("/profile/write", "User does not have an active view")
-        }
-    }
-}
-
 #[get("/profile/settings")]
-pub fn settings_get( session: Session, msg: Option<FlashMessage>  ) -> Template {
+pub fn settings( session: Session, msg: Option<FlashMessage>  ) -> Template {
     let views = match session.id {
         Some(id) => View::for_user(id),
         None => vec![]
@@ -108,30 +89,161 @@ pub fn settings_get( session: Session, msg: Option<FlashMessage>  ) -> Template 
     })
 }
 
-#[post("/profile/views", data = "<form>")]
-pub fn views_post( session: Session, mut cookies: Cookies, form: Form<ViewForm> ) -> Result<Redirect,Flash<Redirect>> {
-    match (Action::from(form),session.id,session.view) {
-        // create a view
-        (Action::Create(name),Some(uid),_) => {
-            match View::create_from(uid,&name) {
-                Ok(_)  => Ok(Redirect::to("/profile/settings")),
-                _ => flash!("/profile/settings","Could not create view")
-            }
-        },
-        // delete the view if it isn't the current view
-        (Action::Delete(vid),Some(uid),Some(cv)) if vid != cv  => {
-            match View::delete_from(uid,vid) {
-                Ok(_) => Ok(Redirect::to("/profile/settings")),
-                _ => flash!("/profile/settings","Could not delete view")
-            }
-        },
-        // verify that the view exists and update session
-        (Action::Active(vid),Some(uid),_)  => {
-            match Session::update(uid,vid,&mut cookies) {
-                Ok(_) => Ok(Redirect::to("/profile/settings")),
-                _ => flash!("/profile/settings","Could not activate view")
-            }
-        },
-        _ => flash!("/profile/settings","Could not perform action")
+pub mod api {
+
+    use rocket::{
+        response::{Flash,Redirect},
+        request::{Form},
+        http::{Cookies}
+    };
+
+    type ApiResponse = Result<Redirect,Flash<Redirect>>;
+
+    macro_rules! unpack {
+        ( $p:ident, $c:ident ) => {
+            match Session::get(&$c) {
+                Ok(s) => {
+                    match (s.id,s.view) {
+                        (Some(u),Some(v)) => (u,v),
+                        _ => {
+                            warn!("User or View id was None during unpack");
+                            return flash!($p,"User not found")
+                        }
+                    }
+                },
+                Err(e) => {
+                    warn!("Error getting Session from Cookies: {}",e);
+                    return flash!($p,"Not logged in")
+                }
+            };
+        }
     }
+
+    /*  Posts API
+        This module contains endpoints that handle the
+        creation, deletion and modification of posts.
+    */
+    pub mod posts {
+
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            post::{Post}
+        }; 
+
+        #[derive(FromForm)]
+        pub struct CreatePost {
+            pub title: String,
+            pub body:  String,
+        }
+
+        #[derive(FromForm)]
+        pub struct DeletePost {
+            pub value: i32,
+        }
+
+        #[post("/api/v1/posts/create?<redirect>", data = "<form>")]
+        pub fn create( redirect: Option<String>,
+                       cookies:  Cookies, 
+                       form:     Form<CreatePost>) -> ApiResponse {
+            let path = redirect.unwrap_or("/write".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            match Post::create_from(vid,&form.title,&form.body) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not create post")
+            }
+        }
+
+        #[post("/api/v1/posts/delete?<redirect>", data = "<form>")]
+        pub fn delete( redirect: Option<String>,
+                       cookies:  Cookies, 
+                       form:     Form<DeletePost>) -> ApiResponse {
+            let path = redirect.unwrap_or("/feed".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            match Post::delete_from(vid,form.value) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not delete post")
+            }
+        }
+
+    }
+
+    /*  Views API
+        This module contains endpoints that handle the
+        creation, deletion and modification of views.
+    */
+    pub mod views {
+        
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            view::{View}
+        }; 
+
+        #[derive(FromForm,Debug)]
+        pub struct CreateView {
+            pub value:  String
+        }
+
+        #[derive(FromForm,Debug)]
+        pub struct UpdateView {
+            pub value:  i32
+        }
+
+        #[derive(FromForm,Debug)]
+        pub struct DeleteView {
+            pub value:  i32
+        }
+
+        #[post("/api/v1/views/create?<redirect>", data = "<form>")]
+        pub fn create( redirect: Option<String>,
+                       cookies:  Cookies, 
+                       form:     Form<CreateView>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile".to_string());
+            let (uid,_) = unpack!(path,cookies);
+
+            match View::create_from(uid,&form.value) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not create view")
+            }
+        }
+
+        #[post("/api/v1/views/update?<redirect>", data = "<form>")]
+        pub fn update( redirect:    Option<String>, 
+                       mut cookies: Cookies, 
+                       form:        Form<UpdateView>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile".to_string());
+            let (uid,_) = unpack!(path,cookies);
+            
+            match Session::update(uid,form.value,&mut cookies) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not update view")
+            }
+        }
+
+        #[post("/api/v1/views/delete?<redirect>", data = "<form>")]
+        pub fn delete( redirect: Option<String>, 
+                       cookies:  Cookies, 
+                       form:     Form<DeleteView>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile".to_string());
+            let (uid,cid) = unpack!(path,cookies);
+
+            if form.value == cid {
+                return flash!(path,"Cannot delete current view")
+            }
+
+            match View::delete_from(uid,form.value) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not delete view")
+            }
+        }
+
+    }
+
 }
+
+

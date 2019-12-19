@@ -44,12 +44,16 @@ fn main() {
             profile::main,
             profile::feed,
             profile::friends,
+            profile::messages,
             profile::write,
-            profile::write_post,
-            profile::delete,
+            profile::settings,
 
-            profile::settings_get,
-            profile::views_post
+            profile::api::posts::create,
+            profile::api::posts::delete,
+
+            profile::api::views::create,
+            profile::api::views::update,
+            profile::api::views::delete,
         ])
         .mount("/css",  StaticFiles::from(STATIC_CSS ))
         .mount("/js",   StaticFiles::from(STATIC_JS  ))

@@ -1,5 +1,17 @@
 {% extends 'profile/base' %}
 
 {% block body %}
-MESSAGES
+{% if messages %}
+    {% for message in messages %}
+        {% if message.sender == session.view %}
+            you: 
+        {% else %}
+            {{message.sender}}:
+        {% endif %}
+        <br/>
+        <p>{{message.body}}</p>
+    {% endfor %}
+{% else %}
+no messages
+{% endif %}
 {% endblock body %}

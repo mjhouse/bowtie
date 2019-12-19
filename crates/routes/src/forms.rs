@@ -27,6 +27,8 @@ pub struct RegisterForm {
     pub password2: String
 }
 
+
+
 impl From<Form<ViewForm>> for Action {
     fn from(form: Form<ViewForm>) -> Self {
         match (form.action.as_str(),form.value.clone()) {

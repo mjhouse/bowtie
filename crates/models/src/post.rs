@@ -44,9 +44,26 @@ impl Post {
         })
     }
 
+    pub fn delete_from(t_view: i32, t_id: i32) -> Result<Post,Error> {
+        let conn = db!(Err(BowtieError::NoConnection)?);
+        
+        conn.transaction::<_, Error, _>(|| {
+            // delete the post
+            let model: PostModel = 
+            diesel::delete(
+                posts_dsl.filter(
+                    posts::view_id.eq(t_view)
+                    .and(posts::id.eq(t_id))
+                ))
+                .get_result(&conn)?;
+
+            // return the deleted post
+            Ok(model.into())
+        })
+    }
+
     pub fn create(t_post: Post) -> Result<Post,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+        let conn = db!(Err(BowtieError::NoConnection)?);
 
         conn.transaction::<_, Error, _>(|| {
             // create model
@@ -60,8 +77,7 @@ impl Post {
     }
 
     pub fn delete(t_post: Post) -> Result<Post,Error> {
-        let uri  = env::var("DATABASE_URL")?;
-        let conn = PgConnection::establish(&uri)?;
+        let conn = db!(Err(BowtieError::NoConnection)?);
 
         conn.transaction::<_, Error, _>(|| {
             let id = match t_post.id {
