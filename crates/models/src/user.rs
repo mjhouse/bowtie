@@ -24,8 +24,7 @@ macro_rules! hash {
     ( $s:expr ) => { Whirlpool::new().chain(&$s).result(); }
 }
 
-// generate an insertion and query struct (User/UserModel),
-// From implementations and basic helper macros/methods.
+// Creates insertion and query structs (<Object>/<Object>Model),
 model!(
     table:  users,
     traits: [Identifiable,Default,AsChangeset],
@@ -35,15 +34,16 @@ model!(
         passhash: String
 });
 
-impl_for!( User,
-    id:i32        => users::id,
-    email:&str    => users::email,
-    username:&str => users::username
+// Creates 'for_<field>' query functions.
+queries!( 
+    table: users,
+    model: User,
+    one: {
+        id:i32        => users::id,
+        username:&str => users::username
+    }
 );
 
-impl_set!( User,
-    email:&str    => users::email
-);
 
 impl User {
     pub const COOKIE_NAME: &'static str = "bowtie_session_token";

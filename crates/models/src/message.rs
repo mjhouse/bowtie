@@ -20,9 +20,7 @@ model!(
         created: NaiveDateTime
 });
 
-impl_for!( Message,
-    id:i32 => messages::id
-);
+
 
 impl Message {
 

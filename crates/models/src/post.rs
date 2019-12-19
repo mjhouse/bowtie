@@ -16,6 +16,7 @@ pub struct PostForm {
     pub body:    String,
 }
 
+// Creates insertion and query structs (<Object>/<Object>Model),
 model!(
     table:  posts,
     owner:  (View),
@@ -27,9 +28,13 @@ model!(
         created: NaiveDateTime
 });
 
-impl_for!( Post,
-    id:i32     => posts::id,
-    title:&str => posts::title
+// Creates 'for_<field>' query functions.
+queries!( 
+    table: posts,
+    model: Post,
+    one: {
+        id:i32 => posts::id
+    }
 );
 
 impl Post {
@@ -101,7 +106,20 @@ impl Post {
     }
 
     pub fn for_view(t_conn: &PgConnection, t_id: i32) -> Vec<Post> {
-        query!(many: t_conn, posts::view_id.eq(t_id), posts::created.asc())
+        match posts::table
+            .filter(posts::view_id.eq(t_id))
+            .order(posts::created.asc())
+            .load::<PostModel>(t_conn) {
+            Ok(p) => {
+                p.into_iter()
+                    .map(|m| m.into())
+                    .collect()
+            },
+            Err(e) => {
+                warn!("Error during query: {}",e);
+                vec![]
+            }
+        }
     }
 
 }

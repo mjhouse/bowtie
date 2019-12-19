@@ -3,5 +3,6 @@
 
 pub mod schema;
 pub mod models;
+pub mod queries;
 pub mod database;
 pub mod traits;

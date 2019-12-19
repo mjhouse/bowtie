@@ -1,7 +1,6 @@
 pub use bowtie_data::{schema::*,traits::*};
 
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
-use bowtie_data::schema::friend_requests::dsl::friend_requests as request_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
@@ -11,6 +10,8 @@ use std::env;
 use crate::error::*;
 use crate::view::*;
 
+// Creates insertion and query structs for 'friends' table:
+//      Friend/FriendModel
 model!(
     table:  friends,
     traits: [Identifiable,Associations],
@@ -19,24 +20,32 @@ model!(
         view2: i32
 });
 
-impl_for!( Friend,
-    id:i32 => friends::id
+queries!( 
+    table: friends,
+    model: Friend,
+    one: {
+        id:i32 => friends::id
+    }
 );
 
-// @todo implement FriendRequest
-// @body Need to pull apart models.rs macros if I want to put two models in the same file.
+// Creates insertion and query structs for 'friend_requests' table:
+//      FriendRequest/FriendRequestModel
+model!(
+    table:  friend_requests,
+    traits: [Identifiable,Associations],
+    FriendRequest {
+        sender:   i32,
+        receiver: i32,
+        accepted: bool
+});
 
-// model!(
-//     table:  friend_requests,
-//     traits: [Identifiable,Associations],
-//     FriendRequest {
-//         view1: i32,
-//         view2: Option<i32>
-// });
-
-// impl_for!( FriendRequest,
-//     id:i32 => friend_requests::id
-// );
+queries!( 
+    table: friend_requests,
+    model: FriendRequest,
+    one: {
+        id:i32 => friend_requests::id
+    }
+);
 
 impl Friend {
 
@@ -108,7 +117,24 @@ impl Friend {
                            .collect(),
                 Err(_) => vec![]
             }
+    }
 
+    pub fn request(t_sender: i32, t_receiver: i32) -> Result<FriendRequest,Error> {
+        let conn = db!(Err(BowtieError::NoConnection)?);
+        conn.transaction::<_, Error, _>(|| {
+            // create model
+            let model: FriendRequestModel = 
+                diesel::insert_into(friend_requests::table)
+                .values(FriendRequest {
+                    id: None,
+                    sender:   t_sender,
+                    receiver: t_receiver,
+                    accepted: false
+                })
+                .get_result(&conn)?;
+
+            Ok(model.into())
+        })
     }
 
 }

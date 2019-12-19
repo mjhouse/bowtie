@@ -1,8 +1,9 @@
 table! {
     friend_requests (id) {
         id -> Int4,
-        view1 -> Int4,
-        view2 -> Nullable<Int4>,
+        sender -> Int4,
+        receiver -> Int4,
+        accepted -> Bool,
     }
 }
 

@@ -52,65 +52,6 @@ macro_rules! model {
     }) => {
         paste::item! {
 
-            macro_rules! update {
-                ( $d:expr, $i:ident, $q:expr ) => {
-                    match diesel::update($tn::table)
-                    .filter($tn::id.eq($i))
-                    .set($q)
-                    .get_result::<[<$n Model>]>($d)
-                    {
-                        Ok(m) => Some(m.into()),
-                        Err(e) => {
-                            warn!("Error during update: {}",e);
-                            None
-                        }
-                    }
-                }
-            }
-
-            macro_rules! query {
-
-                // A query macro that returns an Option<Object>
-                ( one: $d:expr, $q:expr ) => {
-                    match $tn::table
-                    .filter($q)
-                    .first::<[<$n Model>]>($d)
-                    {
-                        Ok(m) => {
-                            Some(m.into())
-                        }
-                        Err(e) => {
-                            warn!("Error during query: {}",e);
-                            None
-                        }
-                    }
-                };
-
-                // A query macro that returns a Vec<Object> result
-                ( many: $d:expr, $q:expr ) => {
-                    query!(many: $d, $q, $tn::id.desc())
-                };
-
-                // A query macro that returns an ordered Vec<Object>
-                ( many: $d:expr, $q:expr, $o:expr ) => {
-                    match $tn::table
-                        .filter($q)
-                        .order($o)
-                        .load::<[<$n Model>]>($d) {
-                            Ok(p) => {
-                                p.into_iter()
-                                    .map(|m| m.into())
-                                    .collect()
-                            },
-                            Err(e) => {
-                                warn!("Error during query: {}",e);
-                                vec![]
-                            }
-                        }
-                }
-                
-            }
-
             // Define the object struct that is
             // used for insertion.
             make_object!(
@@ -151,44 +92,5 @@ macro_rules! model {
             }
         }
 
-    }
-}
-
-#[macro_export]
-macro_rules! impl_for {
-    ( $s:ty,
-      $( $n:ident:$t:ty => $p:path ),*
-    ) => {
-        impl $s {
-            paste::item! {
-                $(
-                    pub fn [<for_ $n>](t_value: $t) -> Option<Self> {
-                        let conn = db!(None);
-                        query!(one: &conn,$p.eq(t_value))
-                    } 
-                )*
-            }
-        } 
-    }
-}
-
-#[macro_export]
-macro_rules! impl_set {
-    ( $s:ty,
-      $( $n:ident:$t:ty => $p:path ),*
-    ) => {
-        impl $s {
-            paste::item! {
-                $(
-                    pub fn [<set_ $n>](&self,t_value: $t) -> Option<$s> {
-                        let conn = db!(None);
-                        match self.id {
-                            Some(id) => update!(&conn,id,$p.eq(t_value)),
-                            None => None
-                        }
-                    } 
-                )*
-            }
-        } 
     }
 }

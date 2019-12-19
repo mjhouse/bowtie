@@ -11,6 +11,7 @@ use serde::{Serialize};
 use failure::*;
 use std::env;
 
+// Creates insertion and query structs (<Object>/<Object>Model).
 model!(
     table:  views,
     owner:  (User),
@@ -20,9 +21,13 @@ model!(
         name: String
 });
 
-impl_for!( View,
-    id:i32 => views::id,
-    name:&str => views::name
+// Creates 'for_<field>' query functions.
+queries!( 
+    table: views,
+    model: View,
+    one: {
+        name:&str => views::name
+    }
 );
 
 impl View {
@@ -121,16 +126,30 @@ impl View {
 
     pub fn for_user(t_id: i32) -> Vec<View> {
         let conn = db!(vec![]);
-        query!(many: &conn, views::user_id.eq(t_id))
+
+        match views::table
+            .filter(views::user_id.eq(t_id))
+            .load::<ViewModel>(&conn) {
+            Ok(p) => {
+                p.into_iter()
+                    .map(|m| m.into())
+                    .collect()
+            },
+            Err(e) => {
+                warn!("Error during query: {}",e);
+                vec![]
+            }
+        }
     }
 
     pub fn first(t_id: i32) -> Option<i32> {
         let conn = db!(None);
-        let view: Option<View> = query!(one: &conn, views::user_id.eq(t_id));
-        match view {
-            Some(v) => v.id,
-            None => None
-        }
+        match views::table
+            .filter(views::user_id.eq(t_id))
+            .first::<ViewModel>(&conn) {
+                Ok(m)  => Some(m.id),
+                Err(_) => None
+            }
     }
 
 }
