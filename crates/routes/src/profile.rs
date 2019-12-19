@@ -1,92 +1,97 @@
-use rocket_contrib::{
-    templates::Template
-};
-
-use rocket::{
-    request::{FlashMessage},
-    response::{Redirect},
-};
-
-use diesel::prelude::*;
-use std::env;
-
-use bowtie_models::*;
 
 // @todo Set up database connection pooling
 // @body https://api.rocket.rs/v0.5/rocket_contrib/databases/index.html
 
-#[get("/profile")]
-pub fn main( _session: Session ) -> Redirect {
-    Redirect::to("/profile/feed")
-}
+pub mod pages {
 
-#[get("/profile/feed")]
-pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
-    let posts = match (db!(),session.view) {
-        (Some(c),Some(id)) => Post::for_view(&c,id),
-        _ => vec![]
+    use rocket_contrib::{
+        templates::Template
     };
-
-    Template::render("profile/feed",Context {
-        session: Some(session),
-        posts:   posts,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
-}
-
-#[get("/profile/friends")]
-pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
-    let friends = match session.view {
-        Some(id) => Friend::friends(id),
-        _ => vec![]
+    
+    use rocket::{
+        request::{FlashMessage},
+        response::{Redirect},
     };
+    
+    use diesel::prelude::*;
+    use std::env;
+    
+    use bowtie_models::*;
 
-    Template::render("profile/friends",Context {
-        session: Some(session),
-        views:   friends,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
-}
+    #[get("/profile")]
+    pub fn main( _session: Session ) -> Redirect {
+        Redirect::to("/profile/feed")
+    }
+    
+    #[get("/profile/feed")]
+    pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
+        let posts = match (db!(),session.view) {
+            (Some(c),Some(id)) => Post::for_view(&c,id),
+            _ => vec![]
+        };
+    
+        Template::render("profile/feed",Context {
+            session: Some(session),
+            posts:   posts,
+            flash:   unflash!(msg),
+            ..Default::default()
+        })
+    }
+    
+    #[get("/profile/friends")]
+    pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
+        let friends = match session.view {
+            Some(id) => Friend::friends(id),
+            _ => vec![]
+        };
+    
+        Template::render("profile/friends",Context {
+            session: Some(session),
+            views:   friends,
+            flash:   unflash!(msg),
+            ..Default::default()
+        })
+    }
+    
+    #[get("/profile/messages")]
+    pub fn messages( session: Session, msg: Option<FlashMessage> ) -> Template {
+        let messages = match session.view {
+            Some(id) => Message::messages(id),
+            _ => vec![]
+        };
+    
+        Template::render("profile/messages",Context {
+            session: Some(session),
+            messages: messages,
+            flash:    unflash!(msg),
+            ..Default::default()
+        })
+    }
+    
+    #[get("/profile/write")]
+    pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
+        Template::render("profile/write",Context {
+            session: Some(session),
+            flash:   unflash!(msg),
+            ..Default::default()
+        })
+    }
+    
+    #[get("/profile/settings")]
+    pub fn settings( session: Session, msg: Option<FlashMessage>  ) -> Template {
+        let views = match session.id {
+            Some(id) => View::for_user(id),
+            None => vec![]
+        };
+    
+        Template::render("profile/settings",Context {
+            session: Some(session),
+            views:   views,
+            flash:   unflash!(msg),
+            ..Default::default()
+        })
+    }
 
-#[get("/profile/messages")]
-pub fn messages( session: Session, msg: Option<FlashMessage> ) -> Template {
-    let messages = match session.view {
-        Some(id) => Message::messages(id),
-        _ => vec![]
-    };
-
-    Template::render("profile/messages",Context {
-        session: Some(session),
-        messages: messages,
-        flash:    unflash!(msg),
-        ..Default::default()
-    })
-}
-
-#[get("/profile/write")]
-pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
-    Template::render("profile/write",Context {
-        session: Some(session),
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
-}
-
-#[get("/profile/settings")]
-pub fn settings( session: Session, msg: Option<FlashMessage>  ) -> Template {
-    let views = match session.id {
-        Some(id) => View::for_user(id),
-        None => vec![]
-    };
-
-    Template::render("profile/settings",Context {
-        session: Some(session),
-        views:   views,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
 }
 
 pub mod api {

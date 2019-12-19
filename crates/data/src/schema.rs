@@ -1,4 +1,12 @@
 table! {
+    friend_requests (id) {
+        id -> Int4,
+        view1 -> Int4,
+        view2 -> Nullable<Int4>,
+    }
+}
+
+table! {
     friends (id) {
         id -> Int4,
         view1 -> Int4,
@@ -47,6 +55,7 @@ joinable!(posts -> views (view_id));
 joinable!(views -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
+    friend_requests,
     friends,
     messages,
     posts,

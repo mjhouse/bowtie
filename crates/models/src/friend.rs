@@ -1,5 +1,7 @@
 pub use bowtie_data::{schema::*,traits::*};
+
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
+use bowtie_data::schema::friend_requests::dsl::friend_requests as request_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
@@ -20,6 +22,21 @@ model!(
 impl_for!( Friend,
     id:i32 => friends::id
 );
+
+// @todo implement FriendRequest
+// @body Need to pull apart models.rs macros if I want to put two models in the same file.
+
+// model!(
+//     table:  friend_requests,
+//     traits: [Identifiable,Associations],
+//     FriendRequest {
+//         view1: i32,
+//         view2: Option<i32>
+// });
+
+// impl_for!( FriendRequest,
+//     id:i32 => friend_requests::id
+// );
 
 impl Friend {
 

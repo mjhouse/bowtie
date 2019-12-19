@@ -41,12 +41,12 @@ fn main() {
             auth::unregister,
             
             // profile routes
-            profile::main,
-            profile::feed,
-            profile::friends,
-            profile::messages,
-            profile::write,
-            profile::settings,
+            profile::pages::main,
+            profile::pages::feed,
+            profile::pages::friends,
+            profile::pages::messages,
+            profile::pages::write,
+            profile::pages::settings,
 
             profile::api::posts::create,
             profile::api::posts::delete,
