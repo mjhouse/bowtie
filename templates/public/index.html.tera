@@ -1,5 +1,9 @@
 {% extends 'base' %}
 
+{% block stylesheet %}
+    {{ sheet | safe }}
+{% endblock stylesheet %}
+
 {% block content %}
-INDEX
+    INDEX
 {% endblock content %}

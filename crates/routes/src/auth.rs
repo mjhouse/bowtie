@@ -9,7 +9,6 @@ use rocket::{
 };
 
 use bowtie_models::user::*;
-use bowtie_models::view::*;
 use bowtie_models::context::*;
 use bowtie_models::session::*;
 
@@ -31,16 +30,9 @@ pub fn login_get( session: Option<Session>, msg: Option<FlashMessage> ) -> GetRe
 pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> PostResponse {
     match User::for_username(&form.username) {
         Some(user) if user.validate(&form.password) => {
-            let mut session  = Session::from(&user);
-            let id = match session.id {
-                Some(id) => id,
-                None => return flash!("/login","There was an unexpected problem logging in")
-            };
-
-            session.view = View::first(id);
-            match session.set(&mut cookies) {
+            match Session::create(&user, &mut cookies) {
                 Ok(_)  => Ok(Redirect::to("/profile")),
-                Err(_) => flash!("/login", "There was an unexpected problem logging in")
+                Err(_) => flash!("/login", "Could not create session")
             }
         },
         _ => flash!("/login", "Invalid username or password")

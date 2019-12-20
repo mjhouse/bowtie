@@ -8,14 +8,69 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         
-        <link rel="stylesheet" href="/css/layout.css"/>
-        <link rel="stylesheet" href="/css/themes/bowtie-light.css"/>
-
         {# don't request a favicon #}
         <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-
-        {% block stylesheet %}
-        {% endblock stylesheet %}
+        {% block stylesheet %}{% endblock stylesheet %}
+        <style>
+            #v-toggle { display:none; }
+            .v-dot {
+                background-color:#09af00;
+                border-radius:100px;
+                width:10px;
+                height:10px;
+                align-self:center;
+                margin-right:5px;
+            }
+            .v-dot.v-inactive {
+                background-color:lightgray;
+            }
+            #v-toggle + label > div button {
+                border:none;
+                background-color:transparent;
+                cursor:pointer;
+                flex-grow:1;
+                text-align:left;
+            }
+            #v-toggle + label > div > form {
+                padding:5px;
+                display:flex;
+                align-items:baseline;
+            }
+            #v-toggle + label > div form:hover {
+                background-color:rgba(0,0,0,0.1);
+            }
+            #v-toggle + label > div > a:last-child {
+                color:gray;
+                align-self:end;
+            }
+            #v-toggle + label > div > a:last-child:hover {
+                background-color:transparent;
+                text-decoration:underline;
+            }
+            #v-toggle + label {
+                user-select: none;
+            }
+            #v-toggle + label > div {
+                user-select: none;
+                margin:10px 0 0 -6px;
+                padding:5px;
+                border-radius: 3px;
+                border:1px solid gray;
+                background-color:white;
+                position:absolute;
+                display:none;
+                color:black;
+                box-shadow:5px 5px 5px rgba(0,0,0,0.1);
+            }
+            #v-toggle:checked + label {
+                background-color:rgba(255,255,255,0.95);
+                color:black;
+            }
+            #v-toggle:checked + label > div {
+                display:flex;
+                flex-direction:column;
+            }
+        </style>
     </head>
     <body>
         <div class="page l r col">
@@ -24,12 +79,37 @@
                 {% if session %}
                 :<a href="/profile" class="l10">{{session.username}}</a>
                 {% endif %}
-                <form class="l" action="/search" method="get">
+                <div class="l"></div>
+                {% if session %}
+                <input id="v-toggle" type="checkbox">
+                <label for="v-toggle" class="btn-med">Views            
+                    <div>
+                        {% for view in session.views %}
+                            {% if view.0 == session.view %}
+                            <form>
+                                <div class="v-dot">&nbsp;</div>
+                                <button>{{view.1}}</button>
+                            </form>
+                            {% else %}
+                            <form action="/api/v1/views/update?redirect={{route}}" method="post">
+                                <div class="v-dot v-inactive">&nbsp;</div>
+                                <input type="hidden" name="value" value="{{view.0}}"/>
+                                <button>{{view.1}}</button>
+                            </form>
+                            {% endif %}
+                        {% endfor %}
+                        <a href="/profile/settings">settings</a>
+                    </div>
+                </label>
+                {% endif %}
+
+                <form class="l10" action="/search" method="get">
                     <input type="hidden" name="posts" value="on"/>
                     <input type="hidden" name="people" value="on"/>
                     <input class="txt-med" name="value" placeholder="Search" type="text" tabindex="1"/>
                 </form>
                 {% if session %}
+
                 <a href="/logout"   class="l10 btn-med p5" title="Log out" tabindex="2">Logout</a>
                 <a href="/profile"  class="l10 btn-med p5" title="Profile page" tabindex="3">Profile</a>
                 

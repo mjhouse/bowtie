@@ -1,4 +1,7 @@
 
+// This is a macro for building the model itself-
+// it's mainly in a different macro to allow the
+// creation of the 'belongs_to' line.
 #[macro_export]
 macro_rules! make_object {
     (   table:  $tn:expr,
@@ -16,6 +19,12 @@ macro_rules! make_object {
     }
 }
 
+// This is the main model-building macro. It defines
+// two structs- the 'object' struct used throughout the
+// project, and a 'model' struct that is used only as 
+// a query result.
+// Also defined:
+//      * From<Model>/From<Object> trait implementations
 #[macro_export]
 macro_rules! model {
 
@@ -36,14 +45,7 @@ macro_rules! model {
         );
     };
 
-    // This is the main model-building macro. It defines
-    // two structs- the 'object' struct used throughout the
-    // project, and a 'model' struct that is used only as 
-    // a query result.
-    // Also defined:
-    //      * From<Model>/From<Object> trait implementations
-    //      * Helper macros for queries
-    //      *  
+    // The main body of the macro
     (   table:  $tn:ident,
         owner:  ( $( $bt:ident ),* ),
         traits: [ $( $oi:ident ),* ], 

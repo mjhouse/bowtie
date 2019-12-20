@@ -1,4 +1,8 @@
 
+// Builds 'for_<field>' functions for already-existing models
+// so that single results can be queried by value. Should be
+// expanded to include 'Vec<Model>'-returning query functions
+// as well.
 #[macro_export]
 macro_rules! queries {
     (   table: $tn: ident,

@@ -9,7 +9,8 @@ use crate::session::*;
 const DATETIME_FORMAT: &str = "%Y";
 
 #[derive(Serialize,Default)]
-pub struct Context {
+pub struct Context<'a> {
+    pub route:     &'a str,
     pub datetime:  String,
     pub session:   Option<Session>,
 
@@ -21,13 +22,16 @@ pub struct Context {
     pub message:   Option<Message>,
 
     pub search:    Option<Search>,
+    
+    pub sheet:     String,
     pub flash:     Option<String>
 }
 
-impl Context {
+impl Context<'_> {
 
     pub fn empty() -> Self {
         Self {
+            route:     "/",
             datetime:  Utc::now().format(DATETIME_FORMAT).to_string(),
             session:   None,
 
@@ -39,6 +43,7 @@ impl Context {
             message:   None,
             
             search:    None,
+            sheet:     String::new(),
             flash:     None
         }
     }

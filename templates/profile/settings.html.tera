@@ -4,23 +4,23 @@
 <div>
     <div class="card m10 p10">
         <h2 class="m5">Views</h2>
-        {% for view in views %}
-            {% if view.id == session.view %}
+        {% for view in session.views %}
+            {% if view.0 == session.view %}
             <div class="p5 m10 row bl" style="border: 1px solid green;">
             {% else %}
             <div class="p5 m10 row bl">
             {% endif %}
-                <div class="f3">{{ view.name }}</div>
+                <div class="f3">{{ view.1 }}</div>
                 <form action="/api/v1/views/update?redirect=/profile/settings" 
                       method="post" 
                       class="l">
-                    <input type="hidden" name="value" value="{{view.id}}"/>
+                    <input type="hidden" name="value" value="{{view.0}}"/>
                     <button class="btn-med" type="submit">active</button>
                 </form>
                 <form action="/api/v1/views/delete?redirect=/profile/settings" 
                       method="post" 
                       class="l5">
-                    <input type="hidden" name="value" value="{{view.id}}"/>
+                    <input type="hidden" name="value" value="{{view.0}}"/>
                     <button class="btn-med" type="submit">delete</button>
                 </form>
             </div>
@@ -32,5 +32,6 @@
             <button class="btn-med l5" type="submit">Create</button> 
         </form>
     </div>
+    
 </div>
 {% endblock body %}

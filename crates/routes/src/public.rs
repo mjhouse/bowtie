@@ -1,5 +1,10 @@
 use rocket_contrib::templates::Template;
-use rocket::request::{FlashMessage,LenientForm};
+use rocket::{
+    State,
+    request::{FlashMessage,LenientForm}
+};
+
+use crate::styles::*;
 
 use bowtie_models::view::*;
 use bowtie_models::post::*;
@@ -8,10 +13,11 @@ use bowtie_models::session::*;
 use bowtie_models::search::*;
 
 #[get("/")]
-pub fn index( session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
+pub fn index( styles: State<Styles>, session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
     Template::render("public/index",Context {
-        session:  session,
-        flash:    unflash!(msg),
+        session: session,
+        sheet:   styles.sheet("light","index"),
+        flash:   unflash!(msg),
         ..Default::default()
     })
 }

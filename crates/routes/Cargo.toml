@@ -5,6 +5,8 @@ authors = ["Michael House <mjhouse@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
+rsass = "0.11.2"
+walkdir = "2.2.9"
 rocket = "0.4.2"
 log = "0.4.8"
 diesel = { version = "1.0.0", features = ["postgres"] }

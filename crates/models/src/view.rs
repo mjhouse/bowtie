@@ -6,6 +6,9 @@ use crate::error::*;
 use bowtie_data::schema::views::dsl::views as views_dsl;
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 
+use bowtie_data::schema::friends::dsl::friends as friends_dsl;
+use bowtie_data::schema::friend_requests::dsl::friend_requests as requests_dsl;
+
 use diesel::prelude::*;
 use serde::{Serialize};
 use failure::*;
@@ -46,6 +49,21 @@ impl View {
         let conn = db!(Err(BowtieError::NoConnection)?);
         
         conn.transaction::<_, Error, _>(|| {
+
+            diesel::delete(
+                friends_dsl.filter(
+                    friends::view1.eq(t_view)
+                    .or(friends::view2.eq(t_view))
+                ))
+                .execute(&conn)?;
+
+            diesel::delete(
+                requests_dsl.filter(
+                    friend_requests::sender.eq(t_view)
+                    .or(friend_requests::receiver.eq(t_view))
+                ))
+                .execute(&conn)?;
+
             // delete all posts associated with the view
             diesel::delete(
                 posts_dsl.filter(

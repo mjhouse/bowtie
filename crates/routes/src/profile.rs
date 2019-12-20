@@ -26,11 +26,12 @@ pub mod pages {
     #[get("/profile/feed")]
     pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
         let posts = match (db!(),session.view) {
-            (Some(c),Some(id)) => Post::for_view(&c,id),
+            (Some(c),id) => Post::for_view(&c,id),
             _ => vec![]
         };
     
         Template::render("profile/feed",Context {
+            route:   "/profile/feed",
             session: Some(session),
             posts:   posts,
             flash:   unflash!(msg),
@@ -40,12 +41,9 @@ pub mod pages {
     
     #[get("/profile/friends")]
     pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
-        let friends = match session.view {
-            Some(id) => Friend::friends(id),
-            _ => vec![]
-        };
-    
+        let friends = Friend::friends(session.view);
         Template::render("profile/friends",Context {
+            route:   "/profile/friends",
             session: Some(session),
             views:   friends,
             flash:   unflash!(msg),
@@ -55,12 +53,9 @@ pub mod pages {
     
     #[get("/profile/messages")]
     pub fn messages( session: Session, msg: Option<FlashMessage> ) -> Template {
-        let messages = match session.view {
-            Some(id) => Message::messages(id),
-            _ => vec![]
-        };
-    
+        let messages = Message::messages(session.view);
         Template::render("profile/messages",Context {
+            route:   "/profile/messages",
             session: Some(session),
             messages: messages,
             flash:    unflash!(msg),
@@ -71,6 +66,7 @@ pub mod pages {
     #[get("/profile/write")]
     pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
         Template::render("profile/write",Context {
+            route:   "/profile/write",
             session: Some(session),
             flash:   unflash!(msg),
             ..Default::default()
@@ -79,14 +75,9 @@ pub mod pages {
     
     #[get("/profile/settings")]
     pub fn settings( session: Session, msg: Option<FlashMessage>  ) -> Template {
-        let views = match session.id {
-            Some(id) => View::for_user(id),
-            None => vec![]
-        };
-    
         Template::render("profile/settings",Context {
+            route:   "/profile/settings",
             session: Some(session),
-            views:   views,
             flash:   unflash!(msg),
             ..Default::default()
         })
@@ -109,7 +100,7 @@ pub mod api {
             match Session::get(&$c) {
                 Ok(s) => {
                     match (s.id,s.view) {
-                        (Some(u),Some(v)) => (u,v),
+                        (Some(u),v) => (u,v),
                         _ => {
                             warn!("User or View id was None during unpack");
                             return flash!($p,"User not found")
@@ -169,7 +160,7 @@ pub mod api {
             let (_,vid) = unpack!(path,cookies);
 
             match Post::delete_from(vid,form.value) {
-                Ok(_) => Ok(Redirect::to(path)),
+                Ok(_)  => Ok(Redirect::to(path)),
                 _ => flash!(path,"Could not delete post")
             }
         }
@@ -206,13 +197,22 @@ pub mod api {
 
         #[post("/api/v1/views/create?<redirect>", data = "<form>")]
         pub fn create( redirect: Option<String>,
-                       cookies:  Cookies, 
+                       mut cookies:  Cookies, 
                        form:     Form<CreateView>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,_) = unpack!(path,cookies);
 
             match View::create_from(uid,&form.value) {
-                Ok(_) => Ok(Redirect::to(path)),
+                Ok(v) if v.id.is_some() => {
+                    match Session::add_view(v.id.unwrap(),v.name,&mut cookies) {
+                        Ok(_) => Ok(Redirect::to(path)),
+                        _ => flash!(path,"Could not update session")  
+                    }
+                },
+                Err(e) => {
+                    dbg!(e);
+                    flash!(path,"Could not create view")
+                }
                 _ => flash!(path,"Could not create view")
             }
         }
@@ -222,17 +222,18 @@ pub mod api {
                        mut cookies: Cookies, 
                        form:        Form<UpdateView>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile".to_string());
-            let (uid,_) = unpack!(path,cookies);
-            
-            match Session::update(uid,form.value,&mut cookies) {
+            match Session::set_view(form.value,&mut cookies) {
                 Ok(_) => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not update view")
+                Err(e) => {
+                    dbg!(e);
+                    flash!(path,"Could not update view")
+                }
             }
         }
 
         #[post("/api/v1/views/delete?<redirect>", data = "<form>")]
         pub fn delete( redirect: Option<String>, 
-                       cookies:  Cookies, 
+                       mut cookies:  Cookies, 
                        form:     Form<DeleteView>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,cid) = unpack!(path,cookies);
@@ -242,7 +243,16 @@ pub mod api {
             }
 
             match View::delete_from(uid,form.value) {
-                Ok(_) => Ok(Redirect::to(path)),
+                Ok(v) if v.id.is_some() => {
+                    match Session::remove_view(v.id.unwrap(),&mut cookies) {
+                        Ok(_) => Ok(Redirect::to(path)),
+                        _ => flash!(path,"Could not update session")  
+                    }
+                },
+                Err(e) => {
+                    dbg!(e);
+                    flash!(path,"Could not delete view")
+                }
                 _ => flash!(path,"Could not delete view")
             }
         }

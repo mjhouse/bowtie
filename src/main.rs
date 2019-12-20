@@ -13,7 +13,9 @@ use bowtie_routes::errors;
 use bowtie_routes::public;
 use bowtie_routes::profile;
 use bowtie_routes::auth;
+use bowtie_routes::styles;
 
+const STATIC_SCSS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/scss");
 const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
 const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
 const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
@@ -21,7 +23,6 @@ const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 fn main() {
     dotenv().ok();
-
     rocket::ignite()
         .attach(Template::fairing())
         .mount("/", routes![
@@ -62,5 +63,6 @@ fn main() {
         .register(catchers![
             errors::handler_404
         ])
+        .manage(styles::Styles::from(STATIC_SCSS))
         .launch();
 }
