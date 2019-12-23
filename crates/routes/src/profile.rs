@@ -14,7 +14,9 @@ pub mod pages {
     
     use crate::resources::*;
     use tera::{Context};
+
     use bowtie_models::*;
+    use bowtie_data::Conn;
 
     #[get("/profile")]
     pub fn main() -> Redirect {
@@ -34,16 +36,16 @@ pub mod pages {
     }
     
     #[get("/profile/friends")]
-    pub fn friends( resources: State<Resources>, session: Session ) -> Page {
-        let friends = Friend::friends(session.view);
+    pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
+        let friends = Friend::friends(&conn,session.view);
         resources.page("/profile/friends",true)
             .with_context(context!(
                 "friends" => friends))
     }
     
     #[get("/profile/messages")]
-    pub fn messages( resources: State<Resources>, session: Session ) -> Page {
-        let messages = Message::messages(session.view);
+    pub fn messages( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
+        let messages = Message::messages(&conn,session.view);
         resources.page("/profile/messages",true)
             .with_context(context!(
                 "messages" => messages))
@@ -68,6 +70,8 @@ pub mod api {
         request::{Form},
         http::{Cookies}
     };
+
+    use bowtie_data::Conn;
 
     type ApiResponse = Result<Redirect,Flash<Redirect>>;
 
@@ -116,26 +120,28 @@ pub mod api {
         }
 
         #[post("/api/v1/posts/create?<redirect>", data = "<form>")]
-        pub fn create( redirect: Option<String>,
-                       cookies:  Cookies, 
-                       form:     Form<CreatePost>) -> ApiResponse {
+        pub fn create( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<CreatePost>) -> ApiResponse {
             let path = redirect.unwrap_or("/write".to_string());
             let (_,vid) = unpack!(path,cookies);
 
-            match Post::create_from(vid,&form.title,&form.body) {
+            match Post::create_from(&conn,vid,&form.title,&form.body) {
                 Ok(_) => Ok(Redirect::to(path)),
                 _ => flash!(path,"Could not create post")
             }
         }
 
         #[post("/api/v1/posts/delete?<redirect>", data = "<form>")]
-        pub fn delete( redirect: Option<String>,
-                       cookies:  Cookies, 
-                       form:     Form<DeletePost>) -> ApiResponse {
+        pub fn delete( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<DeletePost>) -> ApiResponse {
             let path = redirect.unwrap_or("/feed".to_string());
             let (_,vid) = unpack!(path,cookies);
 
-            match Post::delete_from(vid,form.value) {
+            match Post::delete_from(&conn,vid,form.value) {
                 Ok(_)  => Ok(Redirect::to(path)),
                 _ => flash!(path,"Could not delete post")
             }
@@ -172,13 +178,14 @@ pub mod api {
         }
 
         #[post("/api/v1/views/create?<redirect>", data = "<form>")]
-        pub fn create( redirect: Option<String>,
-                       mut cookies:  Cookies, 
-                       form:     Form<CreateView>) -> ApiResponse {
+        pub fn create( conn: Conn,
+                       redirect: Option<String>,
+                       mut cookies: Cookies, 
+                       form: Form<CreateView>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,_) = unpack!(path,cookies);
 
-            match View::create_from(uid,&form.value) {
+            match View::create_from(&conn,uid,&form.value) {
                 Ok(v) if v.id.is_some() => {
                     match Session::add_view(v.id.unwrap(),v.name,&mut cookies) {
                         Ok(_) => Ok(Redirect::to(path)),
@@ -208,9 +215,10 @@ pub mod api {
         }
 
         #[post("/api/v1/views/delete?<redirect>", data = "<form>")]
-        pub fn delete( redirect: Option<String>, 
-                       mut cookies:  Cookies, 
-                       form:     Form<DeleteView>) -> ApiResponse {
+        pub fn delete( conn: Conn,
+                       redirect: Option<String>, 
+                       mut cookies: Cookies, 
+                       form: Form<DeleteView>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,cid) = unpack!(path,cookies);
 
@@ -218,7 +226,7 @@ pub mod api {
                 return flash!(path,"Cannot delete current view")
             }
 
-            match View::delete_from(uid,form.value) {
+            match View::delete_from(&conn,uid,form.value) {
                 Ok(v) if v.id.is_some() => {
                     match Session::remove_view(v.id.unwrap(),&mut cookies) {
                         Ok(_) => Ok(Redirect::to(path)),

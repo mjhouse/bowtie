@@ -1,7 +1,8 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use] 
-extern crate rocket;
+#[macro_use] extern crate rocket;
+
 extern crate bowtie_routes;
+extern crate bowtie_data;
 
 use dotenv::dotenv;
 use rocket_contrib::{
@@ -13,6 +14,7 @@ use bowtie_routes::errors;
 use bowtie_routes::public;
 use bowtie_routes::profile;
 use bowtie_routes::auth;
+use bowtie_data::Conn;
 
 const RESOURCES:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/resources");
 const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
@@ -23,6 +25,7 @@ fn main() {
 
     rocket::ignite()
         .manage(Resources::from(RESOURCES))
+        .manage(Conn::initialize("DATABASE_URL"))
         .mount("/", routes![
             // public routes
             public::index, 
@@ -31,14 +34,11 @@ fn main() {
             public::users,
             public::posts,
             
-            // authentication routes
-            auth::login,
-            auth::register, 
-            auth::unregister,
-            
-            // auth::pages::login,
-            // auth::pages::register,
-            // auth::pages::unregister,
+            // authentication routes            
+            auth::pages::login,
+            auth::pages::register,
+            auth::pages::unregister,
+            auth::pages::recover,
 
             auth::api::account::login,
             auth::api::account::logout,

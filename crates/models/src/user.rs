@@ -1,7 +1,6 @@
 pub use bowtie_data::{schema::*,traits::*};
 use crate::view::*;
 use crate::error::*;
-use crate::session::*;
 
 use diesel::prelude::*;
 
@@ -13,10 +12,6 @@ use serde::{Serialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
 use std::env;
-
-use rocket::{
-    request::{FromRequest,Outcome,Request}
-};
 
 use failure::*;
 
@@ -51,24 +46,25 @@ impl User {
     // @todo Make macro to generate common model create/delete functions
     // @body `create_from`, `create` and `delete` are common to all models
 
-    pub fn create_from(t_name: &str, t_password: &str) -> Result<User,Error> {
-        User::create(User {
-            id:       None,
-            email:    None,
-            username: t_name.into(),
-            passhash: encode(&hash!(t_password))
+    pub fn create_from(t_conn: &PgConnection, t_name: &str, t_password: &str) -> Result<User,Error> {
+        User::create(
+            t_conn,
+            User {
+                id:       None,
+                email:    None,
+                username: t_name.into(),
+                passhash: encode(&hash!(t_password)
+            )
         })
     }
 
-    pub fn create(t_user: User) -> Result<User,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-
-        conn.transaction::<_, Error, _>(|| {
+    pub fn create(t_conn: &PgConnection, t_user: User) -> Result<User,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
             // create model
             let model: UserModel = 
                 diesel::insert_into(users::table)
                 .values(&t_user)
-                .get_result(&conn)?;
+                .get_result(t_conn)?;
 
             // create default view
             let view = View {
@@ -79,16 +75,14 @@ impl User {
         
             diesel::insert_into(views::table)
                 .values(&view)
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             Ok(model.into())
         })
     }
 
-    pub fn delete(t_user: User) -> Result<User,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-
-        conn.transaction::<_, Error, _>(|| {
+    pub fn delete(t_conn: &PgConnection, t_user: User) -> Result<User,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
             let id = match t_user.id {
                 Some(id) => id,
                 _ => Err(BowtieError::NoId)?
@@ -98,70 +92,35 @@ impl User {
             let ids = views::table
                 .filter(views::user_id.eq(id))
                 .select(views::id)
-                .load::<i32>(&conn)?;
+                .load::<i32>(t_conn)?;
 
             // delete all posts associated with the user's views
             diesel::delete(
                 posts_dsl.filter(
                     posts::view_id.eq_any(ids)))
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             // delete all views associated with the user
             diesel::delete(
                 views_dsl.filter(
                     views::user_id.eq(id)))
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             // delete the user
             let model: UserModel = 
             diesel::delete(
                 users_dsl.filter(
                     users::id.eq(id)))
-                .get_result(&conn)?;
+                .get_result(t_conn)?;
 
             // return the deleted user
             Ok(model.into())
         })
     }
 
-    pub fn views( &self ) -> Vec<View> {
-        let conn = db!(vec![]);
-
-        let id = match self.id {
-            Some(id) => id,
-            _ => return vec![]
-        };
-
-        match views::table
-            .filter(views::user_id.eq(id))
-            .load::<ViewModel>(&conn) {
-                Ok(v)  => v.into_iter()
-                           .map(|m| m.into())
-                           .collect(),
-                Err(_) => vec![]
-            }
-    }
-
     pub fn validate( &self, t_password:&str ) -> bool {
         let hash = encode(&hash!(t_password));
         self.passhash == hash
-    }
-
-}
-
-impl<'a, 'r> FromRequest<'a, 'r> for User {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> Outcome<User,()> {
-        match Session::get(&request.cookies()){
-            Ok(s)  => {
-                match s.user() {
-                    Ok(u) =>  Outcome::Success(u),
-                    Err(_) => Outcome::Forward(()) 
-                }
-            },
-            Err(_) => Outcome::Forward(())
-        }
     }
 
 }

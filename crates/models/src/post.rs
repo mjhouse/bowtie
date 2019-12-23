@@ -39,52 +39,44 @@ queries!(
 
 impl Post {
     
-    pub fn create_from(t_view: i32, t_title: &str, t_body: &str) -> Result<Post,Error> {
-        Post::create(Post {
-            id:      None,
-            view_id: t_view,
-            title:   t_title.into(),
-            body:    t_body.into(),
-            created: Utc::now().naive_utc()
-        })
+    pub fn create_from(t_conn: &PgConnection, t_view: i32, t_title: &str, t_body: &str) -> Result<Post,Error> {
+        Post::create(
+            t_conn,
+            Post {
+                id:      None,
+                view_id: t_view,
+                title:   t_title.into(),
+                body:    t_body.into(),
+                created: Utc::now().naive_utc()
+            }
+        )
     }
 
-    pub fn delete_from(t_view: i32, t_id: i32) -> Result<Post,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-        
-        conn.transaction::<_, Error, _>(|| {
-            // delete the post
-            let model: PostModel = 
-            diesel::delete(
-                posts_dsl.filter(
-                    posts::view_id.eq(t_view)
-                    .and(posts::id.eq(t_id))
-                ))
-                .get_result(&conn)?;
+    pub fn delete_from(t_conn: &PgConnection, t_view: i32, t_id: i32) -> Result<Post,Error> {
+        let model: PostModel = 
+        diesel::delete(
+            posts_dsl.filter(
+                posts::view_id.eq(t_view)
+                .and(posts::id.eq(t_id))
+            ))
+            .get_result(t_conn)?;
 
-            // return the deleted post
-            Ok(model.into())
-        })
+        // return the deleted post
+        Ok(model.into())
     }
 
-    pub fn create(t_post: Post) -> Result<Post,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
+    pub fn create(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
+        // create model
+        let model: PostModel = 
+            diesel::insert_into(posts::table)
+            .values(&t_post)
+            .get_result(t_conn)?;
 
-        conn.transaction::<_, Error, _>(|| {
-            // create model
-            let model: PostModel = 
-                diesel::insert_into(posts::table)
-                .values(&t_post)
-                .get_result(&conn)?;
-
-            Ok(model.into())
-        })
+        Ok(model.into())
     }
 
-    pub fn delete(t_post: Post) -> Result<Post,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-
-        conn.transaction::<_, Error, _>(|| {
+    pub fn delete(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
             let id = match t_post.id {
                 Some(id) => id,
                 _ => Err(BowtieError::NoId)?
@@ -98,7 +90,7 @@ impl Post {
             diesel::delete(
                 posts_dsl.filter(
                     posts::id.eq(id)))
-                .get_result(&conn)?;
+                .get_result(t_conn)?;
 
             // return the deleted post
             Ok(model.into())

@@ -2,6 +2,8 @@ use serde::{Serialize, Deserialize};
 use medallion::{Header,Payload,Token,};
 use failure::{Error};
 
+use diesel::pg::PgConnection;
+
 use rocket::{
     request::{FromRequest,Outcome,Request},
     http::{Cookies,Cookie}
@@ -40,10 +42,10 @@ pub struct Session {
 
 impl Session {
 
-    pub fn user( &self ) -> Result<User,Error> {
+    pub fn user( &self, t_conn: &PgConnection ) -> Result<User,Error> {
         match self.id {
             Some(id) => {
-                match User::for_id(id) {
+                match User::for_id(t_conn,id) {
                     Some(u) => Ok(u),
                     None => Err(BowtieError::RecordNotFound)?
                 }
@@ -52,14 +54,14 @@ impl Session {
         }
     }
 
-    pub fn create( t_user: &User, t_cookies: &mut Cookies ) -> Result<Session,Error> {
+    pub fn create( t_conn: &PgConnection, t_user: &User, t_cookies: &mut Cookies ) -> Result<Session,Error> {
         let id = match t_user.id {
             Some(id) => id,
             _ => return Err(BowtieError::RecordNotFound)? 
         };
         
         // get all existing views as (id,name) pairs
-        let views = View::for_user(id.clone())
+        let views = View::for_user(t_conn,id.clone())
             .iter()
             .map(|v| (v.id.unwrap_or(-1),v.name.clone()))
             .collect::<Vec<(i32,String)>>();

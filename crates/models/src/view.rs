@@ -37,38 +37,39 @@ impl View {
 
     // --------------------------------------------------------
     // Creation / Destruction
-    pub fn create_from(t_user: i32, t_name: &str) -> Result<View,Error> {
-        View::create(View {
-            id: None,
-            user_id: t_user,
-            name: t_name.into()
-        })
+    pub fn create_from(t_conn: &PgConnection, t_user: i32, t_name: &str) -> Result<View,Error> {
+        View::create(
+            t_conn,
+            View {
+                id: None,
+                user_id: t_user,
+                name: t_name.into()
+            }
+        )
     }
 
-    pub fn delete_from(t_user: i32, t_view: i32) -> Result<View,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-        
-        conn.transaction::<_, Error, _>(|| {
+    pub fn delete_from(t_conn: &PgConnection, t_user: i32, t_view: i32) -> Result<View,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
 
             diesel::delete(
                 friends_dsl.filter(
                     friends::view1.eq(t_view)
                     .or(friends::view2.eq(t_view))
                 ))
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             diesel::delete(
                 requests_dsl.filter(
                     friend_requests::sender.eq(t_view)
                     .or(friend_requests::receiver.eq(t_view))
                 ))
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             // delete all posts associated with the view
             diesel::delete(
                 posts_dsl.filter(
                     posts::view_id.eq(t_view)))
-                .execute(&conn)?;
+                .execute(t_conn)?;
 
             // delete the view
             let model: ViewModel = 
@@ -77,39 +78,35 @@ impl View {
                     views::user_id.eq(t_user)
                     .and(views::id.eq(t_view))
                 ))
-                .get_result(&conn)?;
+                .get_result(t_conn)?;
 
             // return the deleted view
             Ok(model.into())
         })
     }
 
-    pub fn create(t_view: View) -> Result<View,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-
-        conn.transaction::<_, Error, _>(|| {
+    pub fn create(t_conn: &PgConnection, t_view: View) -> Result<View,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
             // create model
             let model: ViewModel = 
                 diesel::insert_into(views::table)
                 .values(&t_view)
-                .get_result(&conn)?;
+                .get_result(t_conn)?;
 
             Ok(model.into())
         })
     }
 
-    pub fn delete(t_view: View) -> Result<View,Error> {
+    pub fn delete(t_conn: &PgConnection, t_view: View) -> Result<View,Error> {
         match (t_view.user_id,t_view.id) {
-            (uid,Some(vid)) => View::delete_from(uid,vid),
+            (uid,Some(vid)) => View::delete_from(t_conn,uid,vid),
             _ => Err(BowtieError::NoId)?
         }
     }
     // --------------------------------------------------------
 
-    pub fn find_from(t_user: i32, t_view: i32) -> Result<View,Error> {
-        let conn = db!(Err(BowtieError::NoConnection)?);
-
-        conn.transaction::<_, Error, _>(|| {
+    pub fn find_from(t_conn: &PgConnection, t_user: i32, t_view: i32) -> Result<View,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
             // find the view
             let model: ViewModel = 
             views::table
@@ -117,16 +114,14 @@ impl View {
                     views::user_id.eq(t_user)
                     .and(views::id.eq(t_view))
                 )
-                .first::<ViewModel>(&conn)?;
+                .first::<ViewModel>(t_conn)?;
 
             // return the deleted view
             Ok(model.into())
         })
     }
 
-    pub fn posts( &self ) -> Vec<Post> {
-        let conn = db!(vec![]);
-
+    pub fn posts( &self, t_conn: &PgConnection ) -> Vec<Post> {
         let id = match self.id {
             Some(i) => i,
             _ => return vec![]
@@ -134,7 +129,7 @@ impl View {
 
         match posts::table
             .filter(posts::view_id.eq(id))
-            .load::<PostModel>(&conn) {
+            .load::<PostModel>(t_conn) {
                 Ok(p)  => p.into_iter()
                            .map(|m| m.into())
                            .collect(),
@@ -142,12 +137,10 @@ impl View {
             }
     }
 
-    pub fn for_user(t_id: i32) -> Vec<View> {
-        let conn = db!(vec![]);
-
+    pub fn for_user(t_conn: &PgConnection, t_id: i32) -> Vec<View> {
         match views::table
             .filter(views::user_id.eq(t_id))
-            .load::<ViewModel>(&conn) {
+            .load::<ViewModel>(t_conn) {
             Ok(p) => {
                 p.into_iter()
                     .map(|m| m.into())

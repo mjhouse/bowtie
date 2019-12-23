@@ -1,21 +1,11 @@
 use diesel::prelude::*;
 use diesel::pg::Pg;
-use std::env;
 
 use serde::{Serialize};
 use rocket::request::{FromForm, FormItems};
 
 pub use bowtie_data::schema::*;
 use crate::{Post,View,ViewModel,PostModel};
-
-macro_rules! conn_or {
-    ( $v:expr ) => {
-        match db!() {
-            Some(c) => c,
-            _ => return $v
-        };
-    }
-}
 
 macro_rules! unpack {
     ( $i:ident ) => {
@@ -89,14 +79,13 @@ pub struct Search {
 
 impl Search {
 
-    pub fn from( t_query: &SearchQuery ) -> Option<Self> {
+    pub fn from( t_conn: &PgConnection, t_query: &SearchQuery ) -> Option<Self> {
         let (v,p) = match t_query.targets.len() {
             0 => (vec![],vec![]),
             _ => {
-                let conn = conn_or!(None);
                 (
-                    Search::for_views(&conn,t_query),
-                    Search::for_posts(&conn,t_query) 
+                    Search::for_views(t_conn,t_query),
+                    Search::for_posts(t_conn,t_query) 
                 )
             }
         };

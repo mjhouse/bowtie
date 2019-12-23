@@ -10,6 +10,8 @@ use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::search::*;
 
+use bowtie_data::Conn;
+
 #[get("/")]
 pub fn index( resources: State<Resources> ) -> Page {
     resources.page("/public/index",false)
@@ -21,16 +23,16 @@ pub fn about( resources: State<Resources> ) -> Page {
 }
 
 #[get("/search?<query..>")]
-pub fn search( resources: State<Resources>, query: LenientForm<SearchQuery> ) -> Page {
+pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<SearchQuery> ) -> Page {
     resources.page("/public/search",false)
         .with_context(context!(
-            "search" => Search::from(&query)))
+            "search" => Search::from(&conn,&query)))
 }
 
 #[get("/users/<name>")]
-pub fn users( resources: State<Resources>, name: String ) -> Page {
-    let (posts,view) = match View::for_name(&name) {
-        Some(v) => (v.posts(),Some(v)),
+pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
+    let (posts,view) = match View::for_name(&conn,&name) {
+        Some(v) => (v.posts(&conn),Some(v)),
         None    => (vec![],None)
     };
 
@@ -41,8 +43,8 @@ pub fn users( resources: State<Resources>, name: String ) -> Page {
 }
 
 #[get("/posts/<id>")]
-pub fn posts( resources: State<Resources>, id: i32 ) -> Page {
+pub fn posts( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
     resources.page("/public/post",false)
         .with_context(context!(
-            "post" => Post::for_id(id)))
+            "post" => Post::for_id(&conn,id)))
 }
