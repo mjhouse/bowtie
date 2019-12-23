@@ -20,11 +20,15 @@ pub mod pages {
         post::Post
     };
 
+    /// The base page for a user's profile. Redirects
+    /// to `/profile/feed`
     #[get("/profile")]
     pub fn main() -> Redirect {
         Redirect::to("/profile/feed")
     }
     
+    /// Display posts for the current view and recent posts from
+    /// subscribed views.
     #[get("/profile/feed")]
     pub fn feed( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
         let posts = Post::for_view(&conn,session.view);
@@ -33,6 +37,7 @@ pub mod pages {
                 "posts" => posts))
     }
     
+    /// Display friends of the current view.
     #[get("/profile/friends")]
     pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
         let friends = Friend::friends(&conn,session.view);
@@ -41,6 +46,7 @@ pub mod pages {
                 "friends" => friends))
     }
     
+    /// Sent and received messages for the current view.
     #[get("/profile/messages")]
     pub fn messages( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
         let messages = Message::messages(&conn,session.view);
@@ -49,11 +55,14 @@ pub mod pages {
                 "messages" => messages))
     }
     
+    /// Write a new post for the current view.
     #[get("/profile/write")]
     pub fn write( resources: State<Resources> ) -> Page {
         Page::render(&resources,"/profile/write",true)
     }
     
+    /// Change settings for the current view or switch
+    /// to a different view.
     #[get("/profile/settings")]
     pub fn settings( resources: State<Resources> ) -> Page {
         Page::render(&resources,"/profile/settings",true)
