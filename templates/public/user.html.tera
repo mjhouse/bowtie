@@ -1,9 +1,0 @@
-{% extends 'base' %}
-
-{% block content %}
-    {% if view %}
-        USER: {{view.name}}
-    {% else %}
-        USER: not found
-    {% endif %}
-{% endblock content %}

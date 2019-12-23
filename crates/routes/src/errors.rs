@@ -1,4 +1,4 @@
-use rocket::request::{FromRequest,Outcome};
+use rocket::request::{Outcome};
 use rocket::Request;
 use rocket::State;
 

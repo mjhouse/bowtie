@@ -1,22 +1,5 @@
-use rocket_contrib::{
-    templates::Template
-};
-
-use rocket::{
-    State,
-    http::{Cookies,Cookie},
-    request::{LenientForm},
-    response::{Flash,Redirect}
-};
-
+use rocket::State;
 use crate::resources::*;
-use bowtie_models::user::*;
-use bowtie_models::session::*;
-
-use crate::forms::*;
-
-type GetResponse  = Result<Template,Flash<Redirect>>;
-type PostResponse = Result<Redirect,Flash<Redirect>>;
 
 #[get("/login")]
 pub fn login( resources: State<Resources> ) -> Page {
@@ -92,8 +75,7 @@ pub mod api {
         }
 
         #[post("/api/v1/register?<redirect>", data = "<form>")]
-        pub fn register( redirect:    Option<String>,
-                         mut cookies: Cookies, 
+        pub fn register( redirect:    Option<String>, 
                          form:        Form<RegisterForm>) -> ApiResponse {
             let path = redirect.unwrap_or("/login".to_string());
             if form.password1 == form.password2 {

@@ -1,10 +1,9 @@
 use std::fs;
 use std::path::{PathBuf,Path};
 use std::collections::HashMap;
-use walkdir::{WalkDir,DirEntry};
+use walkdir::{WalkDir};
 use tera::{Tera,Context};
 use chrono::{Utc};
-use minify::html::minify;
 
 use rsass::{
     OutputStyle, 
@@ -14,22 +13,13 @@ use rsass::{
 use serde::Serialize;
 
 use std::io::Cursor;
-use rocket_contrib::templates::Template;
 use rocket::{
-    State,
     request::{FromRequest,Request,Outcome,FlashMessage},
     response::{self,Response, Responder},
     http::{ContentType,Status}
 };
 
 use bowtie_models::session::*;
-
-macro_rules! unflash {
-    ( $f:expr ) => { 
-        $f.map(|msg| Some(msg.msg().to_string()))
-          .unwrap_or_else(|| None)
-    }
-}
 
 macro_rules! files {
     ( $r:expr, $f:expr ) => {

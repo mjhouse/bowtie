@@ -14,21 +14,6 @@ pub struct ViewForm {
     pub action: String
 }
 
-#[derive(FromForm)]
-pub struct LoginForm {
-    pub username: String,
-    pub password: String
-}
-
-#[derive(FromForm)]
-pub struct RegisterForm {
-    pub username:  String,
-    pub password1: String,
-    pub password2: String
-}
-
-
-
 impl From<Form<ViewForm>> for Action {
     fn from(form: Form<ViewForm>) -> Self {
         match (form.action.as_str(),form.value.clone()) {
