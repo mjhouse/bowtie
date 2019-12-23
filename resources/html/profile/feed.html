@@ -1,0 +1,38 @@
+{% extends 'profile/base.html' %}
+
+{% block body %}
+<div class="row x1">
+
+    <div class="col x1 w50">
+    {% if posts %}
+        {% for post in posts %}
+            <article class="card col p10 m5">
+                <h1 class="m5 p5">
+                    {{ post.title }}
+                </h1>
+                <div class="m5 p10">
+                    {{ post.body|safe }}
+                </div>
+                <nav class="row m5 p5 f1">
+                    <span class="">
+                    {{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
+                    {% if post.view_id == session.view %}
+                    <form action="/api/v1/posts/delete?redirect=/profile/feed" method="post" class="l">
+                        <input type="hidden" name="value" value="{{post.id}}"/>
+                        <button class="btn-med" type="submit">delete</button>
+                    </form>
+                    {% endif %}
+                </nav>
+            </article>
+        {% endfor %}
+    {% else %}
+        <span class="p10 l r">Nothing here!</span>
+    {% endif %}
+    </div>
+
+    {# FOR SUBSCRIBED - REVERSE CHRONO #}
+    <div class="col x1 w50">
+        <span class="p10 l r">Nothing here!</span>
+    </div>
+</div>
+{% endblock body %}

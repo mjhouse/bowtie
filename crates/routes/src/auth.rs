@@ -3,13 +3,14 @@ use rocket_contrib::{
 };
 
 use rocket::{
+    State,
     http::{Cookies,Cookie},
-    request::{FlashMessage,LenientForm},
+    request::{LenientForm},
     response::{Flash,Redirect}
 };
 
+use crate::resources::*;
 use bowtie_models::user::*;
-use bowtie_models::context::*;
 use bowtie_models::session::*;
 
 use crate::forms::*;
@@ -18,69 +19,93 @@ type GetResponse  = Result<Template,Flash<Redirect>>;
 type PostResponse = Result<Redirect,Flash<Redirect>>;
 
 #[get("/login")]
-pub fn login_get( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
-    Ok(Template::render("auth/login",Context {
-        session:  session,
-        flash:    unflash!(msg),
-        ..Default::default()
-    }))
-}
-
-#[post("/login", data = "<form>")]
-pub fn login_post( mut cookies:Cookies, form: LenientForm<LoginForm> ) -> PostResponse {
-    match User::for_username(&form.username) {
-        Some(user) if user.validate(&form.password) => {
-            match Session::create(&user, &mut cookies) {
-                Ok(_)  => Ok(Redirect::to("/profile")),
-                Err(_) => flash!("/login", "Could not create session")
-            }
-        },
-        _ => flash!("/login", "Invalid username or password")
-    }
-}
-
-#[get("/logout")]
-pub fn logout(mut cookies:Cookies) -> PostResponse {
-    cookies.remove(Cookie::named(User::COOKIE_NAME));
-    Ok(Redirect::to("/"))
+pub fn login( resources: State<Resources> ) -> Page {
+    resources.page("/auth/login",false)
 }
 
 #[get("/register")]
-pub fn register_get( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
-    Ok(Template::render("auth/register",Context {
-        session: session,
-        flash:   unflash!(msg),
-        ..Default::default()
-    }))
+pub fn register( resources: State<Resources> ) -> Page {
+    resources.page("/auth/register",false)
 }
 
-#[post("/register", data = "<form>")]
-pub fn register_post( form: LenientForm<RegisterForm> ) -> PostResponse {
-    match form.password1 == form.password2 {
-        true => {
-            match User::create_from(&form.username,&form.password1) {
-                Ok(_) => Ok(Redirect::to("/login")), 
-                _ => flash!("/register", "Username is taken")
-            }
-        }
-        _ => flash!("/register", "Passwords don't match")
-    }
-}
-
-#[post("/unregister")]
-pub fn unregister( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
-    Ok(Template::render("auth/unregister",Context {
-        session: session,
-        flash:   unflash!(msg),
-        ..Default::default()
-    }))
+#[get("/unregister")]
+pub fn unregister( resources: State<Resources> ) -> Page {
+    resources.page("/auth/unregister",false)
 }
 
 #[get("/recover")]
-pub fn recover( session: Option<Session>, msg: Option<FlashMessage> ) -> GetResponse {
-    Ok(Template::render("auth/recover",Context {
-        session: session,
-        flash:   unflash!(msg),
-        ..Default::default()
-    }))
+pub fn recover( resources: State<Resources> ) -> Page {
+    resources.page("/auth/recover",false)
+}
+
+pub mod api {
+
+    pub mod account {
+        
+        use rocket::{
+            response::{Flash,Redirect},
+            request::{Form},
+            http::{Cookies,Cookie}
+        };
+    
+        use bowtie_models::{
+            session::{Session},
+            user::{User}
+        };
+    
+        type ApiResponse = Result<Redirect,Flash<Redirect>>;
+    
+        #[derive(FromForm)]
+        pub struct LoginForm {
+            pub username: String,
+            pub password: String
+        }
+
+        #[derive(FromForm)]
+        pub struct RegisterForm {
+            pub username:  String,
+            pub password1: String,
+            pub password2: String
+        }
+    
+        #[post("/api/v1/login?<redirect>", data = "<form>")]
+        pub fn login( redirect:    Option<String>,
+                      mut cookies: Cookies, 
+                      form:        Form<LoginForm>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile".to_string());
+            match User::for_username(&form.username) {
+                Some(user) if user.validate(&form.password) => {
+                    match Session::create(&user, &mut cookies) {
+                        Ok(_)  => Ok(Redirect::to(path)),
+                        Err(_) => flash!("/login", "Could not create session")
+                    }
+                },
+                _ => flash!("/login", "Invalid username or password")
+            }
+        }
+
+        // @todo Make it possible to remove cookie from '/api/v1/logout'
+        #[get("/logout")]
+        pub fn logout( mut cookies: Cookies ) -> ApiResponse {
+            cookies.remove(Cookie::named(User::COOKIE_NAME));
+            Ok(Redirect::to("/"))
+        }
+
+        #[post("/api/v1/register?<redirect>", data = "<form>")]
+        pub fn register( redirect:    Option<String>,
+                         mut cookies: Cookies, 
+                         form:        Form<RegisterForm>) -> ApiResponse {
+            let path = redirect.unwrap_or("/login".to_string());
+            if form.password1 == form.password2 {
+                match User::create_from(&form.username,&form.password1) {
+                    Ok(_) => Ok(Redirect::to(path)), 
+                    _ => flash!("/register", "Username is taken")
+                }
+            }
+            else {
+                flash!("/register", "Passwords don't match")
+            }
+        }
+
+    }
 }

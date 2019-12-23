@@ -3,84 +3,60 @@
 // @body https://api.rocket.rs/v0.5/rocket_contrib/databases/index.html
 
 pub mod pages {
-
-    use rocket_contrib::{
-        templates::Template
-    };
     
     use rocket::{
-        request::{FlashMessage},
+        State,
         response::{Redirect},
     };
-    
-    use diesel::prelude::*;
+
     use std::env;
+    use diesel::prelude::*;
     
+    use crate::resources::*;
+    use tera::{Context};
     use bowtie_models::*;
 
     #[get("/profile")]
-    pub fn main( _session: Session ) -> Redirect {
+    pub fn main() -> Redirect {
         Redirect::to("/profile/feed")
     }
     
     #[get("/profile/feed")]
-    pub fn feed( session: Session, msg: Option<FlashMessage> ) -> Template {
+    pub fn feed( resources: State<Resources>, session: Session ) -> Page {
         let posts = match (db!(),session.view) {
             (Some(c),id) => Post::for_view(&c,id),
             _ => vec![]
         };
-    
-        Template::render("profile/feed",Context {
-            route:   "/profile/feed",
-            session: Some(session),
-            posts:   posts,
-            flash:   unflash!(msg),
-            ..Default::default()
-        })
+
+        resources.page("/profile/feed",true)
+            .with_context(context!(
+                "posts" => posts))
     }
     
     #[get("/profile/friends")]
-    pub fn friends( session: Session, msg: Option<FlashMessage> ) -> Template {
+    pub fn friends( resources: State<Resources>, session: Session ) -> Page {
         let friends = Friend::friends(session.view);
-        Template::render("profile/friends",Context {
-            route:   "/profile/friends",
-            session: Some(session),
-            views:   friends,
-            flash:   unflash!(msg),
-            ..Default::default()
-        })
+        resources.page("/profile/friends",true)
+            .with_context(context!(
+                "friends" => friends))
     }
     
     #[get("/profile/messages")]
-    pub fn messages( session: Session, msg: Option<FlashMessage> ) -> Template {
+    pub fn messages( resources: State<Resources>, session: Session ) -> Page {
         let messages = Message::messages(session.view);
-        Template::render("profile/messages",Context {
-            route:   "/profile/messages",
-            session: Some(session),
-            messages: messages,
-            flash:    unflash!(msg),
-            ..Default::default()
-        })
+        resources.page("/profile/messages",true)
+            .with_context(context!(
+                "messages" => messages))
     }
     
     #[get("/profile/write")]
-    pub fn write( session: Session, msg: Option<FlashMessage>  ) -> Template {
-        Template::render("profile/write",Context {
-            route:   "/profile/write",
-            session: Some(session),
-            flash:   unflash!(msg),
-            ..Default::default()
-        })
+    pub fn write( resources: State<Resources> ) -> Page {
+        resources.page("/profile/write",true)
     }
     
     #[get("/profile/settings")]
-    pub fn settings( session: Session, msg: Option<FlashMessage>  ) -> Template {
-        Template::render("profile/settings",Context {
-            route:   "/profile/settings",
-            session: Some(session),
-            flash:   unflash!(msg),
-            ..Default::default()
-        })
+    pub fn settings( resources: State<Resources> ) -> Page {
+        resources.page("/profile/settings",true)
     }
 
 }

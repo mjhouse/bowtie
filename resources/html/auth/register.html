@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form class="l r col" action="/api/v1/register?redirect=/login" method="post">
+    <h1 class="p5">Register</h1>
+    {% if flash %}
+    <p class="flash">{{ flash }}</p>
+    {% endif %}
+    <br/>
+    <input class="txt-med m5" name="username" type="text" placeholder="Username" tabindex="4" required/>
+    <input class="txt-med m5" name="password1" type="password" placeholder="Password" tabindex="5" required/>
+    <input class="txt-med m5" name="password2" type="password" placeholder="Password (Again)" tabindex="5" required/>
+    <button class="l m5 btn-med" type="submit" tabindex="6">Register</button>
+
+    <p class="m5 f1">
+        <a href="/login" tabindex="8">Login</a>
+    </p>
+</form>
+{% endblock content %}

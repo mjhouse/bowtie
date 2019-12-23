@@ -90,10 +90,20 @@ pub struct Search {
 impl Search {
 
     pub fn from( t_query: &SearchQuery ) -> Option<Self> {
-        let conn = conn_or!(None);
+        let (v,p) = match t_query.targets.len() {
+            0 => (vec![],vec![]),
+            _ => {
+                let conn = conn_or!(None);
+                (
+                    Search::for_views(&conn,t_query),
+                    Search::for_posts(&conn,t_query) 
+                )
+            }
+        };
+        
         Some(Self {
-            views: Search::for_views(&conn,t_query),
-            posts: Search::for_posts(&conn,t_query),
+            views: v,
+            posts: p,
             query: t_query.clone()
         })
     }

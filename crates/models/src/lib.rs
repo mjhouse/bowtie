@@ -15,7 +15,6 @@ pub mod friend;
 pub mod message;
 
 // handling
-pub mod context;
 pub mod search;
 pub mod error;
 pub mod session;
@@ -25,6 +24,4 @@ pub use post::{Post,PostModel};
 pub use view::{View,ViewModel};
 pub use friend::{Friend,FriendModel};
 pub use message::{Message,MessageModel};
-
-pub use context::{Context};
 pub use session::{Session};

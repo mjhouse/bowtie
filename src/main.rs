@@ -6,25 +6,23 @@ extern crate bowtie_routes;
 use dotenv::dotenv;
 use rocket_contrib::{
     serve::StaticFiles,
-    templates::Template
 };
 
+use bowtie_routes::resources::Resources;
 use bowtie_routes::errors;
 use bowtie_routes::public;
 use bowtie_routes::profile;
 use bowtie_routes::auth;
-use bowtie_routes::styles;
 
-const STATIC_SCSS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/scss");
-const STATIC_CSS:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/css");
-const STATIC_JS:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/js");
+const RESOURCES:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/resources");
 const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
 const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
 
 fn main() {
     dotenv().ok();
+
     rocket::ignite()
-        .attach(Template::fairing())
+        .manage(Resources::from(RESOURCES))
         .mount("/", routes![
             // public routes
             public::index, 
@@ -34,13 +32,19 @@ fn main() {
             public::posts,
             
             // authentication routes
-            auth::login_get, 
-            auth::login_post, 
-            auth::logout,
-            auth::register_get, 
-            auth::register_post, 
+            auth::login,
+            auth::register, 
             auth::unregister,
             
+            // auth::pages::login,
+            // auth::pages::register,
+            // auth::pages::unregister,
+
+            auth::api::account::login,
+            auth::api::account::logout,
+            auth::api::account::register,
+            // auth::api::account::unregister,
+
             // profile routes
             profile::pages::main,
             profile::pages::feed,
@@ -56,13 +60,10 @@ fn main() {
             profile::api::views::update,
             profile::api::views::delete,
         ])
-        .mount("/css",  StaticFiles::from(STATIC_CSS ))
-        .mount("/js",   StaticFiles::from(STATIC_JS  ))
         .mount("/img",  StaticFiles::from(STATIC_IMG ))
         .mount("/font", StaticFiles::from(STATIC_FONT))
         .register(catchers![
             errors::handler_404
         ])
-        .manage(styles::Styles::from(STATIC_SCSS))
         .launch();
 }

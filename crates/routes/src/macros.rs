@@ -8,3 +8,13 @@ macro_rules! unflash {
           .unwrap_or_else(|| None)
     }
 }
+
+macro_rules! context {
+    ( $( $k:expr => $v:expr ),* ) => {
+        {
+            let mut c = Context::new();
+            $( c.insert($k,&$v); )*
+            c
+        }
+    }
+}

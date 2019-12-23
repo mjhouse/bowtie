@@ -1,69 +1,48 @@
-use rocket_contrib::templates::Template;
 use rocket::{
     State,
-    request::{FlashMessage,LenientForm}
+    request::{LenientForm}
 };
 
-use crate::styles::*;
+use tera::{Context};
 
+use crate::resources::*;
 use bowtie_models::view::*;
 use bowtie_models::post::*;
-use bowtie_models::context::*;
-use bowtie_models::session::*;
 use bowtie_models::search::*;
 
 #[get("/")]
-pub fn index( styles: State<Styles>, session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("public/index",Context {
-        session: session,
-        sheet:   styles.sheet("light","index"),
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
+pub fn index( resources: State<Resources> ) -> Page {
+    resources.page("/public/index",false)
 }
 
 #[get("/about")]
-pub fn about( session: Option<Session>, msg: Option<FlashMessage> ) -> Template {
-    Template::render("public/about",Context {
-        session: session,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
+pub fn about( resources: State<Resources> ) -> Page {
+    resources.page("/public/about",false)
 }
 
 #[get("/search?<query..>")]
-pub fn search( session: Option<Session>, msg: Option<FlashMessage>, query: LenientForm<SearchQuery> ) -> Template {
-    Template::render("public/search",Context {
-        session: session,
-        flash:   unflash!(msg),
-        search:  Search::from(&query),
-        ..Default::default()
-    })
+pub fn search( resources: State<Resources>, query: LenientForm<SearchQuery> ) -> Page {
+    resources.page("/public/search",false)
+        .with_context(context!(
+            "search" => Search::from(&query)))
 }
 
 #[get("/users/<name>")]
-pub fn users( session: Option<Session>, msg: Option<FlashMessage>, name: String ) -> Template {
+pub fn users( resources: State<Resources>, name: String ) -> Page {
     let (posts,view) = match View::for_name(&name) {
         Some(v) => (v.posts(),Some(v)),
         None    => (vec![],None)
     };
 
-    Template::render("public/user",Context {
-        session: session,
-        view:    view,
-        posts:   posts,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
+    resources.page("/public/user",false)
+        .with_context(context!(
+            "posts" => posts,
+            "view"  => view))
 }
 
 #[get("/posts/<id>")]
-pub fn posts( session: Option<Session>, msg: Option<FlashMessage>, id: i32 ) -> Template {
-    let post = Post::for_id(id);
-    Template::render("public/post",Context {
-        session: session,
-        post:    post,
-        flash:   unflash!(msg),
-        ..Default::default()
-    })
+pub fn posts( resources: State<Resources>, id: i32 ) -> Page {
+    resources.page("/public/post",false)
+        .with_context(context!(
+            "post" => Post::for_id(id)))
 }

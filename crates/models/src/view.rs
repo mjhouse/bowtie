@@ -160,14 +160,4 @@ impl View {
         }
     }
 
-    pub fn first(t_id: i32) -> Option<i32> {
-        let conn = db!(None);
-        match views::table
-            .filter(views::user_id.eq(t_id))
-            .first::<ViewModel>(&conn) {
-                Ok(m)  => Some(m.id),
-                Err(_) => None
-            }
-    }
-
 }

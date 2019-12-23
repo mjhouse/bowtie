@@ -66,17 +66,18 @@ impl Session {
 
         if views.len() > 0 {
 
-            let view = match views.first() {
-                Some((id,_)) => *id,
+            let (view,name) = match views.first() {
+                Some((i,n)) => (i.clone(),n.clone()),
                 _ => return Err(BowtieError::RecordNotFound)?
             };
 
             let session = Session {
-                id: Some(id),
-                view: view,
-                views: views,
-                username: t_user.username.clone()
+                id:       Some(id),
+                view:     view,
+                views:    views,
+                username: name
             };
+
             match session.set(t_cookies) {
                 Ok(_)  => Ok(session),
                 Err(e) => Err(e)

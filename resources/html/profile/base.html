@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<nav class="profile__menu row">
+    <a class="p5 f1 l5" href="/profile/write">Post</a>
+    <a class="p5 f1 l5" href="/profile/feed">Feed</a>
+    <a class="p5 f1 l5" href="/profile/messages">Messages</a>
+    <a class="p5 f1 l5" href="/profile/friends">Friends</a>
+    <a class="p5 f1 l5" href="/profile/settings">Settings</a>
+    {% if flash %}
+    <div class="l p5 f1 r5">
+        {{flash}}
+    </div>
+    {% endif %}
+</nav>
+<div class="profile__body col x1">
+    {% block body %}
+    {% endblock body %}
+</div>
+{% endblock content %}
