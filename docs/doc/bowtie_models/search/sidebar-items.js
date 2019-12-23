@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["_IMPL_SERIALIZE_FOR_Search",""],["_IMPL_SERIALIZE_FOR_SearchQuery",""],["_IMPL_SERIALIZE_FOR_Target",""]],"enum":[["SearchError",""],["Target",""]],"mod":[["friend_requests",""],["friends",""],["messages",""],["posts",""],["users",""],["views",""]],"struct":[["Search",""],["SearchQuery",""]]});

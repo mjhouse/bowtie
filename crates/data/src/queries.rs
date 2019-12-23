@@ -15,7 +15,6 @@ macro_rules! queries {
             paste::item! {
                 $(
                     pub fn [<for_ $fn>](t_conn: &PgConnection, t_value: $ft) -> Option<Self> {
-                        let conn = db!(None);
                         match $tn::table
                         .filter($fp.eq(t_value))
                         .first::<[<$mn Model>]>(t_conn) {

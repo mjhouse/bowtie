@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["_IMPL_SERIALIZE_FOR_Post",""]],"fn":[["_impl_associations_for_post",""],["_impl_identifiable_for_post",""],["_impl_insertable_for_post",""],["_impl_queryable_for_postmodel",""]],"mod":[["friend_requests",""],["friends",""],["messages",""],["posts",""],["users",""],["views",""]],"struct":[["Post",""],["PostForm",""],["PostModel",""]]});

@@ -5,7 +5,11 @@ use serde::{Serialize};
 use rocket::request::{FromForm, FormItems};
 
 pub use bowtie_data::schema::*;
-use crate::{Post,View,ViewModel,PostModel};
+use crate::{
+    post::{Post,PostModel},
+    view::{View,ViewModel}
+
+};
 
 macro_rules! unpack {
     ( $i:ident ) => {

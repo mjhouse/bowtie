@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["accepted",""],["friend_requests","The actual table struct"],["id",""],["receiver",""],["sender",""]]});

@@ -14,17 +14,17 @@ use bowtie_data::Conn;
 
 #[get("/")]
 pub fn index( resources: State<Resources> ) -> Page {
-    resources.page("/public/index",false)
+    Page::render(&resources,"/public/index",false)
 }
 
 #[get("/about")]
 pub fn about( resources: State<Resources> ) -> Page {
-    resources.page("/public/about",false)
+    Page::render(&resources,"/public/about",false)
 }
 
 #[get("/search?<query..>")]
 pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<SearchQuery> ) -> Page {
-    resources.page("/public/search",false)
+    Page::render(&resources,"/public/search",false)
         .with_context(context!(
             "search" => Search::from(&conn,&query)))
 }
@@ -36,7 +36,7 @@ pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
         None    => (vec![],None)
     };
 
-    resources.page("/public/user",false)
+    Page::render(&resources,"/public/user",false)
         .with_context(context!(
             "posts" => posts,
             "view"  => view))
@@ -44,7 +44,7 @@ pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
 
 #[get("/posts/<id>")]
 pub fn posts( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
-    resources.page("/public/post",false)
+    Page::render(&resources,"/public/post",false)
         .with_context(context!(
             "post" => Post::for_id(&conn,id)))
 }

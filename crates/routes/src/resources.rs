@@ -89,15 +89,15 @@ pub struct Resources {
 
     // the chained Tera instance containing templated
     // html files from 'root/html'
-    html: Option<Tera>,
+    pub html: Option<Tera>,
 
     // compiled sass where the key is the path from 
     // 'root/css' and value is the compiled content.
-    css:  HashMap<String,String>,
+    pub css:  HashMap<String,String>,
 
     // minified js where the key is the path from
     // 'root/js' and the value is the minified content.
-    js:  HashMap<String,String>,
+    pub js:  HashMap<String,String>,
 }
 
 impl Resources {
@@ -172,25 +172,25 @@ impl Resources {
         }
     }
 
-    pub fn page( &self, t_name: &str, t_secure: bool ) -> Page {
-        match self.html.as_ref() {
+}
+
+impl Page {
+
+    pub fn render( t_resources: &Resources, t_name: &str, t_secure: bool ) -> Page {
+        match t_resources.html.as_ref() {
             Some(html) => {
                 let name   = t_name.trim_start_matches("/").to_string();
-                let style  = self.css.get(&name).cloned();
-                let script = self.js.get(&name).cloned();
+                let style  = t_resources.css.get(&name).cloned();
+                let script = t_resources.js.get(&name).cloned();
                 Page::real( name,
-                          style,
-                          script,
-                          html.clone(),
-                          t_secure )
+                            style,
+                            script,
+                            html.clone(),
+                            t_secure )
             },
             None => Page::none()
         }
     }
-
-}
-
-impl Page {
 
     pub fn real( t_name:   String, 
                t_style:  Option<String>, 

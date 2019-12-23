@@ -18,8 +18,3 @@ serde = { version = "1.0", features = ["derive"] }
 diesel = { version = "1.0.0", features = ["postgres","chrono"] }
 
 bowtie_data = { path = "../data" }
-
-[dependencies.rocket_contrib]
-version = "0.4.2"
-default-features = false
-features = ["tera_templates","serve"]

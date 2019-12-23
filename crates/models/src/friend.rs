@@ -1,11 +1,10 @@
-pub use bowtie_data::{schema::*,traits::*};
+pub use bowtie_data::{schema::*};
 
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
 use failure::*;
-use std::env;
 
 use crate::error::*;
 use crate::view::*;

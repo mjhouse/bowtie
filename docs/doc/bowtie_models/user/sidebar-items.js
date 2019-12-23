@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["_IMPL_SERIALIZE_FOR_User",""]],"fn":[["_impl_as_changeset_for_user",""],["_impl_identifiable_for_user",""],["_impl_insertable_for_user",""],["_impl_queryable_for_usermodel",""]],"mod":[["friend_requests",""],["friends",""],["messages",""],["posts",""],["users",""],["views",""]],"struct":[["User",""],["UserModel",""]]});

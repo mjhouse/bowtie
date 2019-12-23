@@ -1,10 +1,11 @@
-#[macro_use] extern crate bowtie_data;
 #[macro_use] extern crate log;
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate failure;
 #[macro_use] extern crate failure_derive;
 
+#[macro_use] 
+extern crate bowtie_data;
 extern crate chrono;
 
 // models
@@ -18,10 +19,3 @@ pub mod message;
 pub mod search;
 pub mod error;
 pub mod session;
-
-pub use user::{User,UserModel};
-pub use post::{Post,PostModel};
-pub use view::{View,ViewModel};
-pub use friend::{Friend,FriendModel};
-pub use message::{Message,MessageModel};
-pub use session::{Session};

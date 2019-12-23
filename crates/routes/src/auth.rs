@@ -5,22 +5,22 @@ pub mod pages {
 
     #[get("/login")]
     pub fn login( resources: State<Resources> ) -> Page {
-        resources.page("/auth/login",false)
+        Page::render(&resources,"/auth/login",false)
     }
     
     #[get("/register")]
     pub fn register( resources: State<Resources> ) -> Page {
-        resources.page("/auth/register",false)
+        Page::render(&resources,"/auth/register",false)
     }
     
     #[get("/unregister")]
     pub fn unregister( resources: State<Resources> ) -> Page {
-        resources.page("/auth/unregister",false)
+        Page::render(&resources,"/auth/unregister",false)
     }
     
     #[get("/recover")]
     pub fn recover( resources: State<Resources> ) -> Page {
-        resources.page("/auth/recover",false)
+        Page::render(&resources,"/auth/recover",false)
     }
 }
 

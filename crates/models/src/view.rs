@@ -1,7 +1,8 @@
-pub use bowtie_data::{schema::*,traits::*};
 use crate::user::User;
 use crate::post::{Post,PostModel};
 use crate::error::*;
+
+pub use bowtie_data::schema::*;
 
 use bowtie_data::schema::views::dsl::views as views_dsl;
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
@@ -12,7 +13,6 @@ use bowtie_data::schema::friend_requests::dsl::friend_requests as requests_dsl;
 use diesel::prelude::*;
 use serde::{Serialize};
 use failure::*;
-use std::env;
 
 // Creates insertion and query structs (<Object>/<Object>Model).
 model!(

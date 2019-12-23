@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["_IMPL_SERIALIZE_FOR_Message",""]],"fn":[["_impl_associations_for_message",""],["_impl_identifiable_for_message",""],["_impl_insertable_for_message",""],["_impl_queryable_for_messagemodel",""]],"mod":[["friend_requests",""],["friends",""],["messages",""],["posts",""],["users",""],["views",""]],"struct":[["Message",""],["MessageModel",""]]});

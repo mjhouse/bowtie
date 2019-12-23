@@ -9,14 +9,16 @@ pub mod pages {
         response::{Redirect},
     };
 
-    use std::env;
-    use diesel::prelude::*;
-    
-    use crate::resources::*;
     use tera::{Context};
 
-    use bowtie_models::*;
+    use crate::resources::*;
     use bowtie_data::Conn;
+    use bowtie_models::{
+        friend::Friend,
+        message::Message,
+        session::Session,
+        post::Post
+    };
 
     #[get("/profile")]
     pub fn main() -> Redirect {
@@ -24,13 +26,9 @@ pub mod pages {
     }
     
     #[get("/profile/feed")]
-    pub fn feed( resources: State<Resources>, session: Session ) -> Page {
-        let posts = match (db!(),session.view) {
-            (Some(c),id) => Post::for_view(&c,id),
-            _ => vec![]
-        };
-
-        resources.page("/profile/feed",true)
+    pub fn feed( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
+        let posts = Post::for_view(&conn,session.view);
+        Page::render(&resources,"/profile/feed",true)
             .with_context(context!(
                 "posts" => posts))
     }
@@ -38,7 +36,7 @@ pub mod pages {
     #[get("/profile/friends")]
     pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
         let friends = Friend::friends(&conn,session.view);
-        resources.page("/profile/friends",true)
+        Page::render(&resources,"/profile/friends",true)
             .with_context(context!(
                 "friends" => friends))
     }
@@ -46,19 +44,19 @@ pub mod pages {
     #[get("/profile/messages")]
     pub fn messages( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
         let messages = Message::messages(&conn,session.view);
-        resources.page("/profile/messages",true)
+        Page::render(&resources,"/profile/messages",true)
             .with_context(context!(
                 "messages" => messages))
     }
     
     #[get("/profile/write")]
     pub fn write( resources: State<Resources> ) -> Page {
-        resources.page("/profile/write",true)
+        Page::render(&resources,"/profile/write",true)
     }
     
     #[get("/profile/settings")]
     pub fn settings( resources: State<Resources> ) -> Page {
-        resources.page("/profile/settings",true)
+        Page::render(&resources,"/profile/settings",true)
     }
 
 }

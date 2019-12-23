@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["email",""],["id",""],["passhash",""],["username",""],["users","The actual table struct"]]});

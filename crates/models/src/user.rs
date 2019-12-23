@@ -1,6 +1,6 @@
-pub use bowtie_data::{schema::*,traits::*};
 use crate::view::*;
 use crate::error::*;
+pub use bowtie_data::schema::*;
 
 use diesel::prelude::*;
 
@@ -11,7 +11,6 @@ use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 use serde::{Serialize};
 use whirlpool::{Whirlpool, Digest};
 use base64::encode;
-use std::env;
 
 use failure::*;
 

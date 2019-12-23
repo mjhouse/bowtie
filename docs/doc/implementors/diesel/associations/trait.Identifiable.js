@@ -1,0 +1,9 @@
+(function() {var implementors = {};
+implementors["bowtie_models"] = [{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/user/struct.User.html\" title=\"struct bowtie_models::user::User\">User</a>",synthetic:false,types:["bowtie_models::user::User"]},{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/post/struct.Post.html\" title=\"struct bowtie_models::post::Post\">Post</a>",synthetic:false,types:["bowtie_models::post::Post"]},{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/view/struct.View.html\" title=\"struct bowtie_models::view::View\">View</a>",synthetic:false,types:["bowtie_models::view::View"]},{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/friend/struct.Friend.html\" title=\"struct bowtie_models::friend::Friend\">Friend</a>",synthetic:false,types:["bowtie_models::friend::Friend"]},{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/friend/struct.FriendRequest.html\" title=\"struct bowtie_models::friend::FriendRequest\">FriendRequest</a>",synthetic:false,types:["bowtie_models::friend::FriendRequest"]},{text:"impl&lt;'ident&gt; Identifiable for &amp;'ident <a class=\"struct\" href=\"bowtie_models/message/struct.Message.html\" title=\"struct bowtie_models::message::Message\">Message</a>",synthetic:false,types:["bowtie_models::message::Message"]},];
+
+            if (window.register_implementors) {
+                window.register_implementors(implementors);
+            } else {
+                window.pending_implementors = implementors;
+            }
+        })()

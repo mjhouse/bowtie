@@ -17,8 +17,8 @@ use bowtie_routes::auth;
 use bowtie_data::Conn;
 
 const RESOURCES:   &str = concat!(env!("CARGO_MANIFEST_DIR"), "/resources");
-const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/img");
-const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/static/font");
+const STATIC_IMG:  &str = concat!(env!("CARGO_MANIFEST_DIR"), "/resources/static/img");
+const STATIC_FONT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/resources/static/font");
 
 fn main() {
     dotenv().ok();
@@ -63,7 +63,8 @@ fn main() {
         .mount("/img",  StaticFiles::from(STATIC_IMG ))
         .mount("/font", StaticFiles::from(STATIC_FONT))
         .register(catchers![
-            errors::handler_404
+            errors::handler_404,
+            errors::handler_500
         ])
         .launch();
 }

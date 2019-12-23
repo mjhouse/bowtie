@@ -1,5 +1,5 @@
-pub use bowtie_data::{schema::*,traits::*};
 use bowtie_data::schema::messages::dsl::messages as messages_dsl;
+pub use bowtie_data::schema::*;
 
 use chrono::prelude::*;
 use diesel::prelude::*;

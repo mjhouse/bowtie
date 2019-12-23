@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["friends","The actual table struct"],["id",""],["view1",""],["view2",""]]});

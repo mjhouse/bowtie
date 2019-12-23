@@ -1,0 +1,1 @@
+cargo doc --document-private-items -p bowtie -p bowtie_data -p bowtie_models -p bowtie_routes --open --no-deps --target-dir docs/
