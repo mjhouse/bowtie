@@ -32,14 +32,15 @@ it's closer to 50ms. It's a work in progress.
 The main.rs file is the entry point for the whole site. 
 It passes all of the routes to Rocket and starts the server.
 
-#### static/
+#### resources/
 
-This directory has static files- fonts and images, mainly.
+Contains all templates, css, js, images and fonts. It's expected that js/css for
+a page will be at an identical relative path (i.e. html at 'resources/profile/write.html'
+have a stylesheet at 'resources/css/write.scss' and scripts in 'resources/profile/write.js').
 
 #### docs/
 
-Has a file with some notes about building on windows. I started this project on
-Ubuntu.
+Has generated documentation for the project.
 
 ### Crates
 
@@ -47,24 +48,19 @@ This is the directory where all the backend code lives. It's split up into three
 projects. The directories are data, models and routes, but in all the config files
 and import statements they're called bowtie_data, bowtie_models and bowtie_routes.
 
-#### /crates/bowtie_data/
+#### /crates/data/
 
 This project has all the database-interaction stuff in it. The database migrations
 are here, and any time you need to run diesel_cli for some reason, you probably need
 to run it from this directory. It generates a src/schema.rs file that defines the
-database for the project. There's a traits.rs file that I haven't put anything in yet,
-and a really big macro in models.rs file that builds database models. If you want
-to see it in use you can look in the bowtie_models project. 
+database for the project.
 
-This project should ideally only be used by the bowtie_models project- routes/main
-etc. should never have to use any of the construction macros or the schema directly.
-
-#### /crates/bowtie_models/
+#### /crates/models/
 
 All of the database models and most of the public facing (bowtie_routes-facing, I 
 should say) objects live here. Users, Views, Posts etc.
 
-#### /crates/bowtie_routes/
+#### /crates/routes/
 
 All of the routes listed in main.rs are from this directory. Right now I have them
 organized by the section of the site that they route for- so profile.rs handles all
@@ -90,4 +86,4 @@ cargo install diesel_cli --no-default-features --features postgres
 ### Done
 
 That's it. Basically request flow goes route -> model-action -> database and then back
-up until the route renders a response. The main focus' (focii?) of the site are:
+up until the route renders a response.
