@@ -1,0 +1,1 @@
+ALTER TABLE friends DROP CONSTRAINT unique_view_combination

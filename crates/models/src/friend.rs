@@ -1,6 +1,7 @@
 pub use bowtie_data::{schema::*};
 
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
+use bowtie_data::schema::friend_requests::dsl::friend_requests as requests_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
@@ -100,11 +101,27 @@ impl Friend {
         match views::table
             .inner_join(
                 friends::table
-                .on(friends::view1.eq(t_view)
-                .or(friends::view2.eq(t_view)))
+                .on(friends::view2.eq(views::id)
+                .and(friends::view1.eq(t_view)))
             )
             .select((views::id,views::user_id,views::name))
-            .filter(views::id.ne(t_view))
+            .load::<ViewModel>(t_conn) {
+                Ok(p)  => p.into_iter()
+                           .map(|m| m.into())
+                           .collect(),
+                Err(_) => vec![]
+            }
+    }
+
+    pub fn requests(t_conn: &PgConnection, t_view: i32) -> Vec<View> {
+        match views::table
+            .inner_join(
+                friend_requests::table
+                .on(friend_requests::receiver.eq(t_view)
+                .and(friend_requests::sender.eq(views::id)
+                .and(friend_requests::accepted.eq(false))))
+            )
+            .select((views::id,views::user_id,views::name))
             .load::<ViewModel>(t_conn) {
                 Ok(p)  => p.into_iter()
                            .map(|m| m.into())
@@ -124,6 +141,46 @@ impl Friend {
                 accepted: false
             })
             .get_result(t_conn)?;
+
+        Ok(model.into())
+    }
+
+    pub fn accept(t_conn: &PgConnection, t_sender: i32, t_receiver: i32) -> Result<Friend,Error> {
+        t_conn.transaction::<_, Error, _>(|| {
+            // update the request to set accepted
+            diesel::update(friend_requests::table)
+                .set(friend_requests::accepted.eq(true))
+                .execute(t_conn)?;
+
+            // create friend record for both accounts
+            let model: FriendModel = 
+                diesel::insert_into(friends::table)
+                .values(&vec![
+                    Friend {
+                        id: None,
+                        view1: t_sender,
+                        view2: t_receiver
+                    },
+                    Friend {
+                        id: None,
+                        view1: t_receiver,
+                        view2: t_sender
+                    }
+                ])
+                .get_result(t_conn)?;
+    
+            Ok(model.into())
+        })
+    }
+
+    pub fn deny(t_conn: &PgConnection, t_sender: i32, t_receiver: i32) -> Result<FriendRequest,Error> {
+        let model: FriendRequestModel = 
+            diesel::delete(
+                requests_dsl.filter(
+                    friend_requests::sender.eq(t_sender)
+                    .and(friend_requests::receiver.eq(t_receiver))
+                ))
+                .get_result(t_conn)?;
 
         Ok(model.into())
     }

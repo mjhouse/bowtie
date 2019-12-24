@@ -15,31 +15,31 @@
     </head>
     <body>
         <div class="page l r col">
-            <nav class="page__header f2 p10 row bl">
+            <nav class="page__header f2 p10 row">
                 <a href="/"><b>Bowtie</b></a> 
                 {% if session %}
                 :<a href="/profile" class="l10">{{session.username}}</a>
                 {% endif %}
                 <div class="l"></div>
                 {% if session %}
-                <input id="v-toggle" type="checkbox">
-                <label for="v-toggle" class="btn-med">Views            
-                    <div>
+                <input id="view__toggle" class="dropdown__trigger" type="checkbox">
+                <label for="view__toggle" class="clickable dropdown">Views            
+                    <div class="dropdown__container">
                         {% for view in session.views %}
                             {% if view.0 == session.view %}
-                            <form>
-                                <div class="v-dot">&nbsp;</div>
-                                <button>{{view.1}}</button>
+                            <form class="dropdown__item">
+                                <div class="status status__on">&nbsp;</div>
+                                <button class="dropdown__option">{{view.1}}</button>
                             </form>
                             {% else %}
-                            <form action="/api/v1/views/update?redirect={{route | urlencode}}" method="post">
-                                <div class="v-dot v-inactive">&nbsp;</div>
+                            <form class="dropdown__item" action="/api/v1/views/update?redirect={{route | urlencode}}" method="post">
+                                <div class="status status__off">&nbsp;</div>
                                 <input type="hidden" name="value" value="{{view.0}}"/>
-                                <button>{{view.1}}</button>
+                                <button class="dropdown__option">{{view.1}}</button>
                             </form>
                             {% endif %}
                         {% endfor %}
-                        <a href="/profile/settings">settings</a>
+                        <a class="dropdown__page" href="/profile/settings">settings</a>
                     </div>
                 </label>
                 {% endif %}
@@ -47,16 +47,16 @@
                 <form class="l10" action="/search" method="get">
                     <input type="hidden" name="posts" value="on"/>
                     <input type="hidden" name="people" value="on"/>
-                    <input class="txt-med" name="value" placeholder="Search" type="text" tabindex="1"/>
+                    <input class="typeable" name="value" placeholder="Search" type="text" tabindex="1"/>
                 </form>
                 {% if session %}
 
-                <a href="/logout"   class="l10 btn-med p5" title="Log out" tabindex="2">Logout</a>
-                <a href="/profile"  class="l10 btn-med p5" title="Profile page" tabindex="3">Profile</a>
+                <a href="/logout"   class="clickable l10" title="Log out" tabindex="2">Logout</a>
+                <a href="/profile"  class="clickable l10" title="Profile page" tabindex="3">Profile</a>
                 
                 {% else %}
-                <a href="/login"    class="l10 btn-med p5" title="Login page" tabindex="2">Login</a>
-                <a href="/register" class="l10 btn-med p5" title="Registration page" tabindex="3">Sign up</a>
+                <a href="/login"    class="clickable l10" title="Login page" tabindex="2">Login</a>
+                <a href="/register" class="clickable l10" title="Registration page" tabindex="3">Sign up</a>
                 {% endif %}
             </nav>
             <div class="page__content col x1">
@@ -65,16 +65,16 @@
             </div>
             <nav class="page__footer row p10">
                 <div class="f1 r5 col">
-                    <a href="/about" title="About page">About</a>
-                    <a href="/search" title="Search page">Search</a>                
+                    <a class="clickable" href="/about" title="About page">About</a>
+                    <a class="clickable" href="/search" title="Search page">Search</a>                
                 </div>
                 <div class="f1 r5 col">
                     {% if session %}
-                    <a href="/logout" title="Logout">Logout</a>
-                    <a href="/profile" title="Profile page">Profile</a>
+                    <a class="clickable" href="/logout" title="Logout">Logout</a>
+                    <a class="clickable" href="/profile" title="Profile page">Profile</a>
                     {% else %}
-                    <a href="/login" title="Login page">Login</a>
-                    <a href="/register" title="Registration page">Sign up</a>
+                    <a class="clickable" href="/login" title="Login page">Login</a>
+                    <a class="clickable" href="/register" title="Registration page">Sign up</a>
                     {% endif %}
                 </div>
                 <div class="f1 r5 col">

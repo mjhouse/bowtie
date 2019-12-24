@@ -83,9 +83,21 @@ pub struct Page {
 
 }
 
+#[derive(Debug,Clone)]
+pub struct ResourceFile {
+    name: String,
+    path: PathBuf,
+    body: String
+}
+
 #[derive(Debug)]
 pub struct Resources {
+
+    // the root path (i.e. '<root>/html' or '<root>/css')
     root: String,
+
+    // enable to turn on live reload
+    pub live: bool,
 
     // the chained Tera instance containing templated
     // html files from 'root/html'
@@ -93,26 +105,39 @@ pub struct Resources {
 
     // compiled sass where the key is the path from 
     // 'root/css' and value is the compiled content.
-    pub css:  HashMap<String,String>,
+    pub css:  HashMap<String,ResourceFile>,
 
     // minified js where the key is the path from
     // 'root/js' and the value is the minified content.
-    pub js:  HashMap<String,String>,
+    pub js:  HashMap<String,ResourceFile>,
+}
+
+impl ResourceFile {
+
+    pub fn empty() -> Self {
+        Self {
+            name: String::new(),
+            path: PathBuf::new(),
+            body: String::new()
+        }
+    }
+
 }
 
 impl Resources {
 
-    pub fn new( t_root: &str ) -> Self {
+    pub fn new( t_root: &str, t_live: bool ) -> Self {
         Resources {
             root: t_root.to_string(),
+            live: t_live,
             html: None,
             css:  HashMap::new(),
             js:   HashMap::new()
         }        
     }
 
-    pub fn from( t_root: &str ) -> Self {
-        let mut resources = Resources::new(t_root);
+    pub fn from( t_root: &str, t_live: bool ) -> Self {
+        let mut resources = Resources::new(t_root,t_live);
         resources.compile();
         resources
     }
@@ -123,23 +148,55 @@ impl Resources {
         self.compile_js();
     }
 
+    fn compile_css_file( &self, t_root: &Path, t_path: &Path ) -> Option<ResourceFile> {
+        match compile_scss_file(&t_path, OutputStyle::Compressed) {
+            Ok(c) =>  {
+                match (String::from_utf8(c),key!(t_path,t_root)) {
+                    (Ok(s),Ok(name)) => {
+                        Some(ResourceFile {
+                            name: name,
+                            path: t_path.to_path_buf(),
+                            body: s
+                        })
+                    },
+                    (Err(e),_) => {
+                        dbg!(e);
+                        None
+                    },
+                    _ => None
+                }
+            },
+            Err(e) => {
+                dbg!(e);
+                None
+            }
+        }
+    }
+
+    fn compile_js_file( &self, t_root: &Path, t_path: &Path ) -> Option<ResourceFile> {
+        match (fs::read_to_string(t_path),key!(t_path,t_root)) {
+            (Ok(s),Ok(name)) => {
+                Some(ResourceFile {
+                    name: name,
+                    path: t_path.to_path_buf(),
+                    body: s
+                })                
+            },
+            (Err(e),_) => {
+                dbg!(e);
+                None
+            },
+            _ => None
+        }
+    }
+
     pub fn compile_css( &mut self ) {
         let css_root = Path::new(&self.root).join("css");
         if css_root.exists() {
             for path in files!(&css_root,".scss") {
-                match compile_scss_file(&path, OutputStyle::Compressed) {
-                    Ok(c) =>  {
-                        match String::from_utf8(c) {
-                            Ok(s) => {
-                                if let Ok(name) = key!(path,&css_root) {
-                                    self.css.insert(name,s);
-                                }
-                            },
-                            Err(e) => {dbg!(e);} // @todo replace with logging
-                        };
-                    },
-                    Err(e) => {dbg!(e);} // @todo replace with logging
-                };
+                if let Some(file) = self.compile_css_file(&css_root,&path) {
+                    self.css.insert(file.name.clone(),file);
+                }
             }
         }
     }
@@ -148,10 +205,8 @@ impl Resources {
         let js_root = Path::new(&self.root).join("js");
         if js_root.exists() {
             for path in files!(&js_root,".js") {
-                if let Ok(content) = fs::read_to_string(&path) {
-                    if let Ok(name) = key!(path,&js_root) {
-                        self.js.insert(name,content);
-                    }
+                if let Some(file) = self.compile_js_file(&js_root,&path){
+                    self.js.insert(file.name.clone(),file);
                 }
             }
         }
@@ -172,35 +227,67 @@ impl Resources {
         }
     }
 
+    pub fn for_page( &self, t_name: &str ) 
+        -> Result<(tera::Tera,Option<ResourceFile>,Option<ResourceFile>),()> {
+        match self.html.as_ref() {
+            Some(html) => {
+                if self.live {
+                    let mut layout = html.clone();
+                    if let Err(e) = layout.full_reload() {
+                        dbg!(e);
+                    }
+
+                    let mut css = self.css.get(t_name).cloned();
+                    let mut js  = self.js.get(t_name).cloned();
+
+                    css = match css {
+                        Some(r) => self.compile_css_file(Path::new(&self.root),&r.path),
+                        None => None
+                    };
+
+                    js = match js {
+                        Some(r) => self.compile_js_file(Path::new(&self.root),&r.path),
+                        None => None
+                    };
+
+                    Ok(( layout, css, js ))
+                }
+                else {
+                    Ok(( html.clone(),
+                        self.css.get(t_name).cloned(),
+                        self.js.get(t_name).cloned() ))
+                }
+            },
+            None => Err(())
+        }
+    }
+
 }
 
 impl Page {
 
     pub fn render( t_resources: &Resources, t_name: &str, t_secure: bool ) -> Page {
-        match t_resources.html.as_ref() {
-            Some(html) => {
-                let name   = t_name.trim_start_matches("/").to_string();
-                let style  = t_resources.css.get(&name).cloned();
-                let script = t_resources.js.get(&name).cloned();
-                Page::real( name,
-                            style,
-                            script,
-                            html.clone(),
-                            t_secure )
+        let name = t_name.trim_start_matches("/").to_string();
+        match t_resources.for_page(&name) {
+            Ok((html,css,js)) => {
+                Page::real(name,css,js,html,t_secure)
             },
-            None => Page::none()
+            _ => Page::none()
         }
     }
 
     pub fn real( t_name:   String, 
-               t_style:  Option<String>, 
-               t_script: Option<String>, 
-               t_tera:   tera::Tera,
-               t_secure: bool ) -> Self {
+                 t_style:  Option<ResourceFile>, 
+                 t_script: Option<ResourceFile>, 
+                 t_tera:   tera::Tera,
+                 t_secure: bool ) -> Self {
+        let style  = t_style.unwrap_or(ResourceFile::empty());
+        let script = t_script.unwrap_or(ResourceFile::empty());
+
         Self {
             name:      t_name,
-            styles:    t_style.unwrap_or(String::new()),
-            scripts:   t_script.unwrap_or(String::new()),
+            styles:    style.body,
+            scripts:   script.body,
             secure:    t_secure,
             resources: Some(t_tera),
             context:   None,

@@ -1,1 +1,65 @@
 @import '../base';
+
+$button-color: transparent;
+$button-hover-color: rgba(0,0,0,0.25);
+
+.user {
+
+    display: flex;
+
+    .user__sidebar {
+        flex-grow: 1;
+        padding: 10px;
+
+        .sidebar__title {
+            font-size: 1.5em;
+            margin:0;
+        }
+
+        .sidebar__menu {
+            display: flex;
+
+            .clickable{
+                background-color: transparent;
+                &:hover {
+                    background-color: $layer2-dark;}
+            }
+        }
+
+    }
+
+    .user__feed {
+        display:flex;
+        flex-direction: column;
+        flex-grow: 1;
+
+        .feed__post {
+            margin:5px;
+            padding:5px;
+            border:1px solid rgba(0,0,0,0.25);
+            box-shadow:5px 5px 5px rgba(0,0,0,0.1);
+
+            .post__title {
+                font-size: 1.5em;
+                margin:0;
+            }
+
+            .post__body {
+                padding:10px;
+            }
+
+            .post__date {
+                font-size: 0.8em;
+                color:gray;
+            }
+
+        }
+
+    }
+
+    .user__notfound {
+        max-width:300px;
+        margin:0 auto 0 auto;
+    }
+
+}

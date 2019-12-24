@@ -40,10 +40,12 @@ pub mod pages {
     /// Display friends of the current view.
     #[get("/profile/friends")]
     pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
-        let friends = Friend::friends(&conn,session.view);
+        let friends  = Friend::friends(&conn,session.view);
+        let requests = Friend::requests(&conn,session.view);
         Page::render(&resources,"/profile/friends",true)
             .with_context(context!(
-                "friends" => friends))
+                "friends"  => friends,
+                "requests" => requests))
     }
     
     /// Sent and received messages for the current view.
@@ -89,7 +91,7 @@ pub mod api {
                     match (s.id,s.view) {
                         (Some(u),v) => (u,v),
                         _ => {
-                            warn!("User or View id was None during unpack");
+                            warn!("User id was None during unpack");
                             return flash!($p,"User not found")
                         }
                     }
@@ -100,6 +102,71 @@ pub mod api {
                 }
             };
         }
+    }
+
+    /*  Requests API
+        This module contains endpoints that handle the
+        creation, deletion and modification of friend
+        requests.
+    */
+    pub mod requests {
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            friend::{Friend}
+        }; 
+
+        #[derive(FromForm,Debug)]
+        pub struct CreateRequest {
+            pub value: i32,
+        }
+
+        #[derive(FromForm,Debug)]
+        pub struct UpdateRequest {
+            pub value:    i32,
+            pub accepted: bool
+        }
+
+        #[post("/api/v1/friend/create?<redirect>", data = "<form>")]
+        pub fn create( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<CreateRequest>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile/friends".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            if vid == form.value { 
+                return flash!(path,"That's just weird. Weirdo.") }
+
+            match Friend::request(&conn,vid,form.value) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not create friend request")
+            }
+        }
+
+        #[post("/api/v1/friend/update?<redirect>", data = "<form>")]
+        pub fn update( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<UpdateRequest>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile/friends".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            if form.accepted {
+                match Friend::accept(&conn,vid,form.value) {
+                    Ok(_) => Ok(Redirect::to(path)),
+                    _ => flash!(path,"Could not accept friend request")
+                }
+            }
+            else {
+                match Friend::deny(&conn,vid,form.value) {
+                    Ok(_) => Ok(Redirect::to(path)),
+                    _ => flash!(path,"Could not deny friend request")
+                }
+            }
+        }
+
     }
 
     /*  Posts API

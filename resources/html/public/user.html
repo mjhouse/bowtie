@@ -1,9 +1,51 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="user">
     {% if view %}
-        USER: {{view.name}}
+        <div class="user__sidebar">
+            <h1 class="sidebar__title">{{view.name}}</h1>
+            <p class="sidebar__description">
+                User description
+            </p>
+            {% if session %}
+            <div class="row">
+                <form class="sidebar__menu" action="/api/v1/follow/create?redirect={{route | urlencode}}" method="post">
+                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Follow</button>
+                </form>
+                <form class="sidebar__menu" action="/api/v1/friend/create?redirect={{route | urlencode}}" method="post">
+                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Friend</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <div class="user__feed">
+        {% for post in posts %}
+            <div class="feed__post">
+                <h1 
+                    class="post__title">
+                    {{post.title}}
+                </h1>
+                <article 
+                    class="post__body">
+                    {{post.body | safe}}
+                </article>
+                <aside 
+                    class="post__date">
+                    {{ post.created | date(format="%d/%m/%g %l:%M %P") }}
+                </aside>
+            </div>
+        {% endfor %}
+        </div>
     {% else %}
-        USER: not found
-    {% endif %}
+        <div class="user__notfound">
+        <h2>User not found</h2>
+        <p>
+            The username given wasn't found. They might have
+            deleted their account, or the username may be 
+            misspelled.
+        </p>
+        </div>
+{% endif %}
+</div>
 {% endblock content %}

@@ -1,11 +1,33 @@
 {% extends 'profile/base.html' %}
 
 {% block body %}
-{% if views %}
-    {% for view in views %}
-        {{view.name}}
-    {% endfor %}
-{% else %}
-forever alone :(
-{% endif %}
+    <div>
+        <div class="col">
+        <h3>Friends</h3>
+        {% if friends %}
+            {% for friend in friends %}
+                <div>{{friend.name}}</div>
+            {% endfor %}
+        {% else %}
+            No Friends
+        {% endif %}
+        </div>
+
+        <div class="col">
+        <h3>Requests</h3>
+        {% if requests %}
+            {% for request in requests %}
+                <div class="friend__request">
+                    {{request.name}}
+                    <form action="/api/v1/friend/update?redirect={{route | urlencode}}" method="post">
+                        <input type="hidden" name="accepted" value="true"/>
+                        <button class="clickable" type="submit" name="value" value="{{request.id}}">Accept</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            No Requests
+        {% endif %}
+        </div>
+    </div>
 {% endblock body %}

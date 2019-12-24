@@ -51,6 +51,7 @@ impl View {
     pub fn delete_from(t_conn: &PgConnection, t_user: i32, t_view: i32) -> Result<View,Error> {
         t_conn.transaction::<_, Error, _>(|| {
 
+            // delete all friend records for the view
             diesel::delete(
                 friends_dsl.filter(
                     friends::view1.eq(t_view)
@@ -58,6 +59,7 @@ impl View {
                 ))
                 .execute(t_conn)?;
 
+            // delete all requests associated with the view
             diesel::delete(
                 requests_dsl.filter(
                     friend_requests::sender.eq(t_view)

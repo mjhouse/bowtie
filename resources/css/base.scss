@@ -1,7 +1,185 @@
-/* ALL */
-* { text-decoration: none; }
+* {
+    font-family: -apple-system, 
+                  BlinkMacSystemFont, 
+                  "Segoe UI", 
+                  Roboto, 
+                  Oxygen-Sans, 
+                  Ubuntu, 
+                  Cantarell, 
+                  "Helvetica Neue", 
+                  sans-serif;
+    color:inherit;          // default to inheriting colors
+    text-decoration: none;  // default to no decoration
+}
 
-/* STRUCTURE */
+body {
+    margin:0;
+    padding: 0;
+}
+
+.page {
+    min-height:100vh;
+    max-width: 80vw;
+}
+
+/* ---------------------------------------------- 
+   COLORS 
+
+    Colors range from layer0 (farthest 'back')
+    to layer2 (furthest 'forward'). 
+*/
+$layer0-background: #3B8BEB;
+$layer0-text:       white;
+
+$layer1-background: #1C5EAD;
+$layer1-light:      rgba(255,255,255,0.25);
+$layer1-lighter:    rgba(255,255,255,0.4);
+$layer1-dark:       rgba(0,0,0,0.25);
+$layer1-darker:     rgba(0,0,0,0.4);
+$layer1-text:       white;
+$layer1-text-faded: rgba(255,255,255,0.5);
+
+$layer2-background: white;
+$layer2-dark:       rgba(0,0,0,0.125);
+$layer2-darker:     rgba(0,0,0,0.25);
+$layer2-text:       black;
+
+$status-on:         #09af00;
+$status-off:        lightgray;
+
+body { 
+    background-color: $layer0-background;
+    color:            $layer0-text; 
+}
+
+.page__header {
+    background-color: $layer1-background;
+    color:            $layer1-text;
+    .clickable:hover {
+        background-color: $layer1-light;
+    }
+    .typeable {
+        background-color: $layer1-dark;
+        color: $layer1-text-faded;
+        &:focus {
+            background-color: $layer1-darker;
+            color: $layer1-text;
+        }
+    }
+
+    .dropdown__trigger:checked + .dropdown {
+        background-color: $layer2-background;
+        color:$layer2-text;
+        border-left:1px solid $layer2-darker;
+    }
+}
+
+.page__content { 
+    background-color: $layer2-background;
+    color:            $layer2-text;
+    .clickable:hover {
+        background-color: $layer2-dark;
+    }
+}
+
+.page__footer  { 
+    background-color: $layer0-background;
+    color:            $layer0-text; 
+    .clickable:hover {
+        text-decoration: underline;
+    }
+}
+
+/* ---------------------------------------------- 
+   CONTROLS 
+   
+   These are common types of elements used through-
+   out the site.
+*/
+.clickable {
+    cursor:pointer;
+    border:none;
+    padding:3px 5px 3px 5px;
+}
+
+.typeable {
+    border:none;
+    padding: 5px;
+}
+
+.status {
+    border-radius:100px;
+    width:10px;
+    height:10px;
+}
+
+.status__on { background-color:$status-on; }
+.status__off { background-color:$status-off; }
+
+.dropdown__trigger {
+    display: none;
+    + .dropdown {
+        user-select: none;
+        .dropdown__container {
+            position:absolute;
+            flex-direction:column;
+            display: none;
+            margin:3px 0 0 -6px;
+            padding:5px;
+            box-shadow:5px 5px 5px rgba(0,0,0,0.1);
+
+            border:1px solid $layer2-darker;
+            border-top: none;
+            background-color:$layer2-background;
+            color:$layer2-text;
+        }
+
+        .dropdown__item {
+            padding:5px;
+            display:flex;
+            align-items:baseline;
+
+            &:hover {
+                background-color: $layer2-dark;
+            }
+        }
+
+        .status {
+            align-self:center;
+            margin-right:5px;
+        }
+    
+        .dropdown__option {
+            border:none;
+            background-color:transparent;
+            cursor:pointer;
+            flex-grow:1;
+            text-align:left;    
+        }
+    
+        .dropdown__page {
+            color:$layer1-darker;
+            align-self:end;
+            font-size: 0.8em; 
+            &:hover { 
+                text-decoration:underline;
+            }
+        }
+    
+    }
+    &:checked + .dropdown {
+        .dropdown__container {
+            display:flex;
+        }
+    }
+}
+
+/* ---------------------------------------------- 
+   STRUCTURE 
+   
+   These are utility classes that set some attribute
+   or combination of attributes for an element.
+*/
 .col,
 .row,
 .grid {
@@ -51,202 +229,3 @@
 .w50{ width:50%; }
 
 .bl { align-items: baseline; }
-
-/* ELEMENTS */
-body {
-    margin:0;
-    padding: 0;
-}
-
-.page {
-    min-height:100vh;
-    max-width: 80vw;
-}
-
-.page__header {
-    
-}
-
-.page__content {
-
-}
-
-.page__footer {
-
-}
-
-/* CONTROLS */
-.btn-lg,
-.btn-med,
-.txt-med { 
-    padding:5px;
-    border-radius: 3px; 
-}
-
-.btn-lg,
-.btn-med { 
-    cursor:pointer; 
-}
-
-.btn-lg {
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 1.1em;
-}
-
-.card {
-    padding:5px;
-    border-radius:3px; 
-}
-
-.avatar-sm {
-    border-radius: 5px;
-    max-height:40px;
-    max-width:40px;
-}
-
-.name-sm {
-    line-height:40px;
-}
-
-#v-toggle { display:none; }
-.v-dot {
-    background-color:#09af00;
-    border-radius:100px;
-    width:10px;
-    height:10px;
-    align-self:center;
-    margin-right:5px;
-}
-.v-dot.v-inactive {
-    background-color:lightgray;
-}
-#v-toggle + label > div button {
-    border:none;
-    background-color:transparent;
-    cursor:pointer;
-    flex-grow:1;
-    text-align:left;
-}
-#v-toggle + label > div > form {
-    padding:5px;
-    display:flex;
-    align-items:baseline;
-}
-#v-toggle + label > div form:hover {
-    background-color:rgba(0,0,0,0.1);
-}
-#v-toggle + label > div > a:last-child {
-    color:gray;
-    align-self:end;
-}
-#v-toggle + label > div > a:last-child:hover {
-    background-color:transparent;
-    text-decoration:underline;
-}
-#v-toggle + label {
-    user-select: none;
-}
-#v-toggle + label > div {
-    user-select: none;
-    margin:10px 0 0 -6px;
-    padding:5px;
-    border-radius: 3px;
-    border:1px solid gray;
-    background-color:white;
-    position:absolute;
-    display:none;
-    color:black;
-    box-shadow:5px 5px 5px rgba(0,0,0,0.1);
-}
-#v-toggle:checked + label {
-    background-color:rgba(255,255,255,0.95);
-    color:black;
-}
-#v-toggle:checked + label > div {
-    display:flex;
-    flex-direction:column;
-}
-
-
-/* BASE PAGE THEME */
-* {
-    font-family: -apple-system, 
-                  BlinkMacSystemFont, 
-                  "Segoe UI", 
-                  Roboto, 
-                  Oxygen-Sans, 
-                  Ubuntu, 
-                  Cantarell, 
-                  "Helvetica Neue", 
-                  sans-serif;
-    color:inherit;
-}
-
-/* 
-#B23850 -> red
-#3B8BEB -> blue
-#E7E3D4 -> tan
-#C4DBF6 -> green
-#8590AA -> gray 
-#000000 -> black
-*/
-
-body {
-    background-color: #3B8BEB;
-}
-
-.page {
-
-}
-
-.page__header {
-    background-color: rgb(50, 100, 200);
-    color:rgb(255, 255, 255);
-}
-
-.profile__menu > a:hover { background-color: rgb(230, 230, 230); }
-.page__content { background-color: rgb(255, 255, 255); }
-
-.page__footer  a:hover { text-decoration: underline; }
-.page__footer  { color:rgb(255, 255, 255); }
-
-.btn-med {
-    background-color: rgba(0,0,0,0);
-    border: 1px solid rgba(0,0,0,0);
-}
-
-.btn-med:hover {
-    background-color: rgba(0,0,0,0.1);
-    border: 1px solid rgba(0,0,0,0.125);
-}
-
-.btn-lg {
-    background-color: rgb(50, 100, 200);
-    border: 1px solid rgb(40, 70, 150);
-    color:white;
-}
-
-.btn-lg:hover {
-    background-color: rgb(70, 120, 220);
-    border: 1px solid rgb(50, 100, 200);
-}
-
-.txt-med {
-    background-color: rgba(0,0,0,0.015);
-    border: 1px solid rgba(0,0,0,0.125);
-}
-
-.txt-med:focus {
-    background-color: rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.25);
-}
-
-.card {
-    border:1px solid rgba(0,0,0,0.5);
-}
-
-.toggle { cursor:pointer; }
-.toggle-state:checked + .toggle {
-    background-color: rgba(0,0,0,0.25);
-}

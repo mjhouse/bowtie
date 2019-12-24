@@ -24,7 +24,7 @@ fn main() {
     dotenv().ok();
 
     rocket::ignite()
-        .manage(Resources::from(RESOURCES))
+        .manage(Resources::from(RESOURCES,true))
         .manage(Conn::initialize("DATABASE_URL"))
         .mount("/", routes![
             // public routes
@@ -52,6 +52,9 @@ fn main() {
             profile::pages::messages,
             profile::pages::write,
             profile::pages::settings,
+
+            profile::api::requests::create,
+            profile::api::requests::update,
 
             profile::api::posts::create,
             profile::api::posts::delete,

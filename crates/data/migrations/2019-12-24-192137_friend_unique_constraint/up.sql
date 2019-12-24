@@ -1,0 +1,1 @@
+ALTER TABLE friends ADD CONSTRAINT unique_view_combination UNIQUE ( view1, view2 )
