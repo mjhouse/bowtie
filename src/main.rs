@@ -54,6 +54,7 @@ fn main() {
             profile::pages::settings,
 
             profile::api::requests::create,
+            profile::api::requests::delete,
             profile::api::requests::update,
 
             profile::api::posts::create,

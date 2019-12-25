@@ -123,6 +123,11 @@ pub mod api {
         }
 
         #[derive(FromForm,Debug)]
+        pub struct DeleteRequest {
+            pub value: i32,
+        }
+
+        #[derive(FromForm,Debug)]
         pub struct UpdateRequest {
             pub value:    i32,
             pub accepted: bool
@@ -164,6 +169,20 @@ pub mod api {
                     Ok(_) => Ok(Redirect::to(path)),
                     _ => flash!(path,"Could not deny friend request")
                 }
+            }
+        }
+
+        #[post("/api/v1/friend/delete?<redirect>", data = "<form>")]
+        pub fn delete( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<DeleteRequest>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile/friends".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            match Friend::delete_from(&conn,vid,form.value) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not delete friend")
             }
         }
 
