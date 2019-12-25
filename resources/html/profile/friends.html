@@ -4,38 +4,37 @@
     <div class="row">
         <div class="col w20 l10">
             <h3>Requests</h3>
-            {% if requests %}
-                {% for request in requests %}
+            {% if friend_requests %}
+                {% for friend_request in friend_requests %}
+                    {% set friend  = friend_request.0 %}
+                    {% set request = friend_request.1 %}
+                    {% if not request.accepted and session.view != request.sender %}               
                     <div class="friend__request p5 row">
-                        <div>{{request.name}}</div>
+                        <div>{{friend.name}}</div>
                         <form class="l10" action="/api/v1/friend/update?redirect={{route | urlencode}}" method="post">
                             <input type="hidden" name="accepted" value="true"/>
-                            <button class="clickable" type="submit" name="value" value="{{request.id}}">Accept</button>
+                            <button class="clickable" type="submit" name="value" value="{{friend.id}}">Accept</button>
                         </form>
                     </div>
+                    {% endif %}
                 {% endfor %}
-            {% else %}
-                <div class="friend__request p5">
-                    No Requests
-                </div>
             {% endif %}
         </div>
-
         <div class="col x1 l10">
             <h3>Friends</h3>
-            {% if friends %}
-                {% for friend in friends %}
-                    <div class="friend__card p5">
-                        {{friend.name}}
+            {% if friend_requests %}
+                {% for friend_request in friend_requests %}
+                    {% set friend  = friend_request.0 %}
+                    {% set request = friend_request.1 %}
+                    {% if request.accepted %}               
+                    <div class="friend__card p5 row">
+                        <div>{{friend.name}}</div>
                         <form class="l10" action="/api/v1/friend/delete?redirect={{route | urlencode}}" method="post">
                             <button class="clickable" type="submit" name="value" value="{{friend.id}}">Unfriend</button>
                         </form>
                     </div>
+                    {% endif %}
                 {% endfor %}
-            {% else %}
-                <div class="friend__card p5">
-                    No Friends
-                </div>
             {% endif %}
         </div>
     </div>

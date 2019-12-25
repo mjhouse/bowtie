@@ -40,14 +40,10 @@ pub mod pages {
     /// Display friends of the current view.
     #[get("/profile/friends")]
     pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
-        // @todo Refactor so that only one query is made here
-        // @body The only difference between friends and 'requests' is accepted state
-        let friends  = Friend::friends(&conn,session.view);
-        let requests = Friend::requests(&conn,session.view);
+        let friend_requests = Friend::requests(&conn,session.view); 
         Page::render(&resources,"/profile/friends",true)
             .with_context(context!(
-                "friends"  => friends,
-                "requests" => requests))
+                "friend_requests" => friend_requests))
     }
     
     /// Sent and received messages for the current view.
@@ -195,11 +191,12 @@ pub mod api {
                        form: Form<UpdateRequest>) -> ApiResponse {
             let path = redirect.unwrap_or("/profile/friends".to_string());
             let (_,vid) = unpack!(path,cookies);
-
             if form.accepted {
                 match Friend::accept(&conn,form.value,vid) {
-                    Ok(_) => Ok(Redirect::to(path)),
-                    _ => flash!(path,"Could not accept friend request")
+                    Ok(_)  => Ok(Redirect::to(path)),
+                    Err(e) => {
+                        dbg!(e);
+                        flash!(path,"Could not accept friend request")}
                 }
             }
             else {

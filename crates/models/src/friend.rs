@@ -101,18 +101,21 @@ impl Friend {
             }
     }
 
-    pub fn requests(t_conn: &PgConnection, t_view: i32) -> Vec<View> {
+    pub fn requests(t_conn: &PgConnection, t_view: i32) -> Vec<(View,Friend)> {
         match views::table
             .inner_join(
                 friends::table
                 .on(friends::sender.eq(views::id)
-                .and(friends::receiver.eq(t_view)
-                .and(friends::accepted.eq(false))))
+                .or(friends::receiver.eq(views::id)))
             )
-            .select((views::id,views::user_id,views::name))
-            .load::<ViewModel>(t_conn) {
+            .filter(
+                friends::sender.eq(t_view)
+                .or(friends::receiver.eq(t_view))
+            )
+            .filter(views::id.ne(t_view))
+            .load::<(ViewModel,FriendModel)>(t_conn) {
                 Ok(p)  => p.into_iter()
-                           .map(|m| m.into())
+                           .map(|p| (p.0.into(),p.1.into()))
                            .collect(),
                 Err(_) => vec![]
             }
