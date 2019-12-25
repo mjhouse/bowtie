@@ -1,17 +1,9 @@
 table! {
-    friend_requests (id) {
+    friends (id) {
         id -> Int4,
         sender -> Int4,
         receiver -> Int4,
         accepted -> Bool,
-    }
-}
-
-table! {
-    friends (id) {
-        id -> Int4,
-        view1 -> Int4,
-        view2 -> Int4,
     }
 }
 
@@ -56,7 +48,6 @@ joinable!(posts -> views (view_id));
 joinable!(views -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
-    friend_requests,
     friends,
     messages,
     posts,

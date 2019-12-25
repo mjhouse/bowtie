@@ -8,7 +8,6 @@ use bowtie_data::schema::views::dsl::views as views_dsl;
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
-use bowtie_data::schema::friend_requests::dsl::friend_requests as requests_dsl;
 
 use diesel::prelude::*;
 use serde::{Serialize};
@@ -54,16 +53,8 @@ impl View {
             // delete all friend records for the view
             diesel::delete(
                 friends_dsl.filter(
-                    friends::view1.eq(t_view)
-                    .or(friends::view2.eq(t_view))
-                ))
-                .execute(t_conn)?;
-
-            // delete all requests associated with the view
-            diesel::delete(
-                requests_dsl.filter(
-                    friend_requests::sender.eq(t_view)
-                    .or(friend_requests::receiver.eq(t_view))
+                    friends::sender.eq(t_view)
+                    .or(friends::receiver.eq(t_view))
                 ))
                 .execute(t_conn)?;
 

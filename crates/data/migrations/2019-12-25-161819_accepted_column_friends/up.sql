@@ -1,0 +1,2 @@
+ALTER TABLE friends
+ADD accepted BOOLEAN NOT NULL;

@@ -144,7 +144,7 @@ pub mod api {
             if vid == form.value { 
                 return flash!(path,"That's just weird. Weirdo.") }
 
-            match Friend::request(&conn,vid,form.value) {
+            match Friend::create_from(&conn,vid,form.value,false) {
                 Ok(_) => Ok(Redirect::to(path)),
                 _ => flash!(path,"Could not create friend request")
             }
@@ -159,13 +159,13 @@ pub mod api {
             let (_,vid) = unpack!(path,cookies);
 
             if form.accepted {
-                match Friend::accept(&conn,vid,form.value) {
+                match Friend::accept(&conn,form.value,vid) {
                     Ok(_) => Ok(Redirect::to(path)),
                     _ => flash!(path,"Could not accept friend request")
                 }
             }
             else {
-                match Friend::deny(&conn,vid,form.value) {
+                match Friend::delete_from(&conn,vid,form.value) {
                     Ok(_) => Ok(Redirect::to(path)),
                     _ => flash!(path,"Could not deny friend request")
                 }
