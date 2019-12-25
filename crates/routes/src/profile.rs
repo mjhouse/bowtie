@@ -40,6 +40,8 @@ pub mod pages {
     /// Display friends of the current view.
     #[get("/profile/friends")]
     pub fn friends( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
+        // @todo Refactor so that only one query is made here
+        // @body The only difference between friends and 'requests' is accepted state
         let friends  = Friend::friends(&conn,session.view);
         let requests = Friend::requests(&conn,session.view);
         Page::render(&resources,"/profile/friends",true)
@@ -51,10 +53,12 @@ pub mod pages {
     /// Sent and received messages for the current view.
     #[get("/profile/messages")]
     pub fn messages( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
-        let messages = Message::messages(&conn,session.view);
+        let received = Message::received(&conn,session.view);
+        let friends  = Friend::friends(&conn,session.view);
         Page::render(&resources,"/profile/messages",true)
             .with_context(context!(
-                "messages" => messages))
+                "received" => received,
+                "friends"  => friends))
     }
     
     /// Write a new post for the current view.
@@ -102,6 +106,40 @@ pub mod api {
                 }
             };
         }
+    }
+
+    /*  Messages API
+        This module contains endpoints that handle the
+        creation, deletion and modification of messages.
+    */
+    pub mod messages {
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            message::{Message}
+        }; 
+
+        #[derive(FromForm,Debug)]
+        pub struct CreateMessage {
+            pub receiver: i32,
+            pub body:     String
+        }
+
+        #[post("/api/v1/message/create?<redirect>", data = "<form>")]
+        pub fn create( conn: Conn,
+                       redirect: Option<String>,
+                       cookies: Cookies, 
+                       form: Form<CreateMessage>) -> ApiResponse {
+            let path = redirect.unwrap_or("/profile/messages".to_string());
+            let (_,vid) = unpack!(path,cookies);
+
+            match Message::create_from(&conn,vid,form.receiver,form.body.clone()) {
+                Ok(_) => Ok(Redirect::to(path)),
+                _ => flash!(path,"Could not send message")
+            }
+        }
+
     }
 
     /*  Requests API

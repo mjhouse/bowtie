@@ -1,1 +1,40 @@
 @import '../base';
+
+.send {
+    padding:10px;
+    display:flex;
+    flex-direction: column;
+
+    .send__target {
+        margin:0 5px 0 0;
+    }
+
+    .send__button {
+        padding:5px;
+    }
+
+    .send__body {
+        font-size: 1em;
+        resize: vertical;
+        height:200px;
+        margin:5px 0 0 0;
+        padding:5px;
+    }
+
+}
+
+.received {
+    margin:5px;
+    align-self: stretch;
+    padding: 5px;
+    
+    .received__sender {
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .received__body {
+        padding: 5px;
+    }
+
+}

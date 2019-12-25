@@ -13,10 +13,10 @@ model!(
     table:  messages,
     traits: [Identifiable,Associations],
     Message {
-        sender: i32,
+        sender:   i32,
         receiver: i32,
-        body:    String,
-        created: NaiveDateTime
+        body:     String,
+        created:  NaiveDateTime
 });
 
 
@@ -79,6 +79,23 @@ impl Message {
                 Err(_) => vec![]
             }
 
+    }
+
+    pub fn received(t_conn: &PgConnection, t_view: i32) -> Vec<(View,Message)> {
+        match views::table
+            .inner_join(
+                messages::table
+                .on(messages::sender.eq(views::id))
+            )
+            .filter(
+                messages::receiver.eq(t_view)
+            )
+            .load::<(ViewModel,MessageModel)>(t_conn) {
+                Ok(p)  => p.into_iter()
+                           .map(|p| (p.0.into(),p.1.into()))
+                           .collect(),
+                Err(_) => vec![]
+            }
     }
 
 }

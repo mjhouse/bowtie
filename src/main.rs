@@ -53,6 +53,8 @@ fn main() {
             profile::pages::write,
             profile::pages::settings,
 
+            profile::api::messages::create,
+
             profile::api::requests::create,
             profile::api::requests::delete,
             profile::api::requests::update,

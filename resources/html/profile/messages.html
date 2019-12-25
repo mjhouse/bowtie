@@ -1,17 +1,36 @@
 {% extends 'profile/base.html' %}
 
 {% block body %}
-{% if messages %}
-    {% for message in messages %}
-        {% if message.sender == session.view %}
-            you: 
-        {% else %}
-            {{message.sender}}:
+<div class="row">
+    <div class="col w20">
+        <form class="send" action="/api/v1/message/create?redirect={{route | urlencode}}" method="post">
+            <div class="row">
+                <select class="send__target x1" name="receiver" required>
+                    <option hidden disabled selected value>-- friends --</option>
+                    {% if friends %}
+                        {% for friend in friends %}
+                        <option value="{{friend.id}}">{{friend.name}}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <button class="send__button clickable">Send</button>
+            </div>
+            <textarea class="send__body" name="body" placeholder="Write something..." required></textarea>
+        </form>
+    </div>
+    <div class="col x1">
+        {% if received %}
+        {% for pair in received %}
+        <div class="received col">
+            <div class="received__sender">
+                {{pair.0.name}}
+            </div>
+            <div class="received__body">
+                {{pair.1.body}}
+            </div>
+        </div>
+        {% endfor %}
         {% endif %}
-        <br/>
-        <p>{{message.body}}</p>
-    {% endfor %}
-{% else %}
-no messages
-{% endif %}
+    </div>
+</div>
 {% endblock body %}
