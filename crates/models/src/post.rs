@@ -10,12 +10,6 @@ use chrono::prelude::*;
 use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 use failure::*;
 
-#[derive(FromForm)]
-pub struct PostForm {
-    pub title:   String,
-    pub body:    String,
-}
-
 // Creates insertion and query structs (<Object>/<Object>Model),
 model!(
     table:  posts,

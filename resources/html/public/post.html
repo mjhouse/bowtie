@@ -1,9 +1,34 @@
 {% extends 'base.html' %}
 
+{% import "macros.html" as macros %}
+
 {% block content %}
-    {% if post %}
-        POST: {{post.title}}
-    {% else %}
-        POST: not found
-    {% endif %}
+{% if post %}
+<div class="post">
+    <article>
+        <h2 class="post__title">
+            {{post.title}}
+        </h2>
+        <div class="post__body">
+            {{post.body | safe}}
+        </div>
+        <div class="post__created">
+            {{ post.created | date(format="%d/%m/%g %l:%M %P") }}
+        </div>
+    </article>
+    <div class="comments col">
+        <form class="comment col" action="/api/v1/comments/create?redirect={{route | urlencode}}" method="post">
+            <textarea class="comment__field" name="body" placeholder="Leave a comment" required></textarea>
+            <button class="comment__button clickable">Submit</button>
+        </form>
+        <div class="col">
+            {{ macros::unroll(tree=comments) }}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="missing_post">
+    Post does not exit. It may have been deleted by the owner.
+</div>
+{% endif %}
 {% endblock content %}

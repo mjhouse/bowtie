@@ -1,0 +1,11 @@
+{% macro unroll(tree) %}
+    <div class="col p10">
+        {% if tree.root %}
+            <div>author: {{tree.root.author}}</div>
+            <div>body:   {{tree.root.body}}</div>
+        {% endif %}
+        {% for child in tree.children %}
+            {{ self::unroll(tree=child) }}
+        {% endfor %}
+    </div>
+{% endmacro input %}

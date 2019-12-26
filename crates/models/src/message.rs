@@ -19,8 +19,6 @@ model!(
         created:  NaiveDateTime
 });
 
-
-
 impl Message {
 
     pub fn create_from(t_conn: &PgConnection, t_sender: i32, t_receiver: i32, t_body: String) -> Result<Message,Error> {
@@ -78,7 +76,6 @@ impl Message {
                            .collect(),
                 Err(_) => vec![]
             }
-
     }
 
     pub fn received(t_conn: &PgConnection, t_view: i32) -> Vec<(View,Message)> {

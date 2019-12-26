@@ -10,6 +10,24 @@ use rocket::{
     http::{Status}
 };
 
+#[macro_export]
+macro_rules! db {
+    () => {
+        match env::var("DATABASE_URL") {
+            Ok(p) => {
+                match PgConnection::establish(&p) {
+                    Ok(c) => Some(c),
+                    _ => None
+                } 
+            },
+            Err(e) => {
+                warn!("Could not connect to database: {}",e);
+                None
+            }
+        }
+    }
+}
+
 type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 pub struct Conn(pub r2d2::PooledConnection<ConnectionManager<PgConnection>>);

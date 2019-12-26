@@ -9,6 +9,7 @@ use crate::resources::*;
 use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::search::*;
+use bowtie_models::comment::*;
 
 use bowtie_data::Conn;
 
@@ -44,7 +45,11 @@ pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
 
 #[get("/posts/<id>")]
 pub fn posts( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
+    let comments = Comments::for_post(&conn,id);
+    let posts = Post::for_id(&conn,id);
     Page::render(&resources,"/public/post",false)
         .with_context(context!(
-            "post" => Post::for_id(&conn,id)))
+            "post"      => posts,
+            "comments" => comments
+        ))
 }
