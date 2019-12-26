@@ -1,11 +1,25 @@
-{% macro unroll(tree) %}
-    <div class="col p10">
-        {% if tree.root %}
-            <div>author: {{tree.root.author}}</div>
-            <div>body:   {{tree.root.body}}</div>
+{% macro display_comments(comments,id,url) %}
+    <div class="comment__item col">
+        {% if comments.root %}
+            <a  href="/users/{{comments.root.0.name}}" 
+                class="item__name">
+                {{comments.root.0.name}}:
+            </a>
+            <div class="item__body">
+                {{comments.root.1.body}}
+            </div>
+            <div class="item__menu row">
+                {% if comments.root.1.author == id %}
+                    <form action="/api/v1/comment/delete?redirect={{url}}" method="post">
+                        <input type="hidden" name="id" value="{{comments.root.1.id}}"/>
+                        <button type="submit" class="clickable">delete</button>
+                    </form>
+                {% endif %}
+                <a href="#" class="l10">reply</a>
+            </div>
         {% endif %}
-        {% for child in tree.children %}
-            {{ self::unroll(tree=child) }}
+        {% for child in comments.children %}
+            {{ self::display_comments(comments=child,id=id,url=url) }}
         {% endfor %}
     </div>
 {% endmacro input %}

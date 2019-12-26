@@ -22,7 +22,7 @@ model!(
 
 #[derive(Serialize,Debug)]
 pub struct Comments {
-    pub root:     Option<Comment>,
+    pub root:     Option<(View,Comment)>,
     pub children: Vec<Box<Comments>>
 }
 
@@ -35,7 +35,7 @@ impl Comments {
         }
     }
 
-    pub fn from( t_root: Option<Comment> ) -> Self {
+    pub fn from( t_root: Option<(View,Comment)> ) -> Self {
         Self {
             root:     t_root,
             children: vec![]
@@ -43,32 +43,18 @@ impl Comments {
     }
 
     pub fn for_post(t_conn: &PgConnection, t_post: i32) -> Comments {
-        let mut children: Vec<Comment> = 
-        match comments::table
-            .filter(comments::post.eq(t_post))
-            .load::<CommentModel>(t_conn) {
-                Ok(p)  => p.into_iter()
-                        .map(|m| m.into())
-                        .collect(),
-                Err(_) => vec![]
-            };
-
+        let mut children = Comment::for_post(t_conn,t_post);
         Comments::for_data(None,&mut children)
     }
 
-    pub fn for_data( t_root: Option<Comment>, t_comments: &mut Vec<Comment> ) -> Comments {
-        // get id of the root
-        let id = match t_root.as_ref() {
-            Some(c) => c.id.clone(),
-            None => None
-        };
-
+    pub fn for_data(t_root: Option<(View,Comment)>, t_comments: &mut Vec<(View,Comment)>) -> Comments {
+        // get the root comment id and init a new Comments struct
+        let id = t_root.as_ref().and_then(|c| c.1.id.clone());
         let mut comments = Comments::from(t_root);
         
-        // get all direct children of the root
         let mut i = 0;
         while i != t_comments.len() {
-            if t_comments[i].parent == id {
+            if t_comments[i].1.parent == id {
                 let value = t_comments.remove(i);
                 let child = Comments::for_data(
                     Some(value),
@@ -81,7 +67,6 @@ impl Comments {
             }
         }
 
-        // return
         comments
     }
 
@@ -132,4 +117,21 @@ impl Comment {
             _ => Err(BowtieError::NoId)?
         }
     }
+
+    pub fn for_post(t_conn: &PgConnection, t_post: i32) -> Vec<(View,Comment)> {
+        match views::table
+            .inner_join(
+                comments::table
+                .on(comments::author.eq(views::id))
+            )
+            .filter(comments::post.eq(t_post))
+            .load::<(ViewModel,CommentModel)>(t_conn) {
+                Ok(p)  => p.into_iter()
+                           .map(|p| (p.0.into(),p.1.into()))
+                           .collect(),
+                Err(_) => vec![]
+            }
+    }
+
+
 }

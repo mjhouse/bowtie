@@ -104,6 +104,54 @@ pub mod api {
         }
     }
 
+    pub mod comments {
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            comment::{Comment}
+        }; 
+
+        #[derive(FromForm,Debug)]
+        pub struct CreateComment {
+            pub post:   i32,
+            pub parent: Option<i32>,
+            pub body:   String
+        }
+
+        #[derive(FromForm,Debug)]
+        pub struct DeleteComment {
+            pub id: i32,
+        }
+
+        #[post("/api/v1/comment/create?<redirect>", data = "<form>")]
+        pub fn create( conn:     Conn,
+                       redirect: String,
+                       cookies:  Cookies, 
+                       form:     Form<CreateComment>) -> ApiResponse {
+            let (_,vid) = unpack!(redirect,cookies);
+
+            match Comment::create_from(&conn,vid,form.post,form.parent,form.body.clone()) {
+                Ok(_) => Ok(Redirect::to(redirect)),
+                _ => flash!(redirect,"Could not create comment")
+            }
+        }
+
+        #[post("/api/v1/comment/delete?<redirect>", data = "<form>")]
+        pub fn delete( conn:     Conn,
+                       redirect: String,
+                       cookies:  Cookies, 
+                       form:     Form<DeleteComment>) -> ApiResponse {
+            let (_,vid) = unpack!(redirect,cookies);
+
+            match Comment::delete_from(&conn,vid,form.id) {
+                Ok(_) => Ok(Redirect::to(redirect)),
+                _ => flash!(redirect,"Could not delete comment")
+            }
+        }
+
+    }
+
     /*  Messages API
         This module contains endpoints that handle the
         creation, deletion and modification of messages.

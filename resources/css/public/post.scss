@@ -3,7 +3,7 @@
 .post {
     border: 1px solid gray;
     width: 50%;
-    margin:20px auto 0 auto;
+    margin:20px auto 20px auto;
     padding:10px;
 
     .post__title {
@@ -21,14 +21,41 @@
     .comments {
         margin:10px 0 0 0;
 
-        .comment__field {
-            min-height:25px;
-            resize: vertical;
-        }
+        /* css class for the write-comment form */
+        .comment__write {
+            
+            .write__field {
+                min-height:25px;
+                resize: vertical;
+            }
+    
+            .write__button {
+                align-self: flex-end;
+            }
 
-        .comment__button {
-            align-self: flex-end;
+        } 
+
+        /* css class for an existing comment */
+        .comment__item {
+            padding-left:10px;
+            .item__name {
+                margin-top:5px;
+                font-size: 0.9em;
+            }
+    
+            .item__body {
+                padding:10px;
+                border:1px solid rgba(0,0,0,0.25);
+            }
+
+            .item__menu {
+                font-size: 0.9em;
+                justify-content: flex-end;
+            }
+    
         }
 
     }
+
+
 }
