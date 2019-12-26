@@ -24,7 +24,7 @@
             <button class="write__button clickable">Submit</button>
         </form>
         <div class="col">
-            {{ macros::display_comments(comments=comments,id=session.view,url=url) }}
+            {{ macros::display_comments(comments=comments,id=session.view,url=url,post=post.id) }}
         </div>
     </div>
 </div>

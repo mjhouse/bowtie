@@ -52,19 +52,25 @@ impl Comments {
         let id = t_root.as_ref().and_then(|c| c.1.id.clone());
         let mut comments = Comments::from(t_root);
         
+        // drain all the children of the current root
+        let mut children = vec![];
         let mut i = 0;
-        while i != t_comments.len() {
+        while i < t_comments.len() {
             if t_comments[i].1.parent == id {
-                let value = t_comments.remove(i);
-                let child = Comments::for_data(
-                    Some(value),
-                    t_comments
-                );
-                comments.children
-                        .push(Box::new(child));
+                children.push(t_comments.remove(i));
             } else {
                 i += 1;
             }
+        }
+
+        // for each child, create a 'Comments' struct
+        for child in children.into_iter() {
+            comments.children.push(Box::new(
+                Comments::for_data(
+                    Some(child),
+                    t_comments
+                )
+            ));
         }
 
         comments
@@ -89,13 +95,31 @@ impl Comment {
     }
 
     pub fn delete_from(t_conn: &PgConnection, t_author: i32, t_id: i32) -> Result<Comment,Error> {
+
+        let dependents: i64 = 
+            comments::table
+                .filter(comments::parent.eq(t_id))
+                .count()
+                .first(t_conn).unwrap_or(0);
+
         let model: CommentModel = 
-        diesel::delete(
-            comments_dsl.filter(
-                comments::author.eq(t_author)
-                .and(comments::id.eq(t_id))
-            ))
-            .get_result(t_conn)?;
+        if dependents > 0 {
+            diesel::update(comments::table)
+                .filter(
+                    comments::author.eq(t_author)
+                    .and(comments::id.eq(t_id))
+                )
+                .set(comments::body.eq("--"))
+                .get_result(t_conn)?
+        }
+        else {
+            diesel::delete(
+                comments_dsl.filter(
+                    comments::author.eq(t_author)
+                    .and(comments::id.eq(t_id))
+                ))
+                .get_result(t_conn)?
+        };
 
         // return the deleted model
         Ok(model.into())
@@ -127,8 +151,8 @@ impl Comment {
             .filter(comments::post.eq(t_post))
             .load::<(ViewModel,CommentModel)>(t_conn) {
                 Ok(p)  => p.into_iter()
-                           .map(|p| (p.0.into(),p.1.into()))
-                           .collect(),
+                            .map(|p| (p.0.into(),p.1.into()))
+                            .collect(),
                 Err(_) => vec![]
             }
     }

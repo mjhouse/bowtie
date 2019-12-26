@@ -1,25 +1,43 @@
-{% macro display_comments(comments,id,url) %}
+{% macro display_comments(comments,id,url,post) %}
     <div class="comment__item col">
         {% if comments.root %}
-            <a  href="/users/{{comments.root.0.name}}" 
+
+            {% set comment_id   = comments.root.1.id %}
+            {% set comment_user = comments.root.0.name %}
+            {% set comment      = comments.root.1.body %}
+
+            <a name="{{comment_id}}" href="/users/{{comment_user}}" 
                 class="item__name">
-                {{comments.root.0.name}}:
+                {{comment_user}}:
             </a>
+
             <div class="item__body">
-                {{comments.root.1.body}}
+                {{comment}}
             </div>
+
             <div class="item__menu row">
                 {% if comments.root.1.author == id %}
                     <form action="/api/v1/comment/delete?redirect={{url}}" method="post">
-                        <input type="hidden" name="id" value="{{comments.root.1.id}}"/>
+                        <input type="hidden" name="id" value="{{comment_id}}"/>
                         <button type="submit" class="clickable">delete</button>
                     </form>
                 {% endif %}
-                <a href="#" class="l10">reply</a>
+
+                <input type="checkbox" id="toggle{{comment_id}}" class="item__toggle" style="display:none;"/>
+                <label for="toggle{{comment_id}}" class="l10">reply</label>
+                <form class="reply__box" action="/api/v1/comment/create?redirect={{url}}#{{comment_id}}" method="post">
+                    <input type="hidden" name="post" value="{{post}}"/>
+                    <input type="hidden" name="parent" value="{{comment_id}}"/>
+                    <textarea class="reply__field" name="body" placeholder="Reply" required></textarea>
+                    <button class="reply__button clickable l">Submit</button>
+                </form>
             </div>
+
         {% endif %}
+
         {% for child in comments.children %}
-            {{ self::display_comments(comments=child,id=id,url=url) }}
+            {{ self::display_comments(comments=child,id=id,url=url,post=post) }}
         {% endfor %}
+
     </div>
 {% endmacro input %}

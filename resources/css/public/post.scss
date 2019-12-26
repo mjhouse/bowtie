@@ -51,6 +51,25 @@
             .item__menu {
                 font-size: 0.9em;
                 justify-content: flex-end;
+                flex-wrap: wrap;
+
+                .reply__box {
+                    display:none;
+                    flex-direction: column;
+
+                    .reply__field {
+                        resize: vertical;
+                    }
+
+                }
+
+                .item__toggle:checked + label + .reply__box {
+                    display: flex;
+                    width:100%;
+                    user-select: none;
+                }
+
+
             }
     
         }

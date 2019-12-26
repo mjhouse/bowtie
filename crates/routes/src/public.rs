@@ -49,7 +49,7 @@ pub fn posts( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
     let posts = Post::for_id(&conn,id);
     Page::render(&resources,"/public/post",false)
         .with_context(context!(
-            "post"      => posts,
+            "post"     => posts,
             "comments" => comments
         ))
 }
