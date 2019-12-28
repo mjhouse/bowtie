@@ -1,0 +1,2 @@
+ALTER TABLE comments_meta
+ADD depth INTEGER NOT NULL;
