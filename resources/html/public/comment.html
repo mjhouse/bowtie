@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if submission %}
+
+{% set url = route | urlencode %}
+{% set view    = submission.0 %}
+{% set comment = submission.1 %}
+
+<div class="comment">
+    <article>
+        {% if comment.parent %}
+        <a href="/comment/{{comment.parent}}">< BACK</a>
+        {% else %}
+        <a href="/posts/{{comment.post}}">< BACK</a>
+        {% endif %}
+        
+        <h2 class="comment__author">
+            {% if comment.body %}
+                {{view.name}}
+            {% else %}
+                [deleted]
+            {% endif %}
+        </h2>
+        <div class="comment__body">
+            {{comment.body}}
+        </div>
+        <div class="comment__created">
+            {{ comment.created | date(format="%d/%m/%g %l:%M %P") }}
+        </div>
+    </article>
+    <form class="comment__write col" action="/api/v1/comment/create?redirect={{ url }}" method="post">
+        <input type="hidden" name="post" value="{{comment.post}}"/>
+        <input type="hidden" name="parent" value="{{comment.id}}"/>
+        <textarea class="write__field" name="body" placeholder="Reply" required></textarea>
+        <button class="write__button clickable">Submit</button>
+    </form>
+    {% if comments %}
+        {% for pair in comments %}
+            {% set view  = pair.0 %}
+            {% set child = pair.1 %}
+            <div class="child col">
+                <a name="{{comment.id}}" href="/users/{{view.name}}" class="child__author">{{view.name}}</a>
+                <p class="child__body">{{child.body}}</p>
+                <div class="child__menu row bl">
+                    {% if session and child.author == session.view %}
+                        <a class="l10" href="/api/v1/comment/delete?id={{child.id}}&redirect={{ url | urlencode }}">delete</a>
+                    {% endif %}
+                    <a class="l10" href="/comment/{{child.id}}">open</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        No comments yet
+    {% endif %}
+</div>
+{% else %}
+<div class="missing_comment">
+    Comment does not exist. It may have been deleted by the author.
+</div>
+{% endif %}
+{% endblock content %}

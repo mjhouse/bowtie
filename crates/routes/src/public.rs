@@ -31,7 +31,7 @@ pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<Searc
 }
 
 #[get("/users/<name>")]
-pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
+pub fn user( conn: Conn, resources: State<Resources>, name: String ) -> Page {
     let (posts,view) = match View::for_name(&conn,&name) {
         Some(v) => (v.posts(&conn),Some(v)),
         None    => (vec![],None)
@@ -44,12 +44,23 @@ pub fn users( conn: Conn, resources: State<Resources>, name: String ) -> Page {
 }
 
 #[get("/posts/<id>")]
-pub fn posts( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
-    let comments = Comments::for_post(&conn,id);
-    let posts = Post::for_id(&conn,id);
+pub fn post( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
+    let comments = Comment::for_post(&conn,id);
+    let post     = Post::for_id(&conn,id);
     Page::render(&resources,"/public/post",false)
         .with_context(context!(
-            "post"     => posts,
+            "post"     => post,
             "comments" => comments
+        ))
+}
+
+#[get("/comment/<id>")]
+pub fn comment( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
+    let comments   = Comment::for_comment(&conn,id);
+    let submission = Comment::for_id(&conn,id).ok();
+    Page::render(&resources,"/public/comment",false)
+        .with_context(context!(
+            "submission" => submission,
+            "comments"   => comments
         ))
 }

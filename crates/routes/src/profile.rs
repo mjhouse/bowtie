@@ -119,11 +119,6 @@ pub mod api {
             pub body:   String
         }
 
-        #[derive(FromForm,Debug)]
-        pub struct DeleteComment {
-            pub id: i32,
-        }
-
         #[post("/api/v1/comment/create?<redirect>", data = "<form>")]
         pub fn create( conn:     Conn,
                        redirect: String,
@@ -131,20 +126,20 @@ pub mod api {
                        form:     Form<CreateComment>) -> ApiResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
-            match Comment::create_from(&conn,vid,form.post,form.parent,form.body.clone()) {
+            match Comment::create(&conn,vid,form.post,form.parent,form.body.clone()) {
                 Ok(_) => Ok(Redirect::to(redirect)),
                 _ => flash!(redirect,"Could not create comment")
             }
         }
 
-        #[post("/api/v1/comment/delete?<redirect>", data = "<form>")]
+        #[get("/api/v1/comment/delete?<redirect>&<id>")]
         pub fn delete( conn:     Conn,
                        redirect: String,
                        cookies:  Cookies, 
-                       form:     Form<DeleteComment>) -> ApiResponse {
+                       id:       i32) -> ApiResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
-            match Comment::delete_from(&conn,vid,form.id) {
+            match Comment::delete(&conn,vid,id) {
                 Ok(_) => Ok(Redirect::to(redirect)),
                 _ => flash!(redirect,"Could not delete comment")
             }

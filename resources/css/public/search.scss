@@ -1,1 +1,9 @@
 @import '../base';
+
+.toggle {
+    user-select: none;
+}
+
+.toggle-state:checked + .toggle {
+    background-color: $layer2-dark;
+}

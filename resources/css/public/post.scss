@@ -35,46 +35,70 @@
 
         } 
 
-        /* css class for an existing comment */
-        .comment__item {
-            padding-left:10px;
-            .item__name {
-                margin-top:5px;
-                font-size: 0.9em;
+        .comment {
+            padding:5px;
+            margin: 5px 0 5px 0;
+            border:1px solid $layer2-darker;
+            .comment__author {
+                font-size: 0.8em;
             }
     
-            .item__body {
-                padding:10px;
-                border:1px solid rgba(0,0,0,0.25);
+            .comment__body {
+                border-top:1px solid $layer2-dark;
+                border-bottom:1px solid $layer2-dark;
+                padding: 10px;
             }
-
-            .item__menu {
-                font-size: 0.9em;
+    
+            .comment__menu {
+                font-size: 0.8em;
                 justify-content: flex-end;
                 flex-wrap: wrap;
+            }
 
-                .reply__box {
-                    display:none;
-                    flex-direction: column;
+            .reply__box {
+                display:none;
+                flex-direction: column;
 
-                    .reply__field {
-                        resize: vertical;
-                    }
-
+                .reply__field {
+                    resize: vertical;
                 }
-
-                .item__toggle:checked + label + .reply__box {
-                    display: flex;
-                    width:100%;
-                    user-select: none;
-                }
-
 
             }
-    
+
+            .item__toggle:checked + label + .reply__box {
+                display: flex;
+                width:100%;
+                user-select: none;
+            }
+
         }
 
     }
 
 
 }
+
+
+// .item__menu {
+//     font-size: 0.9em;
+//     justify-content: flex-end;
+//     flex-wrap: wrap;
+
+//     .reply__box {
+//         display:none;
+//         flex-direction: column;
+
+//         .reply__field {
+//             resize: vertical;
+//         }
+
+//     }
+
+//     .item__toggle:checked + label + .reply__box {
+//         display: flex;
+//         width:100%;
+//         user-select: none;
+//     }
+
+
+// }

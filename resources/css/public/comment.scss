@@ -1,0 +1,55 @@
+@import '../base';
+
+.comment {
+    border: 1px solid gray;
+    width: 50%;
+    margin:20px auto 20px auto;
+    padding:10px;
+
+    .comment__author {
+        margin:0;
+    }
+
+    .comment__body {
+        padding:10px;
+    }
+    
+    .comment__created {
+        color:$layer2-darker;
+    }
+
+    /* css class for the write-comment form */
+    .comment__write {
+        
+        .write__field {
+            min-height:25px;
+            resize: vertical;
+        }
+
+        .write__button {
+            align-self: flex-end;
+        }
+
+    } 
+
+    .child {
+        padding:5px;
+        margin: 5px 0 5px 0;
+        border:1px solid $layer2-darker;
+        .child__author {
+            font-size: 0.8em;
+        }
+
+        .child__body {
+            border-top:1px solid $layer2-dark;
+            border-bottom:1px solid $layer2-dark;
+            padding: 10px;
+        }
+
+        .child__menu {
+            font-size: 0.8em;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+    }
+}

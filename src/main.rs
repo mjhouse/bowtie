@@ -31,8 +31,9 @@ fn main() {
             public::index, 
             public::about,
             public::search,
-            public::users,
-            public::posts,
+            public::user,
+            public::post,
+            public::comment,
             
             // authentication routes            
             auth::pages::login,

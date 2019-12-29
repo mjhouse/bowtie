@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% import "macros.html" as macros %}
-
 {% block content %}
 {% if post %}
 {% set url = route | urlencode %}
@@ -18,13 +16,36 @@
         </div>
     </article>
     <div class="comments col">
-        <form class="comment__write col" action="/api/v1/comment/create?redirect={{url}}" method="post">
+        <form class="comment__write col" action="/api/v1/comment/create?redirect={{ url | urlencode }}" method="post">
             <input type="hidden" name="post" value="{{post.id}}"/>
             <textarea class="write__field" name="body" placeholder="Leave a comment" required></textarea>
             <button class="write__button clickable">Submit</button>
         </form>
         <div class="col">
-            {{ macros::display_comments(comments=comments,id=session.view,url=url,post=post.id) }}
+            {% if comments %}
+                {% for pair in comments %}
+                    {% set view    = pair.0 %}
+                    {% set comment = pair.1 %}
+                    <div class="comment col">
+                        <a name="{{comment.id}}" href="/users/{{view.name}}" class="comment__author">
+                            {% if comment.body %}
+                                {{view.name}}
+                            {% else %}
+                                [deleted]
+                            {% endif %}
+                        </a>
+                        <p class="comment__body">{{comment.body}}</p>
+                        <div class="comment__menu row bl">
+                        {% if session and comment.author == session.view %}
+                            <a class="l10" href="/api/v1/comment/delete?id={{comment.id}}&redirect={{ url | urlencode }}">delete</a>
+                        {% endif %}
+                        <a class="l10" href="/comment/{{comment.id}}">open</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                No comments yet
+            {% endif %}
         </div>
     </div>
 </div>
