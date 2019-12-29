@@ -3,11 +3,9 @@ use crate::error::*;
 
 pub use bowtie_data::schema::*;
 
-use diesel::prelude::*;
 use serde::{Serialize};
+use diesel::prelude::*;
 use chrono::prelude::*;
-
-use bowtie_data::schema::posts::dsl::posts as posts_dsl;
 use failure::*;
 
 // Creates insertion and query structs (<Object>/<Object>Model),
@@ -56,8 +54,11 @@ impl Post {
 
             // delete the post
             let model: PostModel = 
-            diesel::delete(
-                posts_dsl.filter(posts::id.eq(t_id)))
+            diesel::delete(posts::table)
+                .filter(
+                    posts::view_id.eq(t_view)
+                    .and(posts::id.eq(t_id))
+                )
                 .get_result(t_conn)?;
 
             // return the deleted post

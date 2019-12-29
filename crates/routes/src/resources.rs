@@ -160,14 +160,14 @@ impl Resources {
                         })
                     },
                     (Err(e),_) => {
-                        dbg!(e);
+                        warn!("Error while encoding scss as utf8: {}",e);
                         None
                     },
                     _ => None
                 }
             },
             Err(e) => {
-                dbg!(e);
+                warn!("Error while compiling scss file: {}",e);
                 None
             }
         }
