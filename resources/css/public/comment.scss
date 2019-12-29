@@ -6,6 +6,10 @@
     margin:20px auto 20px auto;
     padding:10px;
 
+    .crumb__current {
+        color: $layer1-darker;
+    }
+
     .comment__author {
         margin:0;
     }

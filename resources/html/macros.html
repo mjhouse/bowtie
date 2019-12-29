@@ -1,43 +1,13 @@
-{% macro display_comments(comments,id,url,post) %}
-    <div class="comment__item col">
-        {% if comments.root %}
+{% macro breadcrumb(top,crumbs) %}
+<a href="/post/{{top}}">top</a>
+{% if crumbs %}
+{% for crumb in crumbs.path %}
+    {% set breadcrumbs = crumbs.path | slice(end=loop.index0) | join(sep=",") %}
+    /<a href="/comment/{{crumb}}?breadcrumbs={{ breadcrumbs }}">{{crumb}}</a>
+{% endfor %}
+{% endif %}
+{% endmacro breadcrumb %}
 
-            {% set comment_id   = comments.root.1.id %}
-            {% set comment_user = comments.root.0.name %}
-            {% set comment      = comments.root.1.body %}
-
-            <a name="{{comment_id}}" href="/users/{{comment_user}}" 
-                class="item__name">
-                {{comment_user}}:
-            </a>
-
-            <div class="item__body">
-                {{comment}}
-            </div>
-
-            <div class="item__menu row">
-                {% if comments.root.1.author == id %}
-                    <form action="/api/v1/comment/delete?redirect={{url}}" method="post">
-                        <input type="hidden" name="id" value="{{comment_id}}"/>
-                        <button type="submit" class="clickable">delete</button>
-                    </form>
-                {% endif %}
-
-                <input type="checkbox" id="toggle{{comment_id}}" class="item__toggle" style="display:none;"/>
-                <label for="toggle{{comment_id}}" class="l10">reply</label>
-                <form class="reply__box" action="/api/v1/comment/create?redirect={{url}}#{{comment_id}}" method="post">
-                    <input type="hidden" name="post" value="{{post}}"/>
-                    <input type="hidden" name="parent" value="{{comment_id}}"/>
-                    <textarea class="reply__field" name="body" placeholder="Reply" required></textarea>
-                    <button class="reply__button clickable l">Submit</button>
-                </form>
-            </div>
-
-        {% endif %}
-
-        {% for child in comments.children %}
-            {{ self::display_comments(comments=child,id=id,url=url,post=post) }}
-        {% endfor %}
-
-    </div>
-{% endmacro input %}
+{% macro crumbs(base,crumb) %}
+{% if base %}{{ base.path | concat(with=crumb) | join(sep=",") }}{% else %}{{ crumb }}{% endif %}
+{% endmacro crumbs %}

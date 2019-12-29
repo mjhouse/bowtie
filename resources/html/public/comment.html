@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import "macros.html" as macros %}
 
 {% block content %}
 {% if submission %}
@@ -9,12 +10,13 @@
 
 <div class="comment">
     <article>
-        {% if comment.parent %}
-            <a href="/comment/{{comment.parent}}">< back</a>
-        {% else %}
-            <a href="/post/{{comment.post}}">< back</a>
-        {% endif %}
-        
+        <a class="crumb__top" href="/post/{{comment.post}}">top</a>
+        {% for crumb in crumbs %}
+            {% set breadcrumbs = crumbs | slice(end=loop.index0) | join(sep=",") %}
+            > <a class="crumb__previous" href="/comment/{{crumb}}?breadcrumb={{ breadcrumbs }}">{{crumb}}</a>
+        {% endfor %}
+        > <span class="crumb__current">{{comment.id}}</span>
+
         <h2 class="comment__author">
             {% if comment.body %}
                 {{view.name}}
@@ -46,7 +48,8 @@
                     {% if session and child.author == session.view %}
                         <a class="l10" href="/api/v1/comment/delete?id={{child.id}}&redirect={{ url | urlencode }}">delete</a>
                     {% endif %}
-                    <a class="l10" href="/comment/{{child.id}}">open</a>
+                    {% set breadcrumbs = crumbs | concat(with=comment.id) | join(sep=",") %}
+                    <a class="l10" href="/comment/{{child.id}}?breadcrumb={{ breadcrumbs }}">open</a>
                 </div>
             </div>
         {% endfor %}
