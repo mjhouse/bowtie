@@ -1,1 +1,13 @@
 @import '../base';
+
+.title__field,
+.post__field {
+    padding:5px;
+    border: 1px solid $layer1-darker;
+}
+
+#italic,
+#bold,
+#editor {
+    display:none;
+}
