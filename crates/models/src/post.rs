@@ -47,16 +47,22 @@ impl Post {
     }
 
     pub fn delete_from(t_conn: &PgConnection, t_view: i32, t_id: i32) -> Result<Post,Error> {
-        let model: PostModel = 
-        diesel::delete(
-            posts_dsl.filter(
-                posts::view_id.eq(t_view)
-                .and(posts::id.eq(t_id))
-            ))
-            .get_result(t_conn)?;
+        t_conn.transaction::<_, Error, _>(|| {
+            
+            // delete all comments
+            diesel::delete(comments::table)
+                .filter(comments::post.eq(t_id))
+                .execute(t_conn)?;
 
-        // return the deleted post
-        Ok(model.into())
+            // delete the post
+            let model: PostModel = 
+            diesel::delete(
+                posts_dsl.filter(posts::id.eq(t_id)))
+                .get_result(t_conn)?;
+
+            // return the deleted post
+            Ok(model.into())
+        })
     }
 
     pub fn create(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
@@ -70,25 +76,10 @@ impl Post {
     }
 
     pub fn delete(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
-        t_conn.transaction::<_, Error, _>(|| {
-            let id = match t_post.id {
-                Some(id) => id,
-                _ => Err(BowtieError::NoId)?
-            };
-
-            // @todo delete comments when post is deleted
-            // @body need to create comment model first
-
-            // delete the post
-            let model: PostModel = 
-            diesel::delete(
-                posts_dsl.filter(
-                    posts::id.eq(id)))
-                .get_result(t_conn)?;
-
-            // return the deleted post
-            Ok(model.into())
-        })
+        match t_post.id {
+            Some(id) => Post::delete_from(t_conn,t_post.view_id,id),
+            None     => Err(BowtieError::NoId)?
+        }
     }
 
     pub fn for_view(t_conn: &PgConnection, t_id: i32) -> Vec<Post> {

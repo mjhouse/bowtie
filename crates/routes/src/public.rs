@@ -30,7 +30,7 @@ pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<Searc
             "search" => Search::from(&conn,&query)))
 }
 
-#[get("/users/<name>")]
+#[get("/user/<name>")]
 pub fn user( conn: Conn, resources: State<Resources>, name: String ) -> Page {
     let (posts,view) = match View::for_name(&conn,&name) {
         Some(v) => (v.posts(&conn),Some(v)),
@@ -43,7 +43,7 @@ pub fn user( conn: Conn, resources: State<Resources>, name: String ) -> Page {
             "view"  => view))
 }
 
-#[get("/posts/<id>")]
+#[get("/post/<id>")]
 pub fn post( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
     let comments = Comment::for_post(&conn,id);
     let post     = Post::for_id(&conn,id);

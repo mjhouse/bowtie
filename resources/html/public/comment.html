@@ -10,9 +10,9 @@
 <div class="comment">
     <article>
         {% if comment.parent %}
-        <a href="/comment/{{comment.parent}}">< BACK</a>
+            <a href="/comment/{{comment.parent}}">< back</a>
         {% else %}
-        <a href="/posts/{{comment.post}}">< BACK</a>
+            <a href="/post/{{comment.post}}">< back</a>
         {% endif %}
         
         <h2 class="comment__author">
@@ -40,7 +40,7 @@
             {% set view  = pair.0 %}
             {% set child = pair.1 %}
             <div class="child col">
-                <a name="{{comment.id}}" href="/users/{{view.name}}" class="child__author">{{view.name}}</a>
+                <a name="{{comment.id}}" href="/user/{{view.name}}" class="child__author">{{view.name}}</a>
                 <p class="child__body">{{child.body}}</p>
                 <div class="child__menu row bl">
                     {% if session and child.author == session.view %}

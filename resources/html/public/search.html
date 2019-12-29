@@ -28,7 +28,7 @@
     <div class="col">
         {% for view in search.views %}
             <div class="card row p10 m5">
-                <a href="/users/{{view.name}}" class="name-sm l10">{{view.name}}</a>
+                <a href="/user/{{view.name}}" class="name-sm l10">{{view.name}}</a>
             </div>
         {% endfor %}
         <div class="row">
@@ -42,7 +42,7 @@
     <div class="col">
         {% for post in search.posts %}
             <div class="card col p10 m5">
-                <a href="/posts/{{post.id}}">{{post.title}}</a>
+                <a href="/post/{{post.id}}">{{post.title}}</a>
                 <span class="f1">{{ post.created | date(format="%d/%m/%g %l:%M %P") }}</span> 
             </div>
         {% endfor %}

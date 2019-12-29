@@ -27,7 +27,7 @@
                     {% set view    = pair.0 %}
                     {% set comment = pair.1 %}
                     <div class="comment col">
-                        <a name="{{comment.id}}" href="/users/{{view.name}}" class="comment__author">
+                        <a name="{{comment.id}}" href="/user/{{view.name}}" class="comment__author">
                             {% if comment.body %}
                                 {{view.name}}
                             {% else %}

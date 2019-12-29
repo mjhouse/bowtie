@@ -1,37 +1,38 @@
 {% extends 'profile/base.html' %}
 
 {% block body %}
-<div>
-    <div class="card m10 p10">
-        <h2 class="m5">Views</h2>
+<div class="settings">
+    <div class="section">
+        <h1 class="section__title m5">Views</h1>
         {% for view in session.views %}
-            {% if view.0 == session.view %}
-            <div class="p5 m10 row bl" style="border: 1px solid green;">
-            {% else %}
-            <div class="p5 m10 row bl">
-            {% endif %}
-                <div class="f3">{{ view.1 }}</div>
-                <form action="/api/v1/views/update?redirect=/profile/settings" 
+            <div class="p5 row bl">
+                <div>{{ view.1 }}</div>
+                <form action="/api/v1/views/delete?redirect=/profile/settings" 
                       method="post" 
                       class="l">
                     <input type="hidden" name="value" value="{{view.0}}"/>
-                    <button class="btn-med" type="submit">active</button>
-                </form>
-                <form action="/api/v1/views/delete?redirect=/profile/settings" 
-                      method="post" 
-                      class="l5">
-                    <input type="hidden" name="value" value="{{view.0}}"/>
-                    <button class="btn-med" type="submit">delete</button>
+                    <button class="clickable" type="submit">delete</button>
                 </form>
             </div>
         {% endfor %}
         <form action="/api/v1/views/create?redirect=/profile/settings" 
               method="post" 
-              class="row m10">
+              class="view__input row">
             <input class="txt-med" placeholder="Display name" name="value" type="text"/>
-            <button class="btn-med l5" type="submit">Create</button> 
+            <button class="clickable l5" type="submit">Create</button> 
         </form>
     </div>
-    
+    <div class="section">
+        <h1 class="section__title m5">Current</h1>
+        <p>Profile settings for the current view.</p>
+        <h2>Description</h2>
+        <p>
+            Description
+        </p>
+        <form class="description__form">
+            <input type="text" name="description" value=""/>
+            <button type="submit">Update</button>
+        </form>
+    </div>
 </div>
 {% endblock body %}
