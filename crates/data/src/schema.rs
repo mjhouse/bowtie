@@ -6,15 +6,7 @@ table! {
         body -> Text,
         created -> Timestamp,
         post -> Int4,
-    }
-}
-
-table! {
-    comments_meta (id) {
-        id -> Int4,
-        parent -> Int4,
-        child -> Int4,
-        depth -> Int4,
+        path -> Text,
     }
 }
 
@@ -71,7 +63,6 @@ joinable!(views -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     comments,
-    comments_meta,
     friends,
     messages,
     posts,

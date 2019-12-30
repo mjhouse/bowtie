@@ -1,11 +1,12 @@
-{% macro breadcrumb(top,crumbs) %}
-<a href="/post/{{top}}">top</a>
-{% if crumbs %}
-{% for crumb in crumbs.path %}
-    {% set breadcrumbs = crumbs.path | slice(end=loop.index0) | join(sep=",") %}
-    /<a href="/comment/{{crumb}}?breadcrumbs={{ breadcrumbs }}">{{crumb}}</a>
-{% endfor %}
-{% endif %}
+{% macro breadcrumbs(top,crumbs,bottom) %}
+<div class="breadcrumbs">
+    <a class="breadcrumb__top breadcrumb" href="/post/{{top}}">Post</a>
+    {% for crumb in crumbs %}
+        > <a class="breadcrumb__previous breadcrumb" 
+                href="/comment/{{crumb}}">{{crumb}}</a>
+    {% endfor %}
+    > <span class="crumb__current breadcrumb">{{bottom}}</span>
+</div>
 {% endmacro breadcrumb %}
 
 {% macro crumbs(base,crumb) %}

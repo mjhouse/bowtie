@@ -16,7 +16,8 @@ model!(
         parent:  Option<i32>,
         body:    String,
         created: NaiveDateTime,
-        post:    i32
+        post:    i32,
+        path:    String
 });
 
 impl Comment {
@@ -27,7 +28,19 @@ impl Comment {
                   t_parent: Option<i32>, 
                   t_body:   String ) -> Result<Comment,Error> 
     {
-        let model: CommentModel = 
+        t_conn.transaction::<_, Error, _>(|| {
+            let mut path = vec![];
+
+            if let Some(id) = t_parent {
+                let (_,p) = Comment::for_id(t_conn,id)?;
+                path = p.path
+                        .split(",")
+                        .map(String::from)
+                        .collect::<Vec<String>>();
+                path.push(id.to_string());
+            }
+
+            let model: CommentModel = 
             diesel::insert_into(comments::table)
                 .values(&Comment {
                     id:      None,
@@ -35,11 +48,13 @@ impl Comment {
                     parent:  t_parent,
                     body:    t_body,
                     created: Utc::now().naive_utc(),
-                    post:    t_post
+                    post:    t_post,
+                    path:    path.join(",")
                 })
                 .get_result(t_conn)?;
 
-        Ok(model.into())
+            Ok(model.into())
+        })
     }
 
     pub fn delete(t_conn: &PgConnection, t_view: i32, t_id: i32) -> Result<Comment,Error> {
@@ -129,6 +144,15 @@ impl Comment {
                 Ok(p)  => Ok((p.0.into(),p.1.into())),
                 Err(_) => Err(BowtieError::RecordNotFound)?
             }      
+    }
+
+    pub fn get_path( &self ) -> Vec<i32> {
+        self.path.split(",")
+                 .filter(|s| !s.trim().is_empty())
+                 .map(|s| s.parse::<i32>())
+                 .filter(Result::is_ok)
+                 .map(Result::unwrap)
+                 .collect()
     }
 
 }
