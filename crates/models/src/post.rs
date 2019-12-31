@@ -8,6 +8,8 @@ use diesel::prelude::*;
 use chrono::prelude::*;
 use failure::*;
 
+use crate::view::*;
+
 // Creates insertion and query structs (<Object>/<Object>Model),
 model!(
     table:  posts,
@@ -19,15 +21,6 @@ model!(
         body:    String,
         created: NaiveDateTime
 });
-
-// Creates 'for_<field>' query functions.
-queries!( 
-    table: posts,
-    model: Post,
-    one: {
-        id:i32 => posts::id
-    }
-);
 
 impl Post {
     
@@ -98,6 +91,19 @@ impl Post {
                 vec![]
             }
         }
+    }
+
+    pub fn for_id(t_conn: &PgConnection, t_id: i32) -> Result<(View,Post),Error> {
+        match views::table
+            .inner_join(
+                posts::table
+                .on(posts::view_id.eq(views::id))
+            )
+            .filter(posts::id.eq(t_id))
+            .get_result::<(ViewModel,PostModel)>(t_conn) {
+                Ok(p)  => Ok((p.0.into(),p.1.into())),
+                Err(_) => Err(BowtieError::RecordNotFound)?
+            }      
     }
 
 }

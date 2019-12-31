@@ -1,104 +1,59 @@
 @import '../base';
 
-.post {
+.submission {
     border: 1px solid gray;
     width: 50%;
     margin:20px auto 20px auto;
     padding:10px;
 
-    .post__title {
+    .breadcrumb__current {
+        color: $layer1-darker;
+    }
+
+    .submission__author {
         margin:0;
     }
 
-    .post__body {
+    .submission__body {
         padding:10px;
     }
     
-    .post__created {
-        color:gray;
+    .submission__created {
+        color:$layer2-darker;
     }
 
-    .comments {
-        margin:10px 0 0 0;
-
-        /* css class for the write-comment form */
-        .comment__write {
-            
-            .write__field {
-                min-height:25px;
-                resize: vertical;
-            }
-    
-            .write__button {
-                align-self: flex-end;
-            }
-
-        } 
-
-        .comment {
-            padding:5px;
-            margin: 5px 0 5px 0;
-            border:1px solid $layer2-darker;
-            .comment__author {
-                font-size: 0.8em;
-            }
-    
-            .comment__body {
-                border-top:1px solid $layer2-dark;
-                border-bottom:1px solid $layer2-dark;
-                padding: 10px;
-            }
-    
-            .comment__menu {
-                font-size: 0.8em;
-                justify-content: flex-end;
-                flex-wrap: wrap;
-            }
-
-            .reply__box {
-                display:none;
-                flex-direction: column;
-
-                .reply__field {
-                    resize: vertical;
-                }
-
-            }
-
-            .item__toggle:checked + label + .reply__box {
-                display: flex;
-                width:100%;
-                user-select: none;
-            }
-
+    /* css class for the write-comment form */
+    .submission__write {
+        
+        .write__field {
+            min-height:25px;
+            resize: vertical;
         }
 
+        .write__button {
+            align-self: flex-end;
+        }
+
+    } 
+
+    .comment {
+        padding:5px;
+        margin: 5px 0 5px 0;
+        border:1px solid $layer2-darker;
+        .comment__author {
+            font-size: 0.8em;
+        }
+
+        .comment__body {
+            border-top:1px solid $layer2-dark;
+            border-bottom:1px solid $layer2-dark;
+            padding: 10px;
+        }
+
+        .comment__menu {
+            font-size: 0.8em;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
     }
-
-
 }
-
-
-// .item__menu {
-//     font-size: 0.9em;
-//     justify-content: flex-end;
-//     flex-wrap: wrap;
-
-//     .reply__box {
-//         display:none;
-//         flex-direction: column;
-
-//         .reply__field {
-//             resize: vertical;
-//         }
-
-//     }
-
-//     .item__toggle:checked + label + .reply__box {
-//         display: flex;
-//         width:100%;
-//         user-select: none;
-//     }
-
-
-// }

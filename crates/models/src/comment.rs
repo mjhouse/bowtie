@@ -58,29 +58,31 @@ impl Comment {
     }
 
     pub fn delete(t_conn: &PgConnection, t_view: i32, t_id: i32) -> Result<Comment,Error> {
-        let exists = diesel::select(
-            diesel::dsl::exists(
-                comments::table.filter(
-                    comments::parent.eq(t_id))))
-            .get_result::<bool>(t_conn)?;
-        
-        let model: CommentModel = if !exists { 
-            diesel::delete(comments::table)
-                .filter(
-                    comments::id.eq(t_id)
-                    .and(comments::author.eq(t_view)))
-                .get_result(t_conn)?
-        }
-        else {
-            diesel::update(comments::table)
-                .filter(
-                    comments::id.eq(t_id)
-                    .and(comments::author.eq(t_view)))
-                .set(comments::body.eq(""))
-                .get_result(t_conn)?
-        };
-
-        Ok(model.into())
+        t_conn.transaction::<_, Error, _>(|| {
+            let exists = diesel::select(
+                diesel::dsl::exists(
+                    comments::table.filter(
+                        comments::parent.eq(t_id))))
+                .get_result::<bool>(t_conn)?;
+            
+            let model: CommentModel = if !exists { 
+                diesel::delete(comments::table)
+                    .filter(
+                        comments::id.eq(t_id)
+                        .and(comments::author.eq(t_view)))
+                    .get_result(t_conn)?
+            }
+            else {
+                diesel::update(comments::table)
+                    .filter(
+                        comments::id.eq(t_id)
+                        .and(comments::author.eq(t_view)))
+                    .set(comments::body.eq(""))
+                    .get_result(t_conn)?
+            };
+            
+            Ok(model.into())
+        })
     }    
 
     pub fn for_comment(t_conn: &PgConnection, t_id: i32) -> Vec<(View,Comment)> {
@@ -118,7 +120,7 @@ impl Comment {
             Ok(p)  => p.into_iter()
                         .map(|r| (r.0.into(),r.1.into()))
                         .collect(),
-            Err(_) => vec![]
+            Err(_) => vec![] // @todo Log errors
         }
     }
 

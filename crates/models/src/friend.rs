@@ -60,7 +60,7 @@ impl Friend {
 
         // return the deleted model
         Ok(model.into())
-    }
+    } 
 
     pub fn create(t_conn: &PgConnection, t_friend: Friend) -> Result<Friend,Error> {
         // create model

@@ -1,57 +1,51 @@
 {% extends 'base.html' %}
+{% import "macros.html" as macros %}
 
 {% block content %}
-{% if post %}
-{% set url = route | urlencode %}
-<div class="post">
-    <article>
-        <h2 class="post__title">
-            {{post.title}}
-        </h2>
-        <div class="post__body">
-            {{post.body | safe}}
-        </div>
-        <div class="post__created">
-            {{ post.created | date(format="%d/%m/%g %l:%M %P") }}
-        </div>
-    </article>
-    <div class="comments col">
-        <form class="comment__write col" action="/api/v1/comment/create?redirect={{ url | urlencode }}" method="post">
+
+{% if submission %}
+
+    {% set url  = route | urlencode %}
+    {% set view = submission.0 %}
+    {% set post = submission.1 %}
+
+    <div class="submission">
+        <article>
+            <h2 class="submission__title">
+                {{post.title}}
+            </h2>
+            <div class="submission__body">
+                {{post.body | safe}}
+            </div>
+            <div class="submission__created">
+                {{ post.created | date(format="%d/%m/%g %l:%M %P") }}
+            </div>
+        </article>
+
+        <form class="submission__write col" action="/api/v1/comment/create?redirect={{ url | urlencode }}" method="post">
             <input type="hidden" name="post" value="{{post.id}}"/>
             <textarea class="write__field" name="body" placeholder="Leave a comment" required></textarea>
             <button class="write__button clickable">Submit</button>
         </form>
+
         <div class="col">
             {% if comments %}
                 {% for pair in comments %}
-                    {% set view    = pair.0 %}
-                    {% set comment = pair.1 %}
-                    <div class="comment col">
-                        <a name="{{comment.id}}" href="/user/{{view.name}}" class="comment__author">
-                            {% if comment.body %}
-                                {{view.name}}
-                            {% else %}
-                                [deleted]
-                            {% endif %}
-                        </a>
-                        <p class="comment__body">{{comment.body}}</p>
-                        <div class="comment__menu row bl">
-                        {% if session and comment.author == session.view %}
-                            <a class="l10" href="/api/v1/comment/delete?id={{comment.id}}&redirect={{ url | urlencode }}">delete</a>
-                        {% endif %}
-                        <a class="l10" href="/comment/{{comment.id}}">open</a>
-                        </div>
-                    </div>
+                    {{ macros::comment(
+                        route   = url,
+                        author  = pair.0,
+                        comment = pair.1,
+                        session = session
+                    ) }}
                 {% endfor %}
             {% else %}
                 No comments yet
             {% endif %}
         </div>
     </div>
-</div>
 {% else %}
-<div class="missing_post">
-    Post does not exist. It may have been deleted by the author.
-</div>
+    <div class="missing_submission">
+        Post does not exist. It may have been deleted by the author.
+    </div>
 {% endif %}
 {% endblock content %}

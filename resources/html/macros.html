@@ -1,3 +1,8 @@
+
+{#  Breadcrumb builder
+    This macro generates a breadcrumb on submission pages given a post id,
+    a path of 'crumbs' (comment ids) and the current comment.
+#}
 {% macro breadcrumbs(top,crumbs,bottom) %}
 <div class="breadcrumbs">
     <a class="breadcrumb__top breadcrumb" href="/post/{{top}}">Post</a>
@@ -5,10 +10,31 @@
         > <a class="breadcrumb__previous breadcrumb" 
                 href="/comment/{{crumb}}">{{crumb}}</a>
     {% endfor %}
-    > <span class="crumb__current breadcrumb">{{bottom}}</span>
+    > <span class="breadcrumb__current breadcrumb">{{bottom}}</span>
 </div>
 {% endmacro breadcrumb %}
 
-{% macro crumbs(base,crumb) %}
-{% if base %}{{ base.path | concat(with=crumb) | join(sep=",") }}{% else %}{{ crumb }}{% endif %}
-{% endmacro crumbs %}
+{#  Comment component
+    This macro creates a single comment element with author, body and
+    action menu.
+#}
+{% macro comment(route,author,comment,session) %}
+    <div class="comment col">
+        <a name="{{comment.id}}" href="/user/{{author.name}}" class="comment__author">
+            {% if comment.body %}
+                {{author.name}}
+            {% else %}
+                [deleted]
+            {% endif %}
+        </a>
+        <p class="comment__body">
+            {{comment.body}}
+        </p>
+        <div class="comment__menu row bl">
+            {% if session and comment.author == session.view %}
+                <a class="l10" href="/api/v1/comment/delete?id={{comment.id}}&redirect={{ route }}">delete</a>
+            {% endif %}
+            <a class="l10" href="/comment/{{comment.id}}">open</a>
+        </div>
+    </div>
+{% endmacro post %}

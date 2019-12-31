@@ -45,12 +45,13 @@ pub fn user( conn: Conn, resources: State<Resources>, name: String ) -> Page {
 
 #[get("/post/<id>")]
 pub fn post( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
-    let comments = Comment::for_post(&conn,id);
-    let post     = Post::for_id(&conn,id);
+    let comments   = Comment::for_post(&conn,id);
+    let submission = Post::for_id(&conn,id).ok();
+
     Page::render(&resources,"/public/post",false)
         .with_context(context!(
-            "post"     => post,
-            "comments" => comments
+            "submission" => submission,
+            "comments"   => comments
         ))
 }
 
