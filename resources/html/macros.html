@@ -32,7 +32,7 @@
         </p>
         <div class="comment__menu row bl">
             {% if session and comment.author == session.view %}
-                <a class="l10" href="/api/v1/comment/delete?id={{comment.id}}&redirect={{ route }}">delete</a>
+                <a class="l10" href="/comment/delete?id={{comment.id}}&redirect={{ route }}">delete</a>
             {% endif %}
             <a class="l10" href="/comment/{{comment.id}}">open</a>
         </div>

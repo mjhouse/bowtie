@@ -30,7 +30,7 @@
                 </div>
             </article>
 
-            <form class="submission__write col" action="/api/v1/comment/create?redirect={{ url }}" method="post">
+            <form class="submission__write col" action="/comment/create?redirect={{ url }}" method="post">
                 <input type="hidden" name="post" value="{{comment.post}}"/>
                 <input type="hidden" name="parent" value="{{comment.id}}"/>
                 <textarea class="write__field" name="body" placeholder="Reply" required></textarea>

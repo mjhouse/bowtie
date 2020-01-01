@@ -1,7 +1,7 @@
 {% extends 'profile/base.html' %}
 
 {% block body %}
-<form class="col x1" action="/api/v1/posts/create?redirect={{route | urlencode}}" method="post">
+<form class="col x1" action="/posts/create?redirect={{route | urlencode}}" method="post">
     <div class="row row-l">
         <div class="l"></div>
         <button class="clickable r5" type="button" id="italic">I</button>

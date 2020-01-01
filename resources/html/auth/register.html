@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form class="l r col" action="/api/v1/register?redirect=/login" method="post">
+<form class="l r col" action="/register?redirect=/login" method="post">
     <h1 class="p5">Register</h1>
     {% if flash %}
     <p class="flash">{{ flash }}</p>

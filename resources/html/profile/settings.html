@@ -7,7 +7,7 @@
         {% for view in session.views %}
             <div class="p5 row bl">
                 <div>{{ view.1 }}</div>
-                <form action="/api/v1/views/delete?redirect=/profile/settings" 
+                <form action="/views/delete?redirect=/profile/settings" 
                       method="post" 
                       class="l">
                     <input type="hidden" name="value" value="{{view.0}}"/>
@@ -15,7 +15,7 @@
                 </form>
             </div>
         {% endfor %}
-        <form action="/api/v1/views/create?redirect=/profile/settings" 
+        <form action="/views/create?redirect=/profile/settings" 
               method="post" 
               class="view__input row">
             <input class="txt-med" placeholder="Display name" name="value" type="text"/>

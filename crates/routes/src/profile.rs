@@ -1,8 +1,4 @@
-
-// @todo Set up database connection pooling
-// @body https://api.rocket.rs/v0.5/rocket_contrib/databases/index.html
-
-pub mod pages {
+pub mod get {
     
     use rocket::{
         State,
@@ -76,7 +72,7 @@ pub mod pages {
 
 }
 
-pub mod api {
+pub mod post {
 
     use rocket::{
         response::{Flash,Redirect},
@@ -84,9 +80,19 @@ pub mod api {
         http::{Cookies}
     };
 
+    use bowtie_models::{
+        Session,
+        Follow,
+        Comment,
+        Message,
+        Friend,
+        Post,
+        View
+    }; 
+
     use bowtie_data::Conn;
 
-    type ApiResponse = Result<Redirect,Flash<Redirect>>;
+    type PostResponse = Result<Redirect,Flash<Redirect>>;
 
     macro_rules! unpack {
         ( $p:ident, $c:ident ) => {
@@ -108,29 +114,23 @@ pub mod api {
         }
     }
 
-    pub mod follows {
+    /*  Follows
+        This module contains endpoints that handle the
+        creation and deletion of follower relationships.
+    */
+    pub mod follow {
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            follow::{Follow}
-        }; 
 
         #[derive(FromForm,Debug)]
-        pub struct CreateFollow {
+        pub struct FollowForm {
             pub publisher:  i32
         }
 
-        #[derive(FromForm,Debug)]
-        pub struct DeleteFollow {
-            pub publisher:  i32
-        }
-
-        #[post("/api/v1/follow/create?<redirect>", data = "<form>")]
+        #[post("/follow/create?<redirect>", data = "<form>")]
         pub fn create( conn:     Conn,
                        redirect: String,
                        cookies:  Cookies, 
-                       form:     Form<CreateFollow>) -> ApiResponse {
+                       form:     Form<FollowForm>) -> PostResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
             match Follow::create(&conn,vid,form.publisher) {
@@ -139,11 +139,11 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/follow/delete?<redirect>", data = "<form>")]
+        #[post("/follow/delete?<redirect>", data = "<form>")]
         pub fn delete( conn:     Conn,
                        redirect: String,
                        cookies:  Cookies, 
-                       form:     Form<DeleteFollow>) -> ApiResponse {
+                       form:     Form<FollowForm>) -> PostResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
             match Follow::delete(&conn,vid,form.publisher) {
@@ -154,13 +154,12 @@ pub mod api {
 
     }
 
-    pub mod comments {
+    /*  Comments
+        This module contains endpoints that handle the
+        creation, deletion and modification of comments.
+    */
+    pub mod comment {
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            comment::{Comment}
-        }; 
 
         #[derive(FromForm,Debug)]
         pub struct CreateComment {
@@ -169,11 +168,11 @@ pub mod api {
             pub body:   String
         }
 
-        #[post("/api/v1/comment/create?<redirect>", data = "<form>")]
+        #[post("/comment/create?<redirect>", data = "<form>")]
         pub fn create( conn:     Conn,
                        redirect: String,
                        cookies:  Cookies, 
-                       form:     Form<CreateComment>) -> ApiResponse {
+                       form:     Form<CreateComment>) -> PostResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
             match Comment::create(&conn,vid,form.post,form.parent,form.body.clone()) {
@@ -182,11 +181,11 @@ pub mod api {
             }
         }
 
-        #[get("/api/v1/comment/delete?<redirect>&<id>")]
+        #[get("/comment/delete?<redirect>&<id>")]
         pub fn delete( conn:     Conn,
                        redirect: String,
                        cookies:  Cookies, 
-                       id:       i32) -> ApiResponse {
+                       id:       i32) -> PostResponse {
             let (_,vid) = unpack!(redirect,cookies);
 
             match Comment::delete(&conn,vid,id) {
@@ -197,17 +196,12 @@ pub mod api {
 
     }
 
-    /*  Messages API
+    /*  Messages
         This module contains endpoints that handle the
         creation, deletion and modification of messages.
     */
-    pub mod messages {
+    pub mod message {
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            message::{Message}
-        }; 
 
         #[derive(FromForm,Debug)]
         pub struct CreateMessage {
@@ -215,11 +209,11 @@ pub mod api {
             pub body:     String
         }
 
-        #[post("/api/v1/message/create?<redirect>", data = "<form>")]
+        #[post("/message/create?<redirect>", data = "<form>")]
         pub fn create( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<CreateMessage>) -> ApiResponse {
+                       form: Form<CreateMessage>) -> PostResponse {
             let path = redirect.unwrap_or("/profile/messages".to_string());
             let (_,vid) = unpack!(path,cookies);
 
@@ -231,26 +225,16 @@ pub mod api {
 
     }
 
-    /*  Requests API
+    /*  Friends
         This module contains endpoints that handle the
         creation, deletion and modification of friend
         requests.
     */
-    pub mod requests {
+    pub mod friend {
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            friend::{Friend}
-        }; 
 
         #[derive(FromForm,Debug)]
-        pub struct CreateRequest {
-            pub value: i32,
-        }
-
-        #[derive(FromForm,Debug)]
-        pub struct DeleteRequest {
+        pub struct FriendForm {
             pub value: i32,
         }
 
@@ -260,11 +244,11 @@ pub mod api {
             pub accepted: bool
         }
 
-        #[post("/api/v1/friend/create?<redirect>", data = "<form>")]
+        #[post("/friend/create?<redirect>", data = "<form>")]
         pub fn create( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<CreateRequest>) -> ApiResponse {
+                       form: Form<FriendForm>) -> PostResponse {
             let path = redirect.unwrap_or("/profile/friends".to_string());
             let (_,vid) = unpack!(path,cookies);
 
@@ -277,11 +261,11 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/friend/update?<redirect>", data = "<form>")]
+        #[post("/friend/update?<redirect>", data = "<form>")]
         pub fn update( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<UpdateRequest>) -> ApiResponse {
+                       form: Form<UpdateRequest>) -> PostResponse {
             let path = redirect.unwrap_or("/profile/friends".to_string());
             let (_,vid) = unpack!(path,cookies);
             if form.accepted {
@@ -300,11 +284,11 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/friend/delete?<redirect>", data = "<form>")]
+        #[post("/friend/delete?<redirect>", data = "<form>")]
         pub fn delete( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<DeleteRequest>) -> ApiResponse {
+                       form: Form<FriendForm>) -> PostResponse {
             let path = redirect.unwrap_or("/profile/friends".to_string());
             let (_,vid) = unpack!(path,cookies);
 
@@ -316,18 +300,12 @@ pub mod api {
 
     }
 
-    /*  Posts API
+    /*  Posts
         This module contains endpoints that handle the
         creation, deletion and modification of posts.
     */
-    pub mod posts {
-
+    pub mod post {
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            post::{Post}
-        }; 
 
         #[derive(FromForm)]
         pub struct CreatePost {
@@ -340,11 +318,11 @@ pub mod api {
             pub value: i32,
         }
 
-        #[post("/api/v1/posts/create?<redirect>", data = "<form>")]
+        #[post("/posts/create?<redirect>", data = "<form>")]
         pub fn create( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<CreatePost>) -> ApiResponse {
+                       form: Form<CreatePost>) -> PostResponse {
             let path = redirect.unwrap_or("/write".to_string());
             let (_,vid) = unpack!(path,cookies);
 
@@ -354,11 +332,11 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/posts/delete?<redirect>", data = "<form>")]
+        #[post("/posts/delete?<redirect>", data = "<form>")]
         pub fn delete( conn: Conn,
                        redirect: Option<String>,
                        cookies: Cookies, 
-                       form: Form<DeletePost>) -> ApiResponse {
+                       form: Form<DeletePost>) -> PostResponse {
             let path = redirect.unwrap_or("/feed".to_string());
             let (_,vid) = unpack!(path,cookies);
 
@@ -370,18 +348,13 @@ pub mod api {
 
     }
 
-    /*  Views API
+    /*  Views
         This module contains endpoints that handle the
         creation, deletion and modification of views.
     */
-    pub mod views {
+    pub mod view {
         
         use super::*;
-        
-        use bowtie_models::{
-            session::{Session},
-            view::{View}
-        }; 
 
         #[derive(FromForm,Debug)]
         pub struct CreateView {
@@ -389,20 +362,15 @@ pub mod api {
         }
 
         #[derive(FromForm,Debug)]
-        pub struct UpdateView {
+        pub struct ViewForm {
             pub value:  i32
         }
 
-        #[derive(FromForm,Debug)]
-        pub struct DeleteView {
-            pub value:  i32
-        }
-
-        #[post("/api/v1/views/create?<redirect>", data = "<form>")]
+        #[post("/views/create?<redirect>", data = "<form>")]
         pub fn create( conn: Conn,
                        redirect: Option<String>,
                        mut cookies: Cookies, 
-                       form: Form<CreateView>) -> ApiResponse {
+                       form: Form<CreateView>) -> PostResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,_) = unpack!(path,cookies);
 
@@ -421,10 +389,10 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/views/update?<redirect>", data = "<form>")]
+        #[post("/views/update?<redirect>", data = "<form>")]
         pub fn update( redirect:    Option<String>, 
                        mut cookies: Cookies, 
-                       form:        Form<UpdateView>) -> ApiResponse {
+                       form:        Form<ViewForm>) -> PostResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             match Session::set_view(form.value,&mut cookies) {
                 Ok(_) => Ok(Redirect::to(path)),
@@ -435,11 +403,11 @@ pub mod api {
             }
         }
 
-        #[post("/api/v1/views/delete?<redirect>", data = "<form>")]
+        #[post("/views/delete?<redirect>", data = "<form>")]
         pub fn delete( conn: Conn,
                        redirect: Option<String>, 
                        mut cookies: Cookies, 
-                       form: Form<DeleteView>) -> ApiResponse {
+                       form: Form<ViewForm>) -> PostResponse {
             let path = redirect.unwrap_or("/profile".to_string());
             let (uid,cid) = unpack!(path,cookies);
 

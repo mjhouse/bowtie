@@ -11,7 +11,7 @@
                     {% if not request.accepted and session.view != request.sender %}               
                     <div class="friend__request p5 row">
                         <div>{{friend.name}}</div>
-                        <form class="l10" action="/api/v1/friend/update?redirect={{route | urlencode}}" method="post">
+                        <form class="l10" action="/friend/update?redirect={{route | urlencode}}" method="post">
                             <input type="hidden" name="accepted" value="true"/>
                             <button class="clickable" type="submit" name="value" value="{{friend.id}}">Accept</button>
                         </form>
@@ -29,7 +29,7 @@
                     {% if request.accepted %}               
                     <div class="friend__card p5 row">
                         <div>{{friend.name}}</div>
-                        <form class="l10" action="/api/v1/friend/delete?redirect={{route | urlencode}}" method="post">
+                        <form class="l10" action="/friend/delete?redirect={{route | urlencode}}" method="post">
                             <button class="clickable" type="submit" name="value" value="{{friend.id}}">Unfriend</button>
                         </form>
                     </div>

@@ -3,7 +3,7 @@
 {% block body %}
 <div class="row">
     <div class="col w20">
-        <form class="send" action="/api/v1/message/create?redirect={{route | urlencode}}" method="post">
+        <form class="send" action="/message/create?redirect={{route | urlencode}}" method="post">
             <div class="row">
                 <select class="send__target x1" name="receiver" required>
                     <option hidden disabled selected value>-- friends --</option>

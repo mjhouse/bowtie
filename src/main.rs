@@ -28,12 +28,12 @@ fn main() {
         .manage(Conn::initialize("DATABASE_URL"))
         .mount("/", routes![
             // public routes
-            public::index, 
-            public::about,
-            public::search,
-            public::user,
-            public::post,
-            public::comment,
+            public::get::index, 
+            public::get::about,
+            public::get::search,
+            public::get::user,
+            public::get::post,
+            public::get::comment,
             
             // authentication routes            
             auth::pages::login,
@@ -41,37 +41,32 @@ fn main() {
             auth::pages::unregister,
             auth::pages::recover,
 
-            auth::api::account::login,
-            auth::api::account::logout,
-            auth::api::account::register,
+            auth::post::login,
+            auth::post::logout,
+            auth::post::register,
             // auth::api::account::unregister,
 
             // profile routes
-            profile::pages::main,
-            profile::pages::feed,
-            profile::pages::friends,
-            profile::pages::messages,
-            profile::pages::write,
-            profile::pages::settings,
+            profile::get::main,
+            profile::get::feed,
+            profile::get::friends,
+            profile::get::messages,
+            profile::get::write,
+            profile::get::settings,
 
-            profile::api::follows::create,
-            profile::api::follows::delete,
-
-            profile::api::comments::create,
-            profile::api::comments::delete,
-
-            profile::api::messages::create,
-
-            profile::api::requests::create,
-            profile::api::requests::delete,
-            profile::api::requests::update,
-
-            profile::api::posts::create,
-            profile::api::posts::delete,
-
-            profile::api::views::create,
-            profile::api::views::update,
-            profile::api::views::delete,
+            profile::post::follow::create,
+            profile::post::follow::delete,
+            profile::post::comment::create,
+            profile::post::comment::delete,
+            profile::post::message::create,
+            profile::post::friend::create,
+            profile::post::friend::delete,
+            profile::post::friend::update,
+            profile::post::post::create,
+            profile::post::post::delete,
+            profile::post::view::create,
+            profile::post::view::update,
+            profile::post::view::delete,
         ])
         .mount("/img",  StaticFiles::from(STATIC_IMG ))
         .mount("/font", StaticFiles::from(STATIC_FONT))

@@ -32,7 +32,7 @@
                                 <button class="dropdown__option">{{view.1}}</button>
                             </form>
                             {% else %}
-                            <form class="dropdown__item" action="/api/v1/views/update?redirect={{route | urlencode}}" method="post">
+                            <form class="dropdown__item" action="/views/update?redirect={{route | urlencode}}" method="post">
                                 <div class="status status__off">&nbsp;</div>
                                 <input type="hidden" name="value" value="{{view.0}}"/>
                                 <button class="dropdown__option">{{view.1}}</button>
