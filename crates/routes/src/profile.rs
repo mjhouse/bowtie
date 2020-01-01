@@ -31,10 +31,14 @@ pub mod pages {
     /// subscribed views.
     #[get("/profile/feed")]
     pub fn feed( conn: Conn, resources: State<Resources>, session: Session ) -> Page {
-        let posts = Post::for_view(&conn,session.view);
+        let posts    = Post::for_view(&conn,session.view);
+        let followed = Post::for_followed(&conn,session.view);
+        let friends  = Post::for_friends(&conn,session.view);
         Page::render(&resources,"/profile/feed",true)
             .with_context(context!(
-                "posts" => posts))
+                "posts"    => posts,
+                "followed" => followed,
+                "friends"  => friends ))
     }
     
     /// Display friends of the current view.
@@ -102,6 +106,52 @@ pub mod api {
                 }
             };
         }
+    }
+
+    pub mod follows {
+        use super::*;
+        
+        use bowtie_models::{
+            session::{Session},
+            follow::{Follow}
+        }; 
+
+        #[derive(FromForm,Debug)]
+        pub struct CreateFollow {
+            pub publisher:  i32
+        }
+
+        #[derive(FromForm,Debug)]
+        pub struct DeleteFollow {
+            pub publisher:  i32
+        }
+
+        #[post("/api/v1/follow/create?<redirect>", data = "<form>")]
+        pub fn create( conn:     Conn,
+                       redirect: String,
+                       cookies:  Cookies, 
+                       form:     Form<CreateFollow>) -> ApiResponse {
+            let (_,vid) = unpack!(redirect,cookies);
+
+            match Follow::create(&conn,vid,form.publisher) {
+                Ok(_) => Ok(Redirect::to(redirect)),
+                _ => flash!(redirect,"Could not create following relationship")
+            }
+        }
+
+        #[post("/api/v1/follow/delete?<redirect>", data = "<form>")]
+        pub fn delete( conn:     Conn,
+                       redirect: String,
+                       cookies:  Cookies, 
+                       form:     Form<DeleteFollow>) -> ApiResponse {
+            let (_,vid) = unpack!(redirect,cookies);
+
+            match Follow::delete(&conn,vid,form.publisher) {
+                Ok(_) => Ok(Redirect::to(redirect)),
+                _ => flash!(redirect,"Could not create following relationship")
+            }
+        }
+
     }
 
     pub mod comments {

@@ -15,6 +15,7 @@ pub mod view;
 pub mod friend;
 pub mod message;
 pub mod comment;
+pub mod follow;
 
 // handling
 pub mod search;

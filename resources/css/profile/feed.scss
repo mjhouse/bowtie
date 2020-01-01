@@ -3,3 +3,43 @@
 .post__title {
     font-size: 1.2em;
 }
+
+.tabs {
+    display:flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    .tab__content,
+    #tab__friends,
+    #tab__followed {
+        display:none;
+    }
+
+    #tab__friends:checked ~ .friends,
+    #tab__followed:checked ~ .followed {
+        display: block;
+    }
+
+    #tab__friends:checked ~ .label__friends,
+    #tab__followed:checked ~ .label__followed {
+        background-color: $layer1-dark;
+    }
+
+    .tab__label {
+        padding:5px;
+        margin:0 10px 0 0;
+    }
+
+    .tab__friends {
+
+    }
+    
+    .tab__followed {
+        
+    }
+    
+    .tab__content {
+        padding:5px;
+        width:100%;
+    }
+}

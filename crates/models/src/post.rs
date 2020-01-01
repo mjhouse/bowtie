@@ -106,4 +106,47 @@ impl Post {
             }      
     }
 
+    pub fn for_friends(t_conn: &PgConnection, t_id: i32) -> Vec<(View,Post)> {
+        match views::table
+            .inner_join(
+                friends::table
+                .on(friends::sender.eq(views::id)
+                    .and(friends::receiver.eq(t_id))
+                .or(friends::receiver.eq(views::id)
+                    .and(friends::sender.eq(t_id)))
+                .and(friends::accepted.eq(true)))
+            )
+            .inner_join(
+                posts::table 
+                .on(posts::view_id.eq(views::id))
+            )
+            .filter(views::id.ne(t_id))
+            .select(
+                ((
+                    views::id,
+                    views::user_id,
+                    views::name,
+                ),
+                (    
+                    posts::id,
+                    posts::view_id,
+                    posts::title,
+                    posts::body,
+                    posts::created
+                )))
+            .load::<(ViewModel,PostModel)>(t_conn) {
+                Ok(r)  => r.into_iter()
+                           .map(|m| (m.0.into(),m.1.into()) )
+                           .collect(),
+                Err(e) => {
+                    dbg!(e);
+                    vec![]
+                }
+            }
+    }
+
+    pub fn for_followed(t_conn: &PgConnection, t_id: i32) -> Vec<(View,Post)> {
+        vec![]
+    }
+
 }

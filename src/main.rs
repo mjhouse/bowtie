@@ -54,6 +54,9 @@ fn main() {
             profile::pages::write,
             profile::pages::settings,
 
+            profile::api::follows::create,
+            profile::api::follows::delete,
+
             profile::api::comments::create,
             profile::api::comments::delete,
 

@@ -1,5 +1,5 @@
 pub use bowtie_data::{schema::*};
-
+use diesel::dsl;
 use bowtie_data::schema::friends::dsl::friends as friends_dsl;
 
 use diesel::prelude::*;
@@ -137,5 +137,20 @@ impl Friend {
         })
     }
 
+    pub fn exists(
+        t_conn:   &PgConnection, 
+        t_view:   i32, 
+        t_friend: i32) -> bool {
+        diesel::select(dsl::exists(
+            friends::table.filter(
+                friends::sender.eq(t_view)
+                .and(friends::receiver.eq(t_friend))
+                .or(
+                    friends::sender.eq(t_friend)
+                    .and(friends::receiver.eq(t_view))
+                ).and(friends::accepted.eq(true))
+        )))
+        .get_result(t_conn).unwrap_or(false)
+    }
 
 }

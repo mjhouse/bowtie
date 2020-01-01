@@ -11,6 +11,14 @@ table! {
 }
 
 table! {
+    follows (id) {
+        id -> Int4,
+        subscriber -> Int4,
+        publisher -> Int4,
+    }
+}
+
+table! {
     friends (id) {
         id -> Int4,
         sender -> Int4,
@@ -63,6 +71,7 @@ joinable!(views -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     comments,
+    follows,
     friends,
     messages,
     posts,

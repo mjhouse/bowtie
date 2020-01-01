@@ -10,12 +10,24 @@
             </p>
             {% if session %}
             <div class="row">
-                <form class="sidebar__menu" action="/api/v1/follow/create?redirect={{route | urlencode}}" method="post">
-                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Follow</button>
+                {% if followed %}
+                <form class="sidebar__menu" action="/api/v1/follow/delete?redirect={{route | urlencode}}" method="post">
+                    <button class="clickable" type="submit" name="publisher" value="{{view.id}}">Unfollow</button>
                 </form>
+                {% else %}
+                <form class="sidebar__menu" action="/api/v1/follow/create?redirect={{route | urlencode}}" method="post">
+                    <button class="clickable" type="submit" name="publisher" value="{{view.id}}">Follow</button>
+                </form>
+                {% endif %}
+                {% if friended %}
+                <form class="sidebar__menu" action="/api/v1/friend/delete?redirect={{route | urlencode}}" method="post">
+                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Unfriend</button>
+                </form>
+                {% else %}
                 <form class="sidebar__menu" action="/api/v1/friend/create?redirect={{route | urlencode}}" method="post">
                     <button class="clickable" type="submit" name="value" value="{{view.id}}">Friend</button>
                 </form>
+                {% endif %}
             </div>
             {% endif %}
         </div>

@@ -5,11 +5,17 @@ use rocket::{
 
 use tera::{Context};
 
+// @todo Make bowtie_models export internal modules
+// @body These imports are getting out of hand
+
 use crate::resources::*;
 use bowtie_models::view::*;
 use bowtie_models::post::*;
 use bowtie_models::search::*;
+use bowtie_models::friend::*;
 use bowtie_models::comment::*;
+use bowtie_models::follow::*;
+use bowtie_models::session::*;
 
 use bowtie_data::Conn;
 
@@ -31,16 +37,45 @@ pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<Searc
 }
 
 #[get("/user/<name>")]
-pub fn user( conn: Conn, resources: State<Resources>, name: String ) -> Page {
+pub fn user( conn: Conn, session: Option<Session>, resources: State<Resources>, name: String ) -> Page {
     let (posts,view) = match View::for_name(&conn,&name) {
         Some(v) => (v.posts(&conn),Some(v)),
         None    => (vec![],None)
     };
 
+    // @todo Refactor to reduce the number of queries
+    // @body There are 4 queries in the worst case at this endpoint
+
+    let followed = match (session.as_ref(),view.as_ref()) {
+        (Some(ref s),Some(ref v)) => {
+            if let Some(id) = v.id {
+                Follow::exists(&conn,s.view,id)
+            }
+            else {
+                false
+            }
+        },
+        (_,_) => false
+    };
+
+    let friended = match (session,view.as_ref()) {
+        (Some(ref s),Some(ref v)) => {
+            if let Some(id) = v.id {
+                Friend::exists(&conn,s.view,id)
+            }
+            else {
+                false
+            }
+        },
+        (_,_) => false
+    };
+
     Page::render(&resources,"/public/user",false)
         .with_context(context!(
-            "posts" => posts,
-            "view"  => view))
+            "posts"    => posts,
+            "view"     => view,
+            "followed" => followed,
+            "friended" => friended))
 }
 
 #[get("/post/<id>")]
