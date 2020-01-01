@@ -1,4 +1,4 @@
-pub mod pages {
+pub mod get {
 
     use rocket::State;
     use crate::resources::*;

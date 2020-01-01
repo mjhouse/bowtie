@@ -36,10 +36,10 @@ fn main() {
             public::get::comment,
             
             // authentication routes            
-            auth::pages::login,
-            auth::pages::register,
-            auth::pages::unregister,
-            auth::pages::recover,
+            auth::get::login,
+            auth::get::register,
+            auth::get::unregister,
+            auth::get::recover,
 
             auth::post::login,
             auth::post::logout,
