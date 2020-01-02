@@ -82,7 +82,10 @@ impl View {
             .filter(posts::view_id.eq(self.id))
             .load::<Post>(t_conn) {
                 Ok(p)  => p,
-                Err(_) => vec![]
+                Err(e) => {
+                    warn!("Error during query: {}",e);
+                    vec![]
+                }
             }
     }
 

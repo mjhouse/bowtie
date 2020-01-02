@@ -61,7 +61,10 @@ pub mod post {
             Some(user) if user.validate(&form.password) => {
                 match Session::create(&conn,&user, &mut cookies) {
                     Ok(_)  => Ok(Redirect::to(path)),
-                    Err(_) => flash!("/login", "Could not create session")
+                    Err(e) => {
+                        warn!("Could not create session: {}",e);
+                        flash!("/login", "Could not create session")
+                    }
                 }
             },
             _ => flash!("/login", "Invalid username or password")

@@ -107,7 +107,10 @@ impl Comment {
         )
         .load::<(View,Comment)>(t_conn) {
             Ok(p)  => p,
-            Err(_) => vec![]
+            Err(e) => {
+                warn!("Error during query: {}",e);
+                vec![]
+            }
         }
     }
 
@@ -125,7 +128,10 @@ impl Comment {
         )
         .load::<(View,Comment)>(t_conn) {
             Ok(p)  => p,
-            Err(_) => vec![] // @todo Log errors
+            Err(e) => {
+                warn!("Error during query: {}",e);
+                vec![]
+            }
         }
     }
 
@@ -133,10 +139,11 @@ impl Comment {
         match comments::table
             .filter(comments::author.eq(t_view))
             .load::<Comment>(t_conn) {
-                Ok(p)  => p.into_iter()
-                            .map(|p| p.into())
-                            .collect(),
-                Err(_) => vec![]
+                Ok(p)  => p,
+                Err(e) => {
+                    warn!("Error during query: {}",e);
+                    vec![]
+                }
             }        
     }
 
