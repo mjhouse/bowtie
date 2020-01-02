@@ -24,7 +24,7 @@ fn main() {
     dotenv().ok();
 
     rocket::ignite()
-        .manage(Resources::from(RESOURCES,true))
+        .manage(Resources::from(RESOURCES,false))
         .manage(Conn::initialize("DATABASE_URL"))
         .mount("/", routes![
             // public routes

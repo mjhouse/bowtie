@@ -11,14 +11,7 @@ pub mod get {
     // @body These imports are getting out of hand
     
     use crate::resources::*;
-    use bowtie_models::view::*;
-    use bowtie_models::post::*;
-    use bowtie_models::search::*;
-    use bowtie_models::friend::*;
-    use bowtie_models::comment::*;
-    use bowtie_models::follow::*;
-    use bowtie_models::session::*;
-    
+    use bowtie_models::*;
     use bowtie_data::Conn;
 
     #[get("/")]
@@ -48,28 +41,12 @@ pub mod get {
         // @todo Refactor to reduce the number of queries
         // @body There are 4 queries in the worst case at this endpoint
     
-        let followed = match (session.as_ref(),view.as_ref()) {
-            (Some(ref s),Some(ref v)) => {
-                if let Some(id) = v.id {
-                    Follow::exists(&conn,s.view,id)
-                }
-                else {
-                    false
-                }
+        let (followed,friended) = match (session.as_ref(),view.as_ref()) {
+            (Some(ref s),Some(View { id: Some(vid), ..})) => {
+                ( Follow::exists(&conn,s.view,*vid),
+                  Friend::exists(&conn,s.view,*vid) )
             },
-            (_,_) => false
-        };
-    
-        let friended = match (session,view.as_ref()) {
-            (Some(ref s),Some(ref v)) => {
-                if let Some(id) = v.id {
-                    Friend::exists(&conn,s.view,id)
-                }
-                else {
-                    false
-                }
-            },
-            (_,_) => false
+            _ => (false,false)
         };
     
         Page::render(&resources,"/public/user",false)

@@ -80,16 +80,7 @@ pub mod post {
         http::{Cookies}
     };
 
-    use bowtie_models::{
-        Session,
-        Follow,
-        Comment,
-        Message,
-        Friend,
-        Post,
-        View
-    }; 
-
+    use bowtie_models::*; 
     use bowtie_data::Conn;
 
     type PostResponse = Result<Redirect,Flash<Redirect>>;

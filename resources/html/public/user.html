@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+{% set url = route | urlencode %}
+
 <div class="user">
     {% if view %}
         <div class="user__sidebar">
@@ -8,27 +11,27 @@
             <p class="sidebar__description">
                 User description
             </p>
-            {% if session %}
-            <div class="row">
-                {% if followed %}
-                <form class="sidebar__menu" action="/follow/delete?redirect={{route | urlencode}}" method="post">
-                    <button class="clickable" type="submit" name="publisher" value="{{view.id}}">Unfollow</button>
-                </form>
-                {% else %}
-                <form class="sidebar__menu" action="/follow/create?redirect={{route | urlencode}}" method="post">
-                    <button class="clickable" type="submit" name="publisher" value="{{view.id}}">Follow</button>
-                </form>
-                {% endif %}
-                {% if friended %}
-                <form class="sidebar__menu" action="/friend/delete?redirect={{route | urlencode}}" method="post">
-                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Unfriend</button>
-                </form>
-                {% else %}
-                <form class="sidebar__menu" action="/friend/create?redirect={{route | urlencode}}" method="post">
-                    <button class="clickable" type="submit" name="value" value="{{view.id}}">Friend</button>
-                </form>
-                {% endif %}
-            </div>
+            {% if session and session.view != view.id %}
+                <div class="row">
+                    {% if followed %}{% set follow_action = "delete" %}
+                    {% else %}       {% set follow_action = "create" %}
+                    {% endif %}
+
+                    {% if friended %}{% set friend_action = "delete" %}
+                    {% else %}       {% set friend_action = "create" %}
+                    {% endif %}
+
+                    <form class="sidebar__menu" action="/follow/{{follow_action}}?redirect={{url}}" method="post">
+                        <button class="clickable" type="submit" name="publisher" value="{{view.id}}">
+                        {% if follow_action == "delete" %}Unfollow{% else %}Follow{% endif %}
+                        </button>
+                    </form>
+                    <form class="sidebar__menu" action="/friend/{{friend_action}}?redirect={{url}}" method="post">
+                        <button class="clickable" type="submit" name="value" value="{{view.id}}">
+                        {% if friend_action == "delete" %}Unfriend{% else %}Friend{% endif %}
+                        </button>
+                    </form>
+                </div>
             {% endif %}
         </div>
         <div class="user__feed">

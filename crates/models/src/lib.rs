@@ -23,6 +23,8 @@ pub mod error;
 pub mod session;
 
 pub use session::{Session};
+pub use search::{SearchQuery,Search};
+
 pub use user::{User,UserModel};
 pub use post::{Post,PostModel};
 pub use view::{View,ViewModel};

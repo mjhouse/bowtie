@@ -32,11 +32,7 @@ pub mod post {
         http::{Cookies,Cookie}
     };
 
-    use bowtie_models::{
-        session::{Session},
-        user::{User}
-    };
-
+    use bowtie_models::*;
     use bowtie_data::Conn;
 
     type PostResponse = Result<Redirect,Flash<Redirect>>;
