@@ -44,26 +44,16 @@ impl Session {
 
     pub fn user( &self, t_conn: &PgConnection ) -> Result<User,Error> {
         match self.id {
-            Some(id) => {
-                match User::for_id(t_conn,id) {
-                    Some(u) => Ok(u),
-                    None => Err(BowtieError::RecordNotFound)?
-                }
-            },
-            None => Err(BowtieError::NoId)? 
+            Some(id) => User::for_id(t_conn,id),
+            None     => Err(BowtieError::NoId)? 
         }
     }
 
     pub fn create( t_conn: &PgConnection, t_user: &User, t_cookies: &mut Cookies ) -> Result<Session,Error> {
-        let id = match t_user.id {
-            Some(id) => id,
-            _ => return Err(BowtieError::RecordNotFound)? 
-        };
-        
         // get all existing views as (id,name) pairs
-        let views = View::for_user(t_conn,id.clone())
+        let views = View::for_user(t_conn,t_user.id)
             .iter()
-            .map(|v| (v.id.unwrap_or(-1),v.name.clone()))
+            .map(|v| (v.id,v.name.clone()))
             .collect::<Vec<(i32,String)>>();
 
         if views.len() > 0 {
@@ -74,7 +64,7 @@ impl Session {
             };
 
             let session = Session {
-                id:       Some(id),
+                id:       Some(t_user.id),
                 view:     view,
                 views:    views,
                 username: name
@@ -87,6 +77,10 @@ impl Session {
         } else {
             Err(BowtieError::RecordNotFound)?
         }        
+    }
+
+    pub fn delete(t_cookies: &mut Cookies) {
+        t_cookies.remove(Cookie::named(COOKIE_NAME));
     }
 
     pub fn add_view( t_view:i32, t_name:String, cookies: &mut Cookies ) -> Result<Session,Error> {

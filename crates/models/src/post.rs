@@ -1,40 +1,49 @@
-use crate::view::View;
 use crate::error::*;
-
 pub use bowtie_data::schema::*;
 
-use serde::{Serialize};
-use diesel::prelude::*;
 use chrono::prelude::*;
+use diesel::prelude::*;
+use serde::{Serialize};
 use failure::*;
 
-use crate::view::*;
+use crate::View;
 
-// Creates insertion and query structs (<Object>/<Object>Model),
-model!(
-    table:  posts,
-    owner:  (View),
-    traits: [Identifiable,Associations],
-    Post {
-        view_id: i32,
-        title:   String,
-        body:    String,
-        created: NaiveDateTime
-});
+#[derive(Serialize, Queryable, Debug)]
+pub struct Post {
+    pub id:      i32,
+    pub view_id: i32,
+    pub title:   String,
+    pub body:    String,
+    pub created: NaiveDateTime
+}
+
+#[derive(Identifiable,Insertable,Debug,Serialize)]
+#[table_name="posts"]
+pub struct PostModel {
+    pub id:      Option<i32>,
+    pub view_id: i32,
+    pub title:   String,
+    pub body:    String,
+    pub created: NaiveDateTime
+}
 
 impl Post {
     
-    pub fn create_from(t_conn: &PgConnection, t_view: i32, t_title: &str, t_body: &str) -> Result<Post,Error> {
-        Post::create(
-            t_conn,
-            Post {
-                id:      None,
-                view_id: t_view,
-                title:   t_title.into(),
-                body:    t_body.into(),
-                created: Utc::now().naive_utc()
-            }
-        )
+    pub fn create_from(
+        t_conn: &PgConnection, 
+        t_view: i32, 
+        t_title: &str, 
+        t_body: &str) -> Result<Post,Error> {
+
+        Ok(diesel::insert_into(posts::table)
+        .values(&PostModel {
+            id:      None,
+            view_id: t_view,
+            title:   t_title.into(),
+            body:    t_body.into(),
+            created: Utc::now().naive_utc()
+        })
+        .get_result(t_conn)?)
     }
 
     pub fn delete_from(t_conn: &PgConnection, t_view: i32, t_id: i32) -> Result<Post,Error> {
@@ -46,8 +55,7 @@ impl Post {
                 .execute(t_conn)?;
 
             // delete the post
-            let model: PostModel = 
-            diesel::delete(posts::table)
+            let result = diesel::delete(posts::table)
                 .filter(
                     posts::view_id.eq(t_view)
                     .and(posts::id.eq(t_id))
@@ -55,41 +63,20 @@ impl Post {
                 .get_result(t_conn)?;
 
             // return the deleted post
-            Ok(model.into())
+            Ok(result)
         })
-    }
-
-    pub fn create(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
-        // create model
-        let model: PostModel = 
-            diesel::insert_into(posts::table)
-            .values(&t_post)
-            .get_result(t_conn)?;
-
-        Ok(model.into())
-    }
-
-    pub fn delete(t_conn: &PgConnection, t_post: Post) -> Result<Post,Error> {
-        match t_post.id {
-            Some(id) => Post::delete_from(t_conn,t_post.view_id,id),
-            None     => Err(BowtieError::NoId)?
-        }
     }
 
     pub fn for_view(t_conn: &PgConnection, t_id: i32) -> Vec<Post> {
         match posts::table
             .filter(posts::view_id.eq(t_id))
             .order(posts::created.asc())
-            .load::<PostModel>(t_conn) {
-            Ok(p) => {
-                p.into_iter()
-                    .map(|m| m.into())
-                    .collect()
-            },
-            Err(e) => {
-                warn!("Error during query: {}",e);
-                vec![]
-            }
+            .load::<Post>(t_conn) {
+                Ok(p) => p,
+                Err(e) => {
+                    warn!("Error during query: {}",e);
+                    vec![]
+                }
         }
     }
 
@@ -100,9 +87,12 @@ impl Post {
                 .on(posts::view_id.eq(views::id))
             )
             .filter(posts::id.eq(t_id))
-            .get_result::<(ViewModel,PostModel)>(t_conn) {
-                Ok(p)  => Ok((p.0.into(),p.1.into())),
-                Err(_) => Err(BowtieError::RecordNotFound)?
+            .get_result::<(View,Post)>(t_conn) {
+                Ok(p)  => Ok(p),
+                Err(e) => {
+                    warn!("Error during query: {}",e);
+                    Err(BowtieError::RecordNotFound)?
+                }
             }      
     }
 
@@ -134,19 +124,47 @@ impl Post {
                     posts::body,
                     posts::created
                 )))
-            .load::<(ViewModel,PostModel)>(t_conn) {
-                Ok(r)  => r.into_iter()
-                           .map(|m| (m.0.into(),m.1.into()) )
-                           .collect(),
+            .load::<(View,Post)>(t_conn) {
+                Ok(r)  => r,
                 Err(e) => {
-                    dbg!(e);
+                    warn!("Error during query: {}",e);
                     vec![]
                 }
             }
     }
 
     pub fn for_followed(t_conn: &PgConnection, t_id: i32) -> Vec<(View,Post)> {
-        vec![]
+        match views::table
+            .inner_join(
+                follows::table
+                .on(follows::publisher.eq(views::id)
+                .and(follows::subscriber.eq(t_id)))
+            )
+            .inner_join(
+                posts::table 
+                .on(posts::view_id.eq(views::id))
+            )
+            .filter(views::id.ne(t_id))
+            .select(
+                ((
+                    views::id,
+                    views::user_id,
+                    views::name,
+                ),
+                (    
+                    posts::id,
+                    posts::view_id,
+                    posts::title,
+                    posts::body,
+                    posts::created
+                )))
+            .load::<(View,Post)>(t_conn) {
+                Ok(r)  => r,
+                Err(e) => {
+                    warn!("Error during query: {}",e);
+                    vec![]
+                }
+            }
     }
 
 }

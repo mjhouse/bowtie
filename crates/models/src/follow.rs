@@ -1,20 +1,24 @@
 pub use bowtie_data::schema::*;
+
 use diesel::dsl;
-use chrono::prelude::*;
 use diesel::prelude::*;
 use serde::{Serialize};
 use failure::*;
 
-use crate::view::*;
-use crate::error::*;
+#[derive(Serialize, Queryable, Debug)]
+pub struct Follow {
+    pub id:         i32,
+    pub subscriber: i32,
+    pub publisher:  i32
+}
 
-model!(
-    table:  follows,
-    traits: [Identifiable,Associations],
-    Follow {
-        subscriber: i32,
-        publisher:  i32
-});
+#[derive(Identifiable,Insertable,Debug,Serialize)]
+#[table_name="follows"]
+pub struct FollowModel {
+    pub id:         Option<i32>,
+    pub subscriber: i32,
+    pub publisher:  i32
+}
 
 impl Follow {
 
@@ -23,16 +27,16 @@ impl Follow {
         t_subscriber: i32, 
         t_publisher:  i32) -> Result<Follow,Error> 
     {
-        let model: FollowModel = 
+        let result = 
         diesel::insert_into(follows::table)
-            .values(&Follow {
+            .values(&FollowModel {
                 id:      None,
                 subscriber: t_subscriber,
                 publisher:  t_publisher,
             })
             .get_result(t_conn)?;
 
-        Ok(model.into())
+        Ok(result)
     }
 
     pub fn delete(
@@ -40,7 +44,7 @@ impl Follow {
         t_subscriber: i32, 
         t_publisher:  i32) -> Result<Follow,Error> 
     {
-        let model: FollowModel =
+        let result = 
         diesel::delete(follows::table)
         .filter(
             follows::subscriber.eq(t_subscriber)
@@ -48,7 +52,7 @@ impl Follow {
         )
         .get_result(t_conn)?;
 
-        Ok(model.into())
+        Ok(result)
     }    
 
     pub fn exists(
@@ -57,10 +61,11 @@ impl Follow {
         t_publisher:  i32) -> bool 
     {
         diesel::select(dsl::exists(
-            follows::table.filter(follows::subscriber.eq(t_subscriber)
-            .and(follows::publisher.eq(t_publisher)))
-        ))
-        .get_result(t_conn).unwrap_or(false)
+            follows::table.filter(
+                follows::subscriber.eq(t_subscriber)
+                .and(follows::publisher.eq(t_publisher)))))
+        .get_result(t_conn)
+        .unwrap_or(false)
     }
 
 }

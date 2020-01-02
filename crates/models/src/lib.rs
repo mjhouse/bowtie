@@ -3,7 +3,6 @@
 #[macro_use] extern crate failure;
 #[macro_use] extern crate failure_derive;
 
-#[macro_use] 
 extern crate bowtie_data;
 extern crate chrono;
 extern crate rocket;

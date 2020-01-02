@@ -5,11 +5,7 @@ use serde::{Serialize};
 use rocket::request::{FromForm, FormItems};
 
 pub use bowtie_data::schema::*;
-use crate::{
-    post::{Post,PostModel},
-    view::{View,ViewModel}
-
-};
+use crate::{View,Post};
 
 macro_rules! unpack {
     ( $i:ident ) => {
@@ -25,10 +21,6 @@ macro_rules! unpack {
     }
 }
 
-macro_rules! into {
-    ( $r:ident ) => { $r.into_iter().map(|m| m.into()).collect() }
-}
-
 macro_rules! apply {
     ( $q:ident, $c:path, $v:ident ) => { $q.or_filter($c.like(format!("%{}%",&$v.value))) }
 }
@@ -39,9 +31,9 @@ macro_rules! impl_search {
         table:  $t:path,
         target: $a:path,
         fields: [ $( $f:path ),* ],
-        result: $m:ident -> $o:ident
+        result: $m:ident
     ) => {
-        pub fn $n(t_conn: &PgConnection, t_search: &SearchQuery) -> Vec<$o> {
+        pub fn $n(t_conn: &PgConnection, t_search: &SearchQuery) -> Vec<$m> {
             if !t_search.targets.contains(&$a) {
                 return vec![]; }
 
@@ -51,7 +43,7 @@ macro_rules! impl_search {
             )*
 
             match query.load::<$m>(t_conn) {
-                Ok(r)  => into!(r),
+                Ok(r)  => r,
                 Err(e) => {
                     warn!("{}",e);
                     vec![]
@@ -106,7 +98,7 @@ impl Search {
         table:  views::table,
         target: Target::People,
         fields: [ views::name ],
-        result: ViewModel -> View
+        result: View
     );
 
     impl_search!(
@@ -115,7 +107,7 @@ impl Search {
         target: Target::Posts,
         fields: [ posts::title,
                   posts::body ],
-        result: PostModel -> Post
+        result: Post
     );
 
 }

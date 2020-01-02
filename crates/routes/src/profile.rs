@@ -126,7 +126,10 @@ pub mod post {
 
             match Follow::create(&conn,vid,form.publisher) {
                 Ok(_) => Ok(Redirect::to(redirect)),
-                _ => flash!(redirect,"Could not create following relationship")
+                Err(e) => {
+                    warn!("Could not create follow: {}",e);
+                    flash!(redirect,"Could not create following relationship")
+                }
             }
         }
 
@@ -139,7 +142,10 @@ pub mod post {
 
             match Follow::delete(&conn,vid,form.publisher) {
                 Ok(_) => Ok(Redirect::to(redirect)),
-                _ => flash!(redirect,"Could not create following relationship")
+                Err(e) => {
+                    warn!("Could not delete follow: {}",e);
+                    flash!(redirect,"Could not delete following relationship")
+                }
             }
         }
 
@@ -168,7 +174,10 @@ pub mod post {
 
             match Comment::create(&conn,vid,form.post,form.parent,form.body.clone()) {
                 Ok(_) => Ok(Redirect::to(redirect)),
-                _ => flash!(redirect,"Could not create comment")
+                Err(e) => {
+                    warn!("Could not create comment: {}",e);
+                    flash!(redirect,"Could not create comment")
+                }
             }
         }
 
@@ -181,7 +190,10 @@ pub mod post {
 
             match Comment::delete(&conn,vid,id) {
                 Ok(_) => Ok(Redirect::to(redirect)),
-                _ => flash!(redirect,"Could not delete comment")
+                Err(e) => {
+                    warn!("Could not delete comment: {}",e);
+                    flash!(redirect,"Could not delete comment")
+                }
             }
         }
 
@@ -210,7 +222,10 @@ pub mod post {
 
             match Message::create_from(&conn,vid,form.receiver,form.body.clone()) {
                 Ok(_) => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not send message")
+                Err(e) => {
+                    warn!("Could not send message: {}",e);
+                    flash!(path,"Could not send message")
+                }
             }
         }
 
@@ -248,7 +263,10 @@ pub mod post {
 
             match Friend::create_from(&conn,vid,form.value,false) {
                 Ok(_) => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not create friend request")
+                Err(e) => {
+                    warn!("Could not create friend request: {}",e);
+                    flash!(path,"Could not create friend request")
+                }
             }
         }
 
@@ -263,14 +281,17 @@ pub mod post {
                 match Friend::accept(&conn,form.value,vid) {
                     Ok(_)  => Ok(Redirect::to(path)),
                     Err(e) => {
-                        dbg!(e);
+                        warn!("Could not accept friend request: {}",e);
                         flash!(path,"Could not accept friend request")}
                 }
             }
             else {
                 match Friend::delete_from(&conn,vid,form.value) {
                     Ok(_) => Ok(Redirect::to(path)),
-                    _ => flash!(path,"Could not deny friend request")
+                    Err(e) => {
+                        warn!("Could not deny friend request: {}",e);
+                        flash!(path,"Could not deny friend request")
+                    }
                 }
             }
         }
@@ -285,7 +306,10 @@ pub mod post {
 
             match Friend::delete_from(&conn,vid,form.value) {
                 Ok(_) => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not delete friend")
+                Err(e) => {
+                    warn!("Could not delete friend: {}",e);
+                    flash!(path,"Could not delete friend")
+                }
             }
         }
 
@@ -319,7 +343,10 @@ pub mod post {
 
             match Post::create_from(&conn,vid,&form.title,&form.body) {
                 Ok(_) => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not create post")
+                Err(e) => {
+                    warn!("Could not create post: {}",e);
+                    flash!(path,"Could not create post")
+                }
             }
         }
 
@@ -333,7 +360,10 @@ pub mod post {
 
             match Post::delete_from(&conn,vid,form.value) {
                 Ok(_)  => Ok(Redirect::to(path)),
-                _ => flash!(path,"Could not delete post")
+                Err(e) => {
+                    warn!("Could not delete post: {}",e);
+                    flash!(path,"Could not delete post")
+                }
             }
         }
 
@@ -366,17 +396,16 @@ pub mod post {
             let (uid,_) = unpack!(path,cookies);
 
             match View::create_from(&conn,uid,&form.value) {
-                Ok(v) if v.id.is_some() => {
-                    match Session::add_view(v.id.unwrap(),v.name,&mut cookies) {
+                Ok(v) => {
+                    match Session::add_view(v.id,v.name,&mut cookies) {
                         Ok(_) => Ok(Redirect::to(path)),
                         _ => flash!(path,"Could not update session")  
                     }
                 },
                 Err(e) => {
-                    dbg!(e);
+                    warn!("Could not create view: {}",e);
                     flash!(path,"Could not create view")
                 }
-                _ => flash!(path,"Could not create view")
             }
         }
 
@@ -388,7 +417,7 @@ pub mod post {
             match Session::set_view(form.value,&mut cookies) {
                 Ok(_) => Ok(Redirect::to(path)),
                 Err(e) => {
-                    dbg!(e);
+                    warn!("Could not update view: {}",e);
                     flash!(path,"Could not update view")
                 }
             }
@@ -407,17 +436,19 @@ pub mod post {
             }
 
             match View::delete_from(&conn,uid,form.value) {
-                Ok(v) if v.id.is_some() => {
-                    match Session::remove_view(v.id.unwrap(),&mut cookies) {
+                Ok(v) => {
+                    match Session::remove_view(v.id,&mut cookies) {
                         Ok(_) => Ok(Redirect::to(path)),
-                        _ => flash!(path,"Could not update session")  
+                        Err(e) => {
+                            warn!("Could not update session: {}",e);
+                            flash!(path,"Could not update session")  
+                        }
                     }
                 },
                 Err(e) => {
-                    dbg!(e);
+                    warn!("Could not delete view: {}",e);
                     flash!(path,"Could not delete view")
                 }
-                _ => flash!(path,"Could not delete view")
             }
         }
 

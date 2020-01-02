@@ -6,19 +6,29 @@ use serde::{Serialize};
 use failure::*;
 
 use crate::view::*;
-use crate::error::*;
 
-model!(
-    table:  comments,
-    traits: [Identifiable,Associations],
-    Comment {
-        author:  i32,
-        parent:  Option<i32>,
-        body:    String,
-        created: NaiveDateTime,
-        post:    i32,
-        path:    String
-});
+#[derive(Serialize, Queryable, Debug)]
+pub struct Comment {
+    pub id:      i32,
+    pub author:  i32,
+    pub parent:  Option<i32>,
+    pub body:    String,
+    pub created: NaiveDateTime,
+    pub post:    i32,
+    pub path:    String
+}
+
+#[derive(Identifiable,Insertable,Debug,Serialize)]
+#[table_name="comments"]
+pub struct CommentModel {
+    pub id:      Option<i32>,
+    pub author:  i32,
+    pub parent:  Option<i32>,
+    pub body:    String,
+    pub created: NaiveDateTime,
+    pub post:    i32,
+    pub path:    String
+}
 
 impl Comment {
 
@@ -40,9 +50,8 @@ impl Comment {
                 path.push(id.to_string());
             }
 
-            let model: CommentModel = 
-            diesel::insert_into(comments::table)
-                .values(&Comment {
+            let result = diesel::insert_into(comments::table)
+                .values(&CommentModel {
                     id:      None,
                     author:  t_author,
                     parent:  t_parent,
@@ -53,7 +62,7 @@ impl Comment {
                 })
                 .get_result(t_conn)?;
 
-            Ok(model.into())
+            Ok(result)
         })
     }
 
@@ -65,7 +74,7 @@ impl Comment {
                         comments::parent.eq(t_id))))
                 .get_result::<bool>(t_conn)?;
             
-            let model: CommentModel = if !exists { 
+            let model: Comment = if !exists { 
                 diesel::delete(comments::table)
                     .filter(
                         comments::id.eq(t_id)
@@ -80,8 +89,8 @@ impl Comment {
                     .set(comments::body.eq(""))
                     .get_result(t_conn)?
             };
-            
-            Ok(model.into())
+
+            Ok(model)
         })
     }    
 
@@ -96,10 +105,8 @@ impl Comment {
         .order(
             comments::created.desc()
         )
-        .load::<(ViewModel,CommentModel)>(t_conn) {
-            Ok(p)  => p.into_iter()
-                        .map(|r| (r.0.into(),r.1.into()))
-                        .collect(),
+        .load::<(View,Comment)>(t_conn) {
+            Ok(p)  => p,
             Err(_) => vec![]
         }
     }
@@ -116,10 +123,8 @@ impl Comment {
         .order(
             comments::created.desc()
         )
-        .load::<(ViewModel,CommentModel)>(t_conn) {
-            Ok(p)  => p.into_iter()
-                        .map(|r| (r.0.into(),r.1.into()))
-                        .collect(),
+        .load::<(View,Comment)>(t_conn) {
+            Ok(p)  => p,
             Err(_) => vec![] // @todo Log errors
         }
     }
@@ -127,7 +132,7 @@ impl Comment {
     pub fn for_view(t_conn: &PgConnection, t_view: i32) -> Vec<Comment> {
         match comments::table
             .filter(comments::author.eq(t_view))
-            .load::<CommentModel>(t_conn) {
+            .load::<Comment>(t_conn) {
                 Ok(p)  => p.into_iter()
                             .map(|p| p.into())
                             .collect(),
@@ -136,16 +141,15 @@ impl Comment {
     }
 
     pub fn for_id(t_conn: &PgConnection, t_id: i32) -> Result<(View,Comment),Error> {
-        match views::table
+        let result = views::table
             .inner_join(
                 comments::table
                 .on(comments::author.eq(views::id))
             )
             .filter(comments::id.eq(t_id))
-            .get_result::<(ViewModel,CommentModel)>(t_conn) {
-                Ok(p)  => Ok((p.0.into(),p.1.into())),
-                Err(_) => Err(BowtieError::RecordNotFound)?
-            }      
+            .get_result::<(View,Comment)>(t_conn)?;
+
+        Ok(result)
     }
 
     pub fn get_path( &self ) -> Vec<i32> {
@@ -175,15 +179,7 @@ mod tests {
         let db = PgConnection::establish(&url)
             .expect("Could not connect to database");
 
-        for i in 0..1000 {
-            let c1 = Comment::create(&db,
-                63,
-                37,
-                None,
-                "Comment".to_string()
-            );
-            assert!(c1.is_ok());
-        }
+
     }
 
 }

@@ -15,7 +15,7 @@ macro_rules! make_object {
         #[table_name=$tn]
         pub struct $n {
             $( pub $c: $t ),*
-        } 
+        }
     }
 }
 
@@ -60,15 +60,15 @@ macro_rules! model {
                 table:  stringify!($tn),
                 owner:  ($( $bt ),*),
                 traits: [$( $oi, )* Insertable,Debug,Serialize],
-                $n {
+                [<$n Model>] {
                     id: Option<i32>,
                     $( $c: $t ),*
             });
 
             // Define the model struct that is
             // used for query results.
-            #[derive(Queryable, Debug)]
-            pub struct [<$n Model>] {
+            #[derive(Serialize, Queryable, Debug)]
+            pub struct $n {
                 pub id: i32,
                 $( pub $c: $t ),*
             }
@@ -77,7 +77,7 @@ macro_rules! model {
             impl From<[<$n Model>]> for $n {
                 fn from(model: [<$n Model>]) -> Self {
                     $n {
-                        id: Some(model.id),
+                        id: model.id.unwrap_or(-1),
                         $( $c: model.$c ),*
                     }
                 }
@@ -87,7 +87,7 @@ macro_rules! model {
             impl From<$n> for [<$n Model>] {
                 fn from(object: $n) -> Self {
                     [<$n Model>] {
-                        id: object.id.unwrap_or(-1),
+                        id: Some(object.id),
                         $( $c: object.$c ),*
                     }
                 }

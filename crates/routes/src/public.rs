@@ -42,9 +42,9 @@ pub mod get {
         // @body There are 4 queries in the worst case at this endpoint
     
         let (followed,friended) = match (session.as_ref(),view.as_ref()) {
-            (Some(ref s),Some(View { id: Some(vid), ..})) => {
-                ( Follow::exists(&conn,s.view,*vid),
-                  Friend::exists(&conn,s.view,*vid) )
+            (Some(ref s),Some(ref v)) => {
+                ( Follow::exists(&conn,s.view,v.id),
+                  Friend::exists(&conn,s.view,v.id) )
             },
             _ => (false,false)
         };

@@ -29,7 +29,7 @@ pub mod post {
     use rocket::{
         response::{Flash,Redirect},
         request::{Form},
-        http::{Cookies,Cookie}
+        http::{Cookies}
     };
 
     use bowtie_models::*;
@@ -56,7 +56,8 @@ pub mod post {
                     mut cookies: Cookies, 
                     form:        Form<LoginForm>) -> PostResponse {
         let path = redirect.unwrap_or("/profile".to_string());
-        match User::for_username(&conn,&form.username) {
+
+        match User::for_name(&conn,&form.username) {
             Some(user) if user.validate(&form.password) => {
                 match Session::create(&conn,&user, &mut cookies) {
                     Ok(_)  => Ok(Redirect::to(path)),
@@ -70,7 +71,7 @@ pub mod post {
     // @todo Make it possible to remove cookie from '/api/v1/logout'
     #[get("/logout")]
     pub fn logout( mut cookies: Cookies ) -> PostResponse {
-        cookies.remove(Cookie::named(User::COOKIE_NAME));
+        Session::delete(&mut cookies);
         Ok(Redirect::to("/"))
     }
 
