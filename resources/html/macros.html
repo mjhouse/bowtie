@@ -38,3 +38,30 @@
         </div>
     </div>
 {% endmacro post %}
+
+{#  Pagination component
+    This creates a previous/next button that returns to the same
+    route but with updates 'page' and 'count' params. 
+    (i.e. '?page=<>&count=<>')
+#}
+{% macro pagination(route,items,page,count) %}
+    <div class="pagination row">
+        {% set url = route | split(pat="?") | first %}
+        {% set len = items | length %}
+
+        {# if there is at least one previous page,
+           display the 'newer' link #}
+        {% if page > 0 %}
+            <a  class="pagination_item r" 
+                href="{{url}}?page={{page - 1}}&count={{count}}">< newer</a>
+        {% endif %}
+
+        {# if we got the number of results we asked for,
+           assume this isn't the last page and display
+           the 'older' link #}
+        {% if len == count %}
+            <a  class="pagination_item l" 
+                href="{{url}}?page={{page + 1}}&count={{count}}">older ></a>
+        {% endif %}
+    </div>
+{% endmacro post %}

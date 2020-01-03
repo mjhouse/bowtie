@@ -29,6 +29,13 @@
         </form>
 
         <div class="col">
+            {{ macros::pagination(
+                route = route,
+                items = comments,
+                page  = page_number,
+                count = item_count
+            ) }}
+
             {% if comments %}
                 {% for pair in comments %}
                     {{ macros::comment(
@@ -39,8 +46,15 @@
                     ) }}
                 {% endfor %}
             {% else %}
-                No comments yet
+                <div class="l r">Nothing here</div>
             {% endif %}
+
+            {{ macros::pagination(
+                route = route,
+                items = comments,
+                page  = page_number,
+                count = item_count
+            ) }}
         </div>
     </div>
 {% else %}

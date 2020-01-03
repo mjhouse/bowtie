@@ -94,17 +94,16 @@ impl Comment {
         })
     }    
 
-    pub fn for_comment(t_conn: &PgConnection, t_id: i32) -> Vec<(View,Comment)> {
+    pub fn for_comment(t_conn: &PgConnection, t_id: i32, t_start: i64, t_count: i64) -> Vec<(View,Comment)> {
         match views::table
         .inner_join(
             comments::table
             .on(comments::author.eq(views::id))
         )
-        .filter(
-            comments::parent.eq(t_id))
-        .order(
-            comments::created.desc()
-        )
+        .filter(comments::parent.eq(t_id))
+        .order(comments::created.desc())
+        .offset(t_start)
+        .limit(t_count)
         .load::<(View,Comment)>(t_conn) {
             Ok(p)  => p,
             Err(e) => {
@@ -114,7 +113,7 @@ impl Comment {
         }
     }
 
-    pub fn for_post(t_conn: &PgConnection, t_post: i32) -> Vec<(View,Comment)> {
+    pub fn for_post(t_conn: &PgConnection, t_post: i32, t_start: i64, t_count: i64) -> Vec<(View,Comment)> {
         match views::table
         .inner_join(
             comments::table
@@ -123,9 +122,9 @@ impl Comment {
         .filter(
             comments::post.eq(t_post)
             .and(comments::parent.is_null()))
-        .order(
-            comments::created.desc()
-        )
+        .order(comments::created.desc())
+        .offset(t_start)
+        .limit(t_count)
         .load::<(View,Comment)>(t_conn) {
             Ok(p)  => p,
             Err(e) => {

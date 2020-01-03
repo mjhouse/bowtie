@@ -37,18 +37,34 @@
                 <button class="write__button clickable">Submit</button>
             </form>
 
-            {% if comments %}
-                {% for pair in comments %}
-                    {{ macros::comment(
-                        route   = url,
-                        author  = pair.0,
-                        comment = pair.1,
-                        session = session
-                    ) }}
-                {% endfor %}
-            {% else %}
-                No comments yet
-            {% endif %}
+            <div class="col">
+                {{ macros::pagination(
+                    route = route,
+                    items = comments,
+                    page  = page_number,
+                    count = item_count
+                ) }}
+
+                {% if comments %}
+                    {% for pair in comments %}
+                        {{ macros::comment(
+                            route   = url,
+                            author  = pair.0,
+                            comment = pair.1,
+                            session = session
+                        ) }}
+                    {% endfor %}
+                {% else %}
+                    <div class="l r">Nothing here</div>
+                {% endif %}
+
+                {{ macros::pagination(
+                    route = route,
+                    items = comments,
+                    page  = page_number,
+                    count = item_count
+                ) }}
+            </div>
         </div>
     {% else %}
         <div class="missing_submission">

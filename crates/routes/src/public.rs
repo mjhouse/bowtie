@@ -33,8 +33,8 @@ pub mod get {
     
     #[get("/user/<name>")]
     pub fn user( conn: Conn, session: Option<Session>, resources: State<Resources>, name: String ) -> Page {
-        let (posts,view) = match View::for_name(&conn,&name) {
-            Some(v) => (v.posts(&conn),Some(v)),
+        let (posts,view) = match View::with_posts(&conn,&name) {
+            Some((v,p)) => (p,Some(v)),
             None    => (vec![],None)
         };
     
@@ -42,7 +42,7 @@ pub mod get {
         // @body There are 4 queries in the worst case at this endpoint
     
         let (followed,friended) = match (session.as_ref(),view.as_ref()) {
-            (Some(ref s),Some(ref v)) => {
+            (Some(s),Some(v)) => {
                 ( Follow::exists(&conn,s.view,v.id),
                   Friend::exists(&conn,s.view,v.id) )
             },
@@ -57,21 +57,31 @@ pub mod get {
                 "friended" => friended))
     }
     
-    #[get("/post/<id>")]
-    pub fn post( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
-        let comments   = Comment::for_post(&conn,id);
+    #[get("/post/<id>?<page>&<count>")]
+    pub fn post( conn: Conn, resources: State<Resources>, id: i32, page: Option<i64>, count: Option<i64> ) -> Page {
+        let page_number = page.unwrap_or(0);
+        let item_count  = count.unwrap_or(50);
+        let start = page_number * item_count;
+
+        let comments   = Comment::for_post(&conn,id,start,item_count);
         let submission = Post::for_id(&conn,id).ok();
     
         Page::render(&resources,"/public/post",false)
             .with_context(context!(
                 "submission" => submission,
-                "comments"   => comments
+                "comments"   => comments,
+                "page_number"=> page_number,
+                "item_count" => item_count
             ))
     }
     
-    #[get("/comment/<id>")]
-    pub fn comment( conn: Conn, resources: State<Resources>, id: i32 ) -> Page {
-        let comments   = Comment::for_comment(&conn,id);
+    #[get("/comment/<id>?<page>&<count>")]
+    pub fn comment( conn: Conn, resources: State<Resources>, id: i32, page: Option<i64>, count: Option<i64> ) -> Page {
+        let page_number = page.unwrap_or(0);
+        let item_count  = count.unwrap_or(50);
+        let start = page_number * item_count;
+        
+        let comments   = Comment::for_comment(&conn,id,start,item_count);
         let submission = Comment::for_id(&conn,id).ok();
     
         let crumbs = match submission {
@@ -83,7 +93,9 @@ pub mod get {
             .with_context(context!(
                 "submission" => submission,
                 "comments"   => comments,
-                "crumbs"     => crumbs
+                "crumbs"     => crumbs,
+                "page_number"=> page_number,
+                "item_count" => item_count
             ))
     }
 }

@@ -108,7 +108,18 @@ impl View {
     pub fn for_name(t_conn: &PgConnection, t_name: &str) -> Option<View> {
         views::table
             .filter(views::name.eq(t_name))
-            .first::<View>(t_conn).ok()
+            .first::<View>(t_conn)
+            .ok()
+    }
+
+    pub fn with_posts(t_conn: &PgConnection, t_name: &str) -> Option<(View,Vec<Post>)> {
+        match View::for_name(t_conn,t_name) {
+            Some(view) => {
+                let posts = view.posts(t_conn);
+                Some((view,posts))
+            },
+            None => None
+        }
     }
 
 }
