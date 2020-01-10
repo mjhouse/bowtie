@@ -94,7 +94,7 @@ impl Comment {
         })
     }    
 
-    pub fn for_comment(t_conn: &PgConnection, t_id: i32, t_start: i64, t_count: i64) -> Vec<(View,Comment)> {
+    pub fn for_comment(t_conn: &PgConnection, t_id: i32, t_start: Option<i64>, t_count: i64) -> Vec<(View,Comment)> {
         match views::table
         .inner_join(
             comments::table

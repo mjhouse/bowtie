@@ -24,15 +24,26 @@ pub mod get {
         Page::render(&resources,"/public/about",false)
     }
     
-    #[get("/search?<query..>")]
-    pub fn search( conn: Conn, resources: State<Resources>, query: LenientForm<SearchQuery> ) -> Page {
+    #[get("/search?<page>&<count>&<query..>")]
+    pub fn search(conn: Conn, 
+                  resources: State<Resources>, 
+                  query: LenientForm<SearchQuery>,
+                  page: Option<i64>, 
+                  count: Option<i64> ) -> Page {
+                      
         Page::render(&resources,"/public/search",false)
             .with_context(context!(
                 "search" => Search::from(&conn,&query)))
     }
     
-    #[get("/user/<name>")]
-    pub fn user( conn: Conn, session: Option<Session>, resources: State<Resources>, name: String ) -> Page {
+    #[get("/user/<name>?<page>&<count>")]
+    pub fn user(conn: Conn, 
+                session: Option<Session>, 
+                resources: State<Resources>, 
+                name: String, 
+                page: Option<i64>, 
+                count: Option<i64> ) -> Page {
+
         let (posts,view) = match View::with_posts(&conn,&name) {
             Some((v,p)) => (p,Some(v)),
             None    => (vec![],None)
@@ -58,7 +69,12 @@ pub mod get {
     }
     
     #[get("/post/<id>?<page>&<count>")]
-    pub fn post( conn: Conn, resources: State<Resources>, id: i32, page: Option<i64>, count: Option<i64> ) -> Page {
+    pub fn post(conn: Conn, 
+                resources: State<Resources>, 
+                id: i32, 
+                page: Option<i64>, 
+                count: Option<i64> ) -> Page {
+
         let page_number = page.unwrap_or(0);
         let item_count  = count.unwrap_or(50);
         let start = page_number * item_count;
@@ -76,7 +92,12 @@ pub mod get {
     }
     
     #[get("/comment/<id>?<page>&<count>")]
-    pub fn comment( conn: Conn, resources: State<Resources>, id: i32, page: Option<i64>, count: Option<i64> ) -> Page {
+    pub fn comment(conn: Conn, 
+                   resources: State<Resources>, 
+                   id: i32, 
+                   page: Option<i64>, 
+                   count: Option<i64> ) -> Page {
+
         let page_number = page.unwrap_or(0);
         let item_count  = count.unwrap_or(50);
         let start = page_number * item_count;
