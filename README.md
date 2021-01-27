@@ -10,7 +10,7 @@ website built from the ground up around three principles:
   can parse them, and use semantic html with appropriate hinting and attributes so that
   disabled users can navigate.
 
-* __Be as fast as humanly possible__. This means no huge fucking javascript bundle, no
+* __Be as fast as humanly possible__. This means no huge javascript bundle, no
   front-end framework and few database queries per page. In return for these self-imposed 
   constraints, pages load in less than 50ms. Often much less.
 
