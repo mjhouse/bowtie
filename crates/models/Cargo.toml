@@ -16,6 +16,6 @@ chrono = { version = "0.4.9", features = ["serde"] }
 paste = "0.1.6"
 medallion = "2.3.1"
 serde = { version = "1.0", features = ["derive"] }
-diesel = { version = "1.0.0", features = ["postgres","chrono"] }
+diesel = { version = "1.4.6", features = ["postgres","chrono"] }
 
 bowtie_data = { path = "../data" }
